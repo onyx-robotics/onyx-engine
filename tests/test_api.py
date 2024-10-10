@@ -82,7 +82,7 @@ def test_train_model():
         model_config=model_config,
         training_config=training_config,
         sim_variables=sim_variables
-)
+    )
     
 def test_use_model():    
     # Load our model
@@ -102,4 +102,3 @@ if __name__ == '__main__':
     #test_model_download()
     #test_train_model()
     test_use_model()
-    
