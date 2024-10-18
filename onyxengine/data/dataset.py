@@ -1,8 +1,7 @@
 import pandas as pd
-from dataclasses import dataclass
+from pydantic import BaseModel
 
-@dataclass
-class OnyxDatasetConfig:
+class OnyxDatasetConfig(BaseModel):
     num_outputs: int
     num_state: int
     num_control: int

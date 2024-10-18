@@ -1,10 +1,11 @@
 import torch.nn as nn
-from dataclasses import dataclass, field
+from pydantic import BaseModel, Field
 from typing import Literal
+from onyxengine.modeling import ModelSimulatorConfig, ModelSimulator
 
-@dataclass
-class MLPConfig:
-    model_type: str = field(default='mlp', init=False)
+class MLPConfig(BaseModel):
+    onyx_model_type: str = Field(default='mlp', frozen=True, init=False)
+    sim_config: ModelSimulatorConfig = ModelSimulatorConfig()
     num_inputs: int = 1
     num_outputs: int = 1
     sequence_length: int = 1
@@ -14,9 +15,10 @@ class MLPConfig:
     dropout: float = 0.0
     bias: bool = True
 
-class MLP(nn.Module):
-    def __init__(self, config=MLPConfig()):
-        super(MLP, self).__init__()
+class MLP(nn.Module, ModelSimulator):
+    def __init__(self, config: MLPConfig):
+        nn.Module.__init__(self)
+        ModelSimulator.__init__(self, config.sim_config)
         self.config = config
         num_inputs = config.num_inputs * config.sequence_length
         num_outputs = config.num_outputs

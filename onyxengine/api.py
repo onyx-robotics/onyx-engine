@@ -1,20 +1,17 @@
 import os
-import json
 import requests
 from typing import List
-from dataclasses import asdict
 import torch
 import pandas as pd
 from tqdm import tqdm
 from requests_toolbelt import MultipartEncoder, MultipartEncoderMonitor
-import onyxengine as onyx
 from onyxengine.data import OnyxDataset, OnyxDatasetConfig
 from onyxengine.modeling import model_from_config_json
 from onyxengine.modeling.models import *
-from onyxengine.simulation import SimVariable
 
 # API Constants
 SERVER_URL = "https://api.onyx-robotics.com"
+#SERVER_URL = "http://localhost:8000"
 ONYX_API_KEY = os.environ.get('ONYX_API_KEY')
 if ONYX_API_KEY is None:
     print('Warning ONYX_API_KEY environment variable not found.')
@@ -90,7 +87,10 @@ def download_object(filename, object_type):
                 file.write(data)
     print(f'{filename} downloaded successfully.')
 
-def set_object_metadata(object_id, object_type, object_config, object_source_ids=[]):
+def set_object_metadata(object_id, object_type, object_config, object_source_ids=None):
+    if object_source_ids is None:
+        object_source_ids = []
+    
     # Request to set metadata for the object in onyx engine
     try:
         response = requests.post(
@@ -128,7 +128,7 @@ def save_dataset(object_id, dataset: OnyxDataset, source_dataset_ids: List[str] 
         os.makedirs(DATASETS_PATH)
     dataset_filename = object_id + '.csv'
     config_filename = object_id + '.json'
-    config_json = json.dumps(asdict(dataset.config), indent=2)
+    config_json = dataset.config.model_dump_json(indent=2)
     dataset.dataframe.to_csv(os.path.join(DATASETS_PATH, dataset_filename), index=False)
     with open(os.path.join(DATASETS_PATH, config_filename), 'w') as f:
         f.write(config_json)
@@ -156,8 +156,7 @@ def load_dataset(dataset_id):
     dataset_dataframe = pd.read_csv(dataset_path)
     with open(config_path, 'r') as f:
         config_json = f.read()
-    config_dict = json.loads(config_json)
-    dataset_config = OnyxDatasetConfig(**config_dict)
+    dataset_config = OnyxDatasetConfig.model_validate_json(config_json)
     dataset = OnyxDataset(dataframe=dataset_dataframe)
     dataset.from_config(dataset_config)
     
@@ -169,7 +168,7 @@ def save_model(object_id, model, model_config, source_dataset_ids: List[str]):
         os.makedirs(MODELS_PATH)
     model_filename = object_id + '.pt'
     config_filename = object_id + '.json'
-    config_json = json.dumps(asdict(model_config), indent=2)
+    config_json = model_config.model_dump_json(indent=2)
     torch.save(model.state_dict(), os.path.join(MODELS_PATH, model_filename))
     with open(os.path.join(MODELS_PATH, config_filename), 'w') as f:
         f.write(config_json)
@@ -201,11 +200,10 @@ def load_model(model_id):
     model.eval()
     return model
 
-def train_model(dataset_id, model_id, model_config, training_config, sim_variables: List[SimVariable]=None):
+def train_model(dataset_id, model_id, model_config, training_config):
     # Prepare to make a request to the onyx server
-    model_config_json = json.dumps(asdict(model_config), indent=2)
-    training_config_json = json.dumps(asdict(training_config), indent=2)
-    sim_variables_json = json.dumps([asdict(sim_variable) for sim_variable in sim_variables], indent=2)
+    model_config_json = model_config.model_dump_json(indent=2)
+    training_config_json = training_config.model_dump_json(indent=2)
 
     # Request the onyx server to train the model
     try:
@@ -217,7 +215,6 @@ def train_model(dataset_id, model_id, model_config, training_config, sim_variabl
                 "onyx_model_id": model_id,
                 "onyx_model_config": model_config_json,
                 "training_config": training_config_json,
-                "sim_variables": sim_variables_json,
             },
         )
         response.raise_for_status()
