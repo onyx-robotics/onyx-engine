@@ -1,10 +1,11 @@
 import torch
 import torch.nn as nn
-from dataclasses import dataclass, field
+from pydantic import BaseModel, Field
+from onyxengine.modeling import ModelSimulatorConfig, ModelSimulator
 
-@dataclass
-class RNNConfig:
-    model_type: str = field(default='rnn', init=False)
+class RNNConfig(BaseModel):
+    onyx_model_type: str = Field(default='rnn', frozen=True, init=False)
+    sim_config: ModelSimulatorConfig = ModelSimulatorConfig()
     num_inputs: int = 1
     num_outputs: int = 1
     sequence_length: int = 1 # Not needed by pytorch rnn's but useful for model tracking
@@ -13,9 +14,10 @@ class RNNConfig:
     rnn_type: str = 'RNN'
     streaming_mode: bool = False
 
-class RNN(nn.Module):
-    def __init__(self, config=RNNConfig()):
-        super(RNN, self).__init__()
+class RNN(nn.Module, ModelSimulator):
+    def __init__(self, config: RNNConfig):
+        nn.Module.__init__(self)
+        ModelSimulator.__init__(self, config.sim_config)
         self.config = config
         self.sequence_length = config.sequence_length
         num_inputs = config.num_inputs

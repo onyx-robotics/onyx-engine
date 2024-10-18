@@ -1,13 +1,14 @@
-# Transformer with GPT architecture
+# Transformer with GPT decoder-only architecture
+import math
 import torch
 import torch.nn as nn
-from dataclasses import dataclass, field
 from torch.nn import functional as F
-import math
+from pydantic import BaseModel, Field
+from onyxengine.modeling import ModelSimulatorConfig, ModelSimulator
 
-@dataclass
-class GPTConfig:
-    model_type: str = field(default='transformer', init=False)
+class TransformerConfig(BaseModel):
+    onyx_model_type: str = Field(default='transformer', frozen=True, init=False)
+    sim_config: ModelSimulatorConfig = ModelSimulatorConfig()
     num_inputs: int = 0
     num_outputs: int = 0
     sequence_length: int = 1
@@ -15,7 +16,7 @@ class GPTConfig:
     n_head: int = 12
     n_embd: int = 24
     dropout: float = 0.0
-    bias: bool = True # Bias in Linears and LayerNorms    
+    bias: bool = True # Bias in Linears and LayerNorms
 
 class CausalSelfAttention(nn.Module):
     def __init__(self, config):
@@ -93,9 +94,10 @@ class DecoderBlock(nn.Module):
         x = x + self.mlp(self.ln_2(x))
         return x
 
-class GPT(nn.Module):
-    def __init__(self, config):
-        super(GPT, self).__init__()
+class Transformer(nn.Module, ModelSimulator):
+    def __init__(self, config: TransformerConfig):
+        nn.Module.__init__(self)
+        ModelSimulator.__init__(self, config.sim_config)
         self.config = config
         
         # Continuous states embedded with linear layer instead of token-level nn.Embedding
