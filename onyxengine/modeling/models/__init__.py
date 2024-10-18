@@ -2,4 +2,4 @@
 
 from .mlp import MLP, MLPConfig
 from .rnn import RNN, RNNConfig
-from .transformer import GPT, GPTConfig
+from .transformer import Transformer, TransformerConfig

@@ -3,20 +3,19 @@ import json
 
 def model_from_config_json(config_json):
     config_dict = json.loads(config_json)
-    model_type = config_dict['model_type']
-    # Remove model_type from config_dict
-    config_dict.pop('model_type')
-    
+    model_type = config_dict['onyx_model_type']
+    config_dict.pop('onyx_model_type')
+
     if model_type == 'mlp':
-        mlp_config = MLPConfig(**config_dict)
+        mlp_config = MLPConfig.model_validate(config_dict)
         model = MLP(mlp_config)
     elif model_type == 'rnn':
-        rnn_config = RNNConfig(**config_dict)
+        rnn_config = RNNConfig.model_validate(config_dict)
         model = RNN(rnn_config)
     elif model_type == 'transformer':
-        transformer_config = GPTConfig(**config_dict)
-        model = GPT(transformer_config)
+        transformer_config = TransformerConfig.model_validate(config_dict)
+        model = Transformer(transformer_config)
     else:
         raise ValueError(f"Could not find model type {model_type}")
-    
+
     return model
