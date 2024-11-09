@@ -2,8 +2,8 @@
 import os
 
 # API Constants
-#SERVER_URL = "https://api.onyx-robotics.com"
-SERVER_URL = "http://localhost:8000"
+SERVER_URL = "https://api.onyx-robotics.com"
+#SERVER_URL = "http://localhost:8000"
 ONYX_API_KEY = os.environ.get('ONYX_API_KEY')
 if ONYX_API_KEY is None:
     print('Warning ONYX_API_KEY environment variable not found.')
