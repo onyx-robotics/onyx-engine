@@ -4,6 +4,21 @@ from typing import Literal
 from onyxengine.modeling import ModelSimulatorConfig, ModelSimulator
 
 class MLPConfig(BaseModel):
+    """
+    Configuration class for the MLP model.
+
+    Args:
+        onyx_model_type (str): Model type = 'mlp', immutable.
+        sim_config (ModelSimulatorConfig): Configuration for the model's simulator.
+        num_inputs (int): Number of input features (default is 1).
+        num_outputs (int): Number of output features (default is 1).
+        sequence_length (int): Length of the input sequence (default is 1).
+        hidden_layers (int): Number of hidden layers (default is 2).
+        hidden_size (int): Size of each hidden layer (default is 32).
+        activation (Literal['relu', 'tanh', 'sigmoid']): Activation function (default is 'relu').
+        dropout (float): Dropout rate for layers (default is 0.0).
+        bias (bool): Whether to use bias in layers (default is True).
+    """
     onyx_model_type: str = Field(default='mlp', frozen=True, init=False)
     sim_config: ModelSimulatorConfig = ModelSimulatorConfig()
     num_inputs: int = 1
