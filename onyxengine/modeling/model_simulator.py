@@ -4,11 +4,30 @@ from pydantic import BaseModel
 from contextlib import nullcontext
 
 class State(BaseModel):
-    name: str # Variable name
-    relation: Literal['output', 'delta', 'derivative'] # Method to solve for the variable: the output of the model, parent is the delta of the value, or derivative of parent value
-    parent: str # Parent variable to derive from
+    """
+    State variable used in ModelSimulatorConfig.
+    
+    Args:
+        name (str): Variable name.
+        relation (Literal['output', 'delta', 'derivative']): Method to solve for the variable: variable is an output of the model, parent is the delta of the variable, or parent is the derivative of the variable.
+        parent (str): Parent variable to derive from.
+    """
+    
+    name: str
+    relation: Literal['output', 'delta', 'derivative']
+    parent: str
     
 class ModelSimulatorConfig(BaseModel):
+    """
+    Configuration class for the model simulator.
+    
+    Args:
+        outputs (List[str]): List of output variables.
+        states (List[State]): List of state variables.
+        controls (List[str]): List of control variables.
+        dt (float): Time step for simulation.
+    """
+    
     outputs: List[str] = []
     states: List[State] = []
     controls: List[str] = []
@@ -111,9 +130,9 @@ class ModelSimulator():
         # Initialize simulation data
         seq_length = self.config.sequence_length
         sim_steps = traj_solution.size(1) - seq_length
-        if x0:
+        if x0 is not None:
             traj_solution[:, :seq_length, :self.n_state] = x0
-        if u:
+        if u is not None:
             traj_solution[:, :, -self.n_control:] = u
 
         with self.amp_context and torch.no_grad():

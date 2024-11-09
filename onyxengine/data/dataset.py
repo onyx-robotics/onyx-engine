@@ -8,6 +8,16 @@ class OnyxDatasetConfig(BaseModel):
     dt: float
 
 class OnyxDataset:
+    """
+    Onyx dataset class for storing dataframe and metadata for the dataset.
+    
+    Args:
+        dataframe (pd.DataFrame): Dataframe containing the dataset.
+        num_outputs (int): Number of output features.
+        num_state (int): Number of state variables.
+        num_control (int): Number of control variables.
+        dt (float): Delta time between samples in seconds.
+    """
     def __init__(
         self,
         dataframe: pd.DataFrame = None,

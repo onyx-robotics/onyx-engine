@@ -5,22 +5,22 @@ from onyxengine.data import OnyxDataset
 from onyxengine.modeling import ModelSimulatorConfig, State, MLPConfig, MLP, TrainingConfig
 
 def test_metadata_get():
-    data = onyx.get_object_metadata('brake_train_data')
+    data = onyx.get_object_metadata('brake_data')
     print(data)
     #print(data['data'][0]['object_config'])
 
 def test_data_download():
     # Load the training dataset
-    train_dataset = onyx.load_dataset('brake_train_data')
+    train_dataset = onyx.load_dataset('brake_data')
     print(train_dataset.dataframe.head())
 
 def test_data_upload():
     # Load data
-    raw_data = onyx.load_dataset('brake_train_data')
+    raw_data = onyx.load_dataset('brake_data')
 
     # Pull out features for model training
     train_data = pd.DataFrame()
-    train_data['acceleration_predicted'] = raw_data.dataframe['acceleration_predicted']
+    train_data['acceleration_predicted'] = raw_data.dataframe['acceleration']
     train_data['velocity'] = raw_data.dataframe['velocity']
     train_data['position'] = raw_data.dataframe['position']
     train_data['brake_input'] = raw_data.dataframe['brake_input']
@@ -34,7 +34,7 @@ def test_data_upload():
         num_control=1,
         dt=0.0025
     )
-    onyx.save_dataset("brake_train_data_test", dataset=train_dataset, source_dataset_ids=['brake_train_data'])
+    onyx.save_dataset("brake_train_data", dataset=train_dataset, source_dataset_names=['brake_data'])
     
 def test_model_upload():
     sim_config = ModelSimulatorConfig(
@@ -57,7 +57,7 @@ def test_model_upload():
         bias=True
     )
     model = MLP(mlp_config)
-    onyx.save_model("vehicle_brake_model", model, mlp_config, source_dataset_ids=['brake_train_data_test'])
+    onyx.save_model("vehicle_brake_model", model, source_dataset_names=['brake_train_data'])
     
 def test_model_download():
     model = onyx.load_model('vehicle_brake_model')
@@ -92,8 +92,8 @@ def test_train_model():
 
     # Execute training
     onyx.train_model(
-        dataset_id='vehicle_braking_data',
-        model_id='brake_model_test',
+        dataset_name='brake_train_data',
+        model_name='brake_model_test',
         model_config=model_config,
         training_config=training_config,
     )
@@ -108,11 +108,23 @@ def test_use_model():
         test_output = model(test_input)
     print(test_output)
     
+    # Simulate a trajectory with our model
+    # Model will fill in the x_traj tensor with the simulated trajectory
+    batch_size = 1
+    seq_length = 1
+    sim_steps = 10
+    x0 = torch.ones(batch_size, seq_length, 2)
+    u = torch.ones(batch_size, sim_steps, 1)
+    
+    x_traj = torch.zeros(1, sim_steps, 3)
+    model.simulate(x_traj, x0, u)
+    print(x_traj)
+    
 if __name__ == '__main__':
-    test_metadata_get()
-    #test_data_download()
-    #test_data_upload()
-    #test_model_upload()
-    #test_model_download()
-    #test_train_model()
-    #test_use_model()
+    # test_metadata_get()
+    # test_data_download()
+    # test_data_upload()
+    # test_model_upload()
+    # test_model_download()
+    # test_train_model()
+    test_use_model()
