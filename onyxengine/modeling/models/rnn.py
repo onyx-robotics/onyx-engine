@@ -4,6 +4,20 @@ from pydantic import BaseModel, Field
 from onyxengine.modeling import ModelSimulatorConfig, ModelSimulator
 
 class RNNConfig(BaseModel):
+    """
+    Configuration class for the RNN model.
+    
+    Args:
+        onyx_model_type (str): Model type = 'rnn', immutable.
+        sim_config (ModelSimulatorConfig): Configuration for the model's simulator.
+        num_inputs (int): Number of input features (default is 1).
+        num_outputs (int): Number of output features (default is 1).
+        sequence_length (int): Length of the input sequence (default is 1).
+        hidden_layers (int): Number of hidden layers (default is 2).
+        hidden_size (int): Size of each hidden layer (default is 32).
+        rnn_type (str): Type of RNN to use (default is 'RNN').
+        streaming_mode (bool): Whether to use streaming mode (default is False).
+    """
     onyx_model_type: str = Field(default='rnn', frozen=True, init=False)
     sim_config: ModelSimulatorConfig = ModelSimulatorConfig()
     num_inputs: int = 1

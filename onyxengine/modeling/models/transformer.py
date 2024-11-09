@@ -7,10 +7,25 @@ from pydantic import BaseModel, Field
 from onyxengine.modeling import ModelSimulatorConfig, ModelSimulator
 
 class TransformerConfig(BaseModel):
+    """
+    Configuration class for the Transformer model.
+    
+    Args:
+        onyx_model_type (str): Model type = 'transformer', immutable.
+        sim_config (ModelSimulatorConfig): Configuration for the model's simulator.
+        num_inputs (int): Number of input features (default is 1).
+        num_outputs (int): Number of output features (default is 1).
+        sequence_length (int): Length of the input sequence (default is 1).
+        n_layer (int): Number of transformer layers (default is 1).
+        n_head (int): Number of attention heads (default is 12).
+        n_embd (int): Dimensionality of the embeddings and hidden states (default is 24).
+        dropout (float): Dropout rate for layers (default is 0.0).
+        bias (bool): Whether to use bias in layers (default is True).
+    """
     onyx_model_type: str = Field(default='transformer', frozen=True, init=False)
     sim_config: ModelSimulatorConfig = ModelSimulatorConfig()
-    num_inputs: int = 0
-    num_outputs: int = 0
+    num_inputs: int = 1
+    num_outputs: int = 1
     sequence_length: int = 1
     n_layer: int = 1
     n_head: int = 12
