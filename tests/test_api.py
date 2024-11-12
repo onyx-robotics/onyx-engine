@@ -3,6 +3,7 @@ import pandas as pd
 import onyxengine as onyx
 from onyxengine.data import OnyxDataset
 from onyxengine.modeling import ModelSimulatorConfig, State, MLPConfig, MLP, TrainingConfig
+import asyncio
 
 def test_metadata_get():
     data = onyx.get_object_metadata('brake_data')
@@ -88,6 +89,7 @@ def test_train_model():
     # Training config
     training_config = TrainingConfig(
         training_iters=3000,
+        checkpoint_type='multi_step'
     )
 
     # Execute training
@@ -96,6 +98,7 @@ def test_train_model():
         model_name='brake_model_test',
         model_config=model_config,
         training_config=training_config,
+        monitor_training=True
     )
     
 def test_use_model():    
@@ -126,5 +129,5 @@ if __name__ == '__main__':
     # test_data_upload()
     # test_model_upload()
     # test_model_download()
-    # test_train_model()
-    test_use_model()
+    test_train_model()
+    # test_use_model()

@@ -3,7 +3,10 @@ import json
 import requests
 from tqdm import tqdm
 from requests_toolbelt import MultipartEncoder, MultipartEncoderMonitor
-from onyxengine import SERVER_URL, ONYX_API_KEY, ONYX_PATH
+from onyxengine import SERVER_URL, WSS_URL, ONYX_API_KEY, ONYX_PATH
+from onyxengine.modeling import TrainingConfig
+import websockets
+from websockets.asyncio.client import connect
 
 def handle_post_request(endpoint, data=None):
     try:
@@ -92,3 +95,31 @@ def set_object_metadata(object_name, object_type, object_config, object_source_n
         "object_config": object_config,
         "object_source_names": object_source_names,
     })
+    
+async def monitor_training_job(job_id: str, training_config: TrainingConfig):
+    headers = {
+        "x-api-key": ONYX_API_KEY,
+        "client": "api",
+        "monitor-type": "job_id",
+        "job-id": job_id
+    }
+    try:
+        async with connect(WSS_URL + "/monitor_training", additional_headers=headers) as websocket:
+            total_iters = training_config.training_iters
+            with tqdm(total=total_iters, desc="Training: ", bar_format="{desc}{percentage:.1f}%|{bar}|{n_fmt}/{total_fmt} train_iters") as pbar:
+                while True:
+                    train_update = json.loads(await websocket.recv())
+                    if train_update.get('status') == 'training_complete':
+                        pbar.n = total_iters
+                        pbar.refresh()
+                        break
+                    
+                    pbar.n = train_update['train_iter']
+                    pbar.refresh()
+            print("Training completed.")
+            
+    except websockets.exceptions.ConnectionClosedOK as e:
+        print(f"Training monitor connection closed.")
+        return
+    except websockets.exceptions.WebSocketException as e:
+        raise SystemExit(f"Onyx Engine API error: {e}")

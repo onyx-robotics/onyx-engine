@@ -1,4 +1,5 @@
 from pydantic import BaseModel
+from typing import Literal
 
 class TrainingConfig(BaseModel):
     """
@@ -14,3 +15,4 @@ class TrainingConfig(BaseModel):
     train_batch_size: int = 32
     train_val_split_ratio: float = 0.9
     test_dataset_size: int = 500
+    checkpoint_type: Literal['single_step', 'multi_step'] = 'single_step'

@@ -7,8 +7,8 @@ from pydantic import BaseModel
 from onyxengine import DATASETS_PATH, MODELS_PATH
 from onyxengine.data import OnyxDataset, OnyxDatasetConfig
 from onyxengine.modeling import model_from_config_json, TrainingConfig
-from onyxengine.modeling.models import *
-from .api_utils import handle_post_request, upload_object, download_object, set_object_metadata
+from .api_utils import handle_post_request, upload_object, download_object, set_object_metadata, monitor_training_job
+import asyncio
 
 def get_object_metadata(object_name: str) -> dict:
     """
@@ -257,7 +257,7 @@ def load_model(name: str, use_cache=True) -> torch.nn.Module:
     model.eval()
     return model
 
-def train_model(dataset_name: str, model_name: str, model_config: BaseModel, training_config: TrainingConfig):
+def train_model(dataset_name: str, model_name: str, model_config: BaseModel, training_config: TrainingConfig, monitor_training: bool=True):
     """
     Train a model on the Engine using a specified dataset, model config, and training config.
     
@@ -266,6 +266,7 @@ def train_model(dataset_name: str, model_name: str, model_config: BaseModel, tra
         model_name (str): The name of the model to train
         model_config (BaseModel): The configuration for the model
         training_config (TrainingConfig): The configuration for the training process
+        monitor_training (bool, optional): Whether to monitor the training process. Defaults to True.
         
     Example:
         >>> # Create model configuration
@@ -300,6 +301,7 @@ def train_model(dataset_name: str, model_name: str, model_config: BaseModel, tra
         ...     model_name='example_model',
         ...     model_config=model_config,
         ...     training_config=training_config,
+        ...     monitor_training=True
         ... )
     """
     assert isinstance(dataset_name, str), "dataset_name must be a string."
@@ -323,4 +325,6 @@ def train_model(dataset_name: str, model_name: str, model_config: BaseModel, tra
         "training_config": training_config_json,
     })
     
-    print(f'Started training for model [{model_name}] using dataset [{dataset_name}].')
+    print(f'Preparing to train model [{model_name}] using dataset [{dataset_name}].')    
+    if monitor_training:
+        asyncio.run(monitor_training_job(response['job_id'], training_config))
