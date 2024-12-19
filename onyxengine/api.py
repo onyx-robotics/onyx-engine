@@ -6,7 +6,7 @@ import pandas as pd
 from pydantic import BaseModel
 from onyxengine import DATASETS_PATH, MODELS_PATH
 from onyxengine.data import OnyxDataset, OnyxDatasetConfig
-from onyxengine.modeling import model_from_config_json, TrainingConfig
+from onyxengine.modeling import model_from_config_json, TrainingConfig, OptimizationConfig, ModelSimulatorConfig
 from .api_utils import handle_post_request, upload_object, download_object, set_object_metadata, monitor_training_job
 import asyncio
 
@@ -105,10 +105,6 @@ def load_dataset(name: str, use_cache=True) -> OnyxDataset:
     """
     assert isinstance(name, str), "name must be a string."
     
-    # Check that the dataset exists
-    if get_object_metadata(name) is None:
-        raise SystemExit(f"Onyx Engine API error: Dataset [{name}] not found in the Engine.")
-    
     # Get dataset and config filenames
     if not os.path.exists(DATASETS_PATH):
         os.makedirs(DATASETS_PATH)
@@ -119,6 +115,9 @@ def load_dataset(name: str, use_cache=True) -> OnyxDataset:
     
     # Download the dataset from the cloud if it doesn't exist locally
     if not os.path.exists(dataset_path) or not use_cache:
+        # Check that the dataset exists
+        if get_object_metadata(name) is None:
+            raise SystemExit(f"Onyx Engine API error: Dataset [{name}] not found in the Engine.")
         print(f'Downloading [{name}] from the Engine...')
         download_object(dataset_filename, 'dataset')
         download_object(config_filename, 'dataset')
@@ -229,10 +228,6 @@ def load_model(name: str, use_cache=True) -> torch.nn.Module:
     """
     assert isinstance(name, str), "name must be a string."
     
-    # Check that the model exists
-    if get_object_metadata(name) is None:
-        raise SystemExit(f"Onyx Engine API error: Model [{name}] not found in the Engine.")
-    
     # Get model and config filenames
     if not os.path.exists(MODELS_PATH):
         os.makedirs(MODELS_PATH)
@@ -243,6 +238,9 @@ def load_model(name: str, use_cache=True) -> torch.nn.Module:
     
     # Download the model from the cloud if it doesn't exist locally
     if not os.path.exists(model_path) or not use_cache:
+        # Check that the model exists
+        if get_object_metadata(name) is None:
+            raise SystemExit(f"Onyx Engine API error: Model [{name}] not found in the Engine.")
         print(f'Downloading [{name}] from the Engine...')
         download_object(model_filename, 'model')
         download_object(config_filename, 'model')
@@ -313,18 +311,77 @@ def train_model(dataset_name: str, model_name: str, model_config: BaseModel, tra
     if get_object_metadata(dataset_name) is None:
         raise SystemExit(f"Onyx Engine API error: Dataset [{dataset_name}] not found in the Engine.")
     
-    # Prepare to make a request to the onyx server
-    model_config_json = model_config.model_dump_json(indent=2)
-    training_config_json = training_config.model_dump_json(indent=2)
-
     # Request the onyx server to train the model
     response = handle_post_request("/train_model", {
         "dataset_name": dataset_name,
         "onyx_model_name": model_name,
-        "onyx_model_config": model_config_json,
-        "training_config": training_config_json,
+        "onyx_model_config": model_config.model_dump_json(indent=2),
+        "training_config": training_config.model_dump_json(indent=2),
     })
     
     print(f'Preparing to train model [{model_name}] using dataset [{dataset_name}].')    
     if monitor_training:
-        asyncio.run(monitor_training_job(response['job_id'], training_config))
+        try:
+            asyncio.run(monitor_training_job(response['job_id'], training_config))
+        except KeyboardInterrupt:
+            print('Training job monitoring stopped.')
+        
+def optimize_model(dataset_name: str, model_name: str, model_sim_config: ModelSimulatorConfig, optimization_config: OptimizationConfig):
+    """
+    Optimize a model on the Engine using a specified dataset, model simulator config, and optimization config.
+    
+    Args:
+        dataset_name (str): The name of the dataset to optimize on
+        model_name (str): The name of the model to optimize
+        model_sim_config (ModelSimulatorConfig): The configuration for the model simulator
+        optimization_config (OptimizationConfig): The configuration for the optimization process
+    
+    Example:
+        >>> # Sim config
+        >>> sim_config = ModelSimulatorConfig(
+        ...     outputs=['acceleration'],
+        ...     states=[
+        ...         State(name='velocity', relation='derivative', parent='acceleration'),
+        ...         State(name='position', relation='derivative', parent='velocity'),
+        ...     ],
+        ...     controls=['control_input'],
+        ...     dt=0.0025
+        ... )
+        >>> 
+        >>> # Optimization config
+        >>> opt_config = OptimizationConfig(
+        ...     training_iters=12000,
+        ...     train_batch_size=512,
+        ...     test_dataset_size=500,
+        ...     checkpoint_type='single_step',
+        ...     optimize_model_types=['mlp', 'rnn', 'transformer'],
+        ...     optimize_sequence_length=True,
+        ...     num_trials=3
+        ... )
+        >>> 
+        >>> # Optimize the model
+        >>> onyx.optimize_model(
+        ...     dataset_name='example_train_data',
+        ...     model_name='example_model',
+        ...     model_sim_config=sim_config,
+        ...     optimization_config=opt_config
+        ... )
+    """
+    assert isinstance(dataset_name, str), "dataset_name must be a string."
+    assert isinstance(model_name, str), "model_name must be a string."
+    assert isinstance(model_sim_config, ModelSimulatorConfig), "model_sim_config must be a ModelSimulatorConfig."
+    assert isinstance(optimization_config, OptimizationConfig), "optimization_config must be an OptimizationConfig."
+    
+    # Check that the dataset exists
+    if get_object_metadata(dataset_name) is None:
+        raise SystemExit(f"Onyx Engine API error: Dataset [{dataset_name}] not found in the Engine.")
+    
+    # Request the onyx server to train the model
+    response = handle_post_request("/optimize_model", {
+        "dataset_name": dataset_name,
+        "onyx_model_name": model_name,
+        "onyx_model_sim_config": model_sim_config.model_dump_json(indent=2),
+        "optimization_config": optimization_config.model_dump_json(indent=2),
+    })
+    
+    print(f'Preparing to optimize model [{model_name}] using dataset [{dataset_name}].')

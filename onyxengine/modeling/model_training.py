@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from typing import Literal
+from typing import Literal, List
 
 class TrainingConfig(BaseModel):
     """
@@ -16,3 +16,17 @@ class TrainingConfig(BaseModel):
     train_val_split_ratio: float = 0.9
     test_dataset_size: int = 500
     checkpoint_type: Literal['single_step', 'multi_step'] = 'single_step'
+    
+class OptimizationConfig(TrainingConfig):
+    """
+    Configuration for the optimization of a model. Inherits from TrainingConfig to specify each trial's training configuration.
+    
+    Args:
+        optimize_model_types (List[str]): List of model types to optimize across (default is ['mlp', 'rnn', 'transformer']).
+        optimize_sequence_length (bool): Whether to optimize the sequence length (default is True).
+        num_trials (int): Number of trials to run in optimization (default is 10).
+    """
+    
+    optimize_model_types: List[str] = ['mlp', 'rnn', 'transformer']
+    optimize_sequence_length: bool = False
+    num_trials: int = 10

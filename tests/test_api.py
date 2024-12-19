@@ -2,11 +2,11 @@ import torch
 import pandas as pd
 import onyxengine as onyx
 from onyxengine.data import OnyxDataset
-from onyxengine.modeling import ModelSimulatorConfig, State, MLPConfig, MLP, TrainingConfig
+from onyxengine.modeling import ModelSimulatorConfig, State, MLPConfig, MLP, TrainingConfig, OptimizationConfig
 import asyncio
 
 def test_metadata_get():
-    data = onyx.get_object_metadata('brake_data')
+    data = onyx.get_object_metadata('raw_brake_data')
     print(data)
     #print(data['data'][0]['object_config'])
 
@@ -58,7 +58,7 @@ def test_model_upload():
         bias=True
     )
     model = MLP(mlp_config)
-    onyx.save_model("vehicle_brake_model", model, source_dataset_names=['brake_train_data'])
+    onyx.save_model("vehicle_brake_model3", model, source_dataset_names=['brake_train_data'])
     
 def test_model_download():
     model = onyx.load_model('vehicle_brake_model')
@@ -80,7 +80,7 @@ def test_train_model():
         num_inputs=sim_config.num_inputs,
         num_outputs=sim_config.num_outputs,
         hidden_layers=2,
-        hidden_size=32,
+        hidden_size=64,
         activation='relu',
         dropout=0.2,
         bias=True
@@ -88,8 +88,8 @@ def test_train_model():
     
     # Training config
     training_config = TrainingConfig(
-        training_iters=3000,
-        checkpoint_type='multi_step'
+        training_iters=4000,
+        checkpoint_type='single_step'
     )
 
     # Execute training
@@ -98,12 +98,43 @@ def test_train_model():
         model_name='brake_model_test',
         model_config=model_config,
         training_config=training_config,
-        monitor_training=True
+        monitor_training=False
+    )
+    
+def test_optimize_model():
+    # Sim config
+    sim_config = ModelSimulatorConfig(
+        outputs=['acceleration'],
+        states=[
+            State(name='velocity', relation='derivative', parent='acceleration'),
+            State(name='position', relation='derivative', parent='velocity'),
+        ],
+        controls=['brake_input'],
+        dt=0.0025
+    )
+    
+    # Optimization config
+    opt_config = OptimizationConfig(
+        training_iters=3000,
+        train_batch_size=512,
+        test_dataset_size=500,
+        checkpoint_type='single_step',
+        optimize_model_types=['mlp', 'rnn', 'transformer'],
+        optimize_sequence_length=True,
+        num_trials=3
+    )
+
+    # Execute training
+    onyx.optimize_model(
+        dataset_name='brake_train_data',
+        model_name='brake_model_test',
+        model_sim_config=sim_config,
+        optimization_config=opt_config,
     )
     
 def test_use_model():    
     # Load our model
-    model = onyx.load_model('brake_model_test')
+    model = onyx.load_model('brake_model_test', use_cache=False)
 
     # Run inference with our model
     test_input = torch.ones(1, 1, 3)
@@ -130,4 +161,5 @@ if __name__ == '__main__':
     # test_model_upload()
     # test_model_download()
     test_train_model()
+    # test_optimize_model()
     # test_use_model()

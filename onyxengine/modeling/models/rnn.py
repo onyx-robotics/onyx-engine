@@ -10,22 +10,24 @@ class RNNConfig(BaseModel):
     Args:
         onyx_model_type (str): Model type = 'rnn', immutable.
         sim_config (ModelSimulatorConfig): Configuration for the model's simulator.
+        rnn_type (str): Type of RNN to use (default is 'RNN').
         num_inputs (int): Number of input features (default is 1).
         num_outputs (int): Number of output features (default is 1).
         sequence_length (int): Length of the input sequence (default is 1).
         hidden_layers (int): Number of hidden layers (default is 2).
         hidden_size (int): Size of each hidden layer (default is 32).
-        rnn_type (str): Type of RNN to use (default is 'RNN').
+        dropout (float): Dropout rate (default is 0.0).
         streaming_mode (bool): Whether to use streaming mode (default is False).
     """
     onyx_model_type: str = Field(default='rnn', frozen=True, init=False)
     sim_config: ModelSimulatorConfig = ModelSimulatorConfig()
+    rnn_type: str = 'RNN'
     num_inputs: int = 1
     num_outputs: int = 1
     sequence_length: int = 1 # Not needed by pytorch rnn's but useful for model tracking
     hidden_layers: int = 2
     hidden_size: int = 32
-    rnn_type: str = 'RNN'
+    dropout: float = 0.0
     streaming_mode: bool = False
 
 class RNN(nn.Module, ModelSimulator):
@@ -33,19 +35,20 @@ class RNN(nn.Module, ModelSimulator):
         nn.Module.__init__(self)
         ModelSimulator.__init__(self, config.sim_config)
         self.config = config
+        self.rnn_type = config.rnn_type
         self.sequence_length = config.sequence_length
         num_inputs = config.num_inputs
         num_outputs = config.num_outputs
         self.hidden_layers = config.hidden_layers
         self.hidden_size = config.hidden_size
-        self.rnn_type = config.rnn_type
+        self.dropout = config.dropout
         self.streaming_mode = config.streaming_mode
         if self.rnn_type == 'RNN':
-            self.rnn = nn.RNN(num_inputs, self.hidden_size, self.hidden_layers, batch_first=True)
+            self.rnn = nn.RNN(num_inputs, self.hidden_size, self.hidden_layers, dropout=self.dropout, batch_first=True)
         elif self.rnn_type == 'LSTM':
-            self.rnn = nn.LSTM(num_inputs, self.hidden_size, self.hidden_layers, batch_first=True)
+            self.rnn = nn.LSTM(num_inputs, self.hidden_size, self.hidden_layers, dropout=self.dropout, batch_first=True)
         elif self.rnn_type == 'GRU':
-            self.rnn = nn.GRU(num_inputs, self.hidden_size, self.hidden_layers, batch_first=True)
+            self.rnn = nn.GRU(num_inputs, self.hidden_size, self.hidden_layers, dropout=self.dropout, batch_first=True)
         else:
             raise ValueError("Invalid RNN type. Choose from 'RNN', 'LSTM', or 'GRU'.")
         self.output_layer = nn.Linear(self.hidden_size, num_outputs)
