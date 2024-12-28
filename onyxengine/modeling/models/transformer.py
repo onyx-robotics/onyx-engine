@@ -3,8 +3,10 @@ import math
 import torch
 import torch.nn as nn
 from torch.nn import functional as F
-from pydantic import BaseModel, Field
-from onyxengine.modeling import ModelSimulatorConfig, ModelSimulator
+from pydantic import BaseModel, Field, model_validator
+from typing_extensions import Self
+from typing import List, Union, Dict
+from onyxengine.modeling import ModelSimulatorConfig, ModelSimulator, validate_param, validate_opt_param
 
 class TransformerConfig(BaseModel):
     """
@@ -17,8 +19,8 @@ class TransformerConfig(BaseModel):
         num_outputs (int): Number of output features (default is 1).
         sequence_length (int): Length of the input sequence (default is 1).
         n_layer (int): Number of transformer layers (default is 1).
-        n_head (int): Number of attention heads (default is 12).
-        n_embd (int): Dimensionality of the embeddings and hidden states (default is 24).
+        n_head (int): Number of attention heads (default is 4).
+        n_embd (int): Size of the embedding dimension (default is 32).
         dropout (float): Dropout rate for layers (default is 0.0).
         bias (bool): Whether to use bias in layers (default is True).
     """
@@ -28,10 +30,63 @@ class TransformerConfig(BaseModel):
     num_outputs: int = 1
     sequence_length: int = 1
     n_layer: int = 1
-    n_head: int = 12
-    n_embd: int = 24
+    n_head: int = 4
+    n_embd: int = 32
     dropout: float = 0.0
     bias: bool = True # Bias in Linears and LayerNorms
+
+    @model_validator(mode='after')
+    def validate_hyperparameters(self) -> Self:
+        validate_param(self.num_inputs, 'num_inputs', min_val=1)
+        validate_param(self.num_outputs, 'num_outputs', min_val=1)
+        validate_param(self.sequence_length, 'sequence_length', min_val=1, max_val=50)
+        validate_param(self.n_layer, 'n_layer', min_val=1, max_val=10)
+        validate_param(self.n_head, 'n_head', min_val=1, max_val=12)
+        validate_param(self.n_embd, 'n_embd', min_val=1, max_val=1024)
+        validate_param(self.dropout, 'dropout', min_val=0.0, max_val=1.0)
+        # n_embd must be divisible by n_head
+        if self.n_embd % self.n_head != 0:
+            raise ValueError(f"n_embd ({self.n_embd}) must be divisible by n_head ({self.n_head})")
+        return self
+
+class TransformerOptConfig(BaseModel):
+    """
+    Optimization config class for the Transformer model.
+    
+    Args:
+        onyx_model_type (str): Model type = 'transformer_opt', immutable.
+        sim_config (ModelSimulatorConfig): Configuration for the model's simulator.
+        num_inputs (int): Number of input features (default is 1).
+        num_outputs (int): Number of output features (default is 1).
+        sequence_length (Union[int, Dict[str, List[int]]): Length of the input sequence (default is {"select": [1, 2, 4, 5, 6, 8, 10, 12, 14, 15]}).
+        n_layer (Union[int, Dict[str, List[int]]): Number of transformer layers (default is {"range": [2, 5, 1]}).
+        n_head (Union[int, Dict[str, List[int]]): Number of attention heads (default is {"range": [2, 10, 2]}).
+        n_embd (Union[int, Dict[str, List[int]]): Size of the embedding dimension (default is {"select": [12, 24, 32, 64, 128]}).
+        dropout (Union[float, Dict[str, List[float]]): Dropout rate for layers (default is {"range": [0.0, 0.4, 0.1]}).
+        bias (Union[bool, Dict[str, List[bool]]): Whether to use bias in layers (default is True).
+    """
+    onyx_model_type: str = Field(default='transformer_opt', frozen=True, init=False)
+    sim_config: ModelSimulatorConfig = ModelSimulatorConfig()
+    num_inputs: int = 1
+    num_outputs: int = 1
+    sequence_length: Union[int, Dict[str, List[int]]] = {"select": [1, 2, 4, 5, 6, 8, 10, 12, 14, 15]}
+    n_layer: Union[int, Dict[str, List[int]]] = {"range": [2, 5, 1]}
+    n_head: Union[int, Dict[str, List[int]]] = {"range": [2, 10, 2]}
+    n_embd: Union[int, Dict[str, List[int]]] = {"select": [12, 24, 32, 64, 128]}
+    dropout: Union[float, Dict[str, List[float]]] = {"range": [0.0, 0.4, 0.1]}
+    bias: Union[bool, Dict[str, List[bool]]] = True
+
+    @model_validator(mode='after')
+    def validate_hyperparameters(self) -> Self:
+        validate_param(self.num_inputs, 'num_inputs', min_val=1)
+        validate_param(self.num_outputs, 'num_outputs', min_val=1)
+        validate_opt_param(self.sequence_length, 'sequence_length', options=['select', 'range'], min_val=1, max_val=50)
+        validate_opt_param(self.n_layer, 'n_layer', options=['select', 'range'], min_val=1, max_val=10)
+        validate_opt_param(self.n_head, 'n_head', options=['select', 'range'], min_val=1, max_val=12)
+        validate_opt_param(self.n_embd, 'n_embd', options=['select', 'range'], min_val=1, max_val=1024)
+        validate_opt_param(self.dropout, 'dropout', options=['select', 'range'], min_val=0.0, max_val=1.0)
+        validate_opt_param(self.bias, 'bias', options=['select'], select_from=[True, False])
+        return self
 
 class CausalSelfAttention(nn.Module):
     def __init__(self, config):
