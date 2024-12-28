@@ -2,8 +2,23 @@ import torch
 import pandas as pd
 import onyxengine as onyx
 from onyxengine.data import OnyxDataset
-from onyxengine.modeling import ModelSimulatorConfig, State, MLPConfig, MLP, TrainingConfig, OptimizationConfig
-import asyncio
+from onyxengine.modeling import (
+    ModelSimulatorConfig, 
+    State, 
+    MLPConfig,
+    MLP,
+    RNNConfig,
+    TrainingConfig, 
+    OptimizationConfig,
+    AdamWConfig,
+    SGDConfig,
+    CosineDecayWithWarmupConfig,
+    MLPOptConfig,
+    RNNOptConfig,
+    TransformerOptConfig,
+    AdamWOptConfig,
+    CosineDecayWithWarmupOptConfig,
+)
 
 def test_metadata_get():
     data = onyx.get_object_metadata('raw_brake_data')
@@ -89,7 +104,10 @@ def test_train_model():
     # Training config
     training_config = TrainingConfig(
         training_iters=4000,
-        checkpoint_type='single_step'
+        test_dataset_size=4000,
+        checkpoint_type='single_step',
+        optimizer=SGDConfig(lr=3e-4, weight_decay=1e-2),
+        lr_scheduler=CosineDecayWithWarmupConfig(max_lr=3e-4, min_lr=3e-5, warmup_iters=200, decay_iters=1000)
     )
 
     # Execute training
@@ -102,7 +120,6 @@ def test_train_model():
     )
     
 def test_optimize_model():
-    # Sim config
     sim_config = ModelSimulatorConfig(
         outputs=['acceleration'],
         states=[
@@ -113,17 +130,66 @@ def test_optimize_model():
         dt=0.0025
     )
     
+    mlp_opt = MLPOptConfig(
+        sim_config=sim_config,
+        num_inputs=sim_config.num_inputs,
+        num_outputs=sim_config.num_outputs,
+        sequence_length={"select": [1, 2, 4, 5, 6, 8, 10]},
+        hidden_layers={"range": [2, 4, 1]},
+        hidden_size={"select": [12, 24, 32, 64, 128]},
+        activation={"select": ['relu', 'tanh']},
+        dropout={"range": [0.0, 0.4, 0.1]},
+        bias=True
+    )
+    
+    rnn_opt = RNNOptConfig(
+        sim_config=sim_config,
+        num_inputs=sim_config.num_inputs,
+        num_outputs=sim_config.num_outputs,
+        rnn_type={"select": ['RNN', 'LSTM', 'GRU']},
+        sequence_length={"select": [1, 2, 4, 5, 6, 8, 10, 12, 14, 15]},
+        hidden_layers={"range": [2, 4, 1]},
+        hidden_size={"select": [12, 24, 32, 64, 128]},
+        dropout={"range": [0.0, 0.4, 0.1]},
+        bias=True
+    )
+    
+    transformer_opt = TransformerOptConfig(
+        sim_config=sim_config,
+        num_inputs=sim_config.num_inputs,
+        num_outputs=sim_config.num_outputs,
+        sequence_length={"select": [1, 2, 4, 5, 6, 8, 10, 12, 14, 15]},
+        n_layer={"range": [2, 4, 1]},
+        n_head={"range": [2, 10, 2]},
+        n_embd={"select": [12, 24, 32, 64, 128]},
+        dropout={"range": [0.0, 0.4, 0.1]},
+        bias=True
+    )
+        
+    adamw_opt = AdamWOptConfig(
+        lr={"select": [1e-5, 5e-5, 1e-4, 3e-4, 5e-4, 8e-4, 1e-3, 5e-3, 1e-2]},
+        weight_decay={"select": [1e-4, 1e-3, 1e-2, 1e-1]}
+    )
+    
+    scheduler_opt = CosineDecayWithWarmupOptConfig(
+        max_lr={"select": [1e-4, 3e-4, 5e-4, 8e-4, 1e-3, 3e-3, 5e-3]},
+        min_lr={"select": [1e-6, 5e-6, 1e-5, 3e-5, 5e-5, 8e-5, 1e-4]},
+        warmup_iters={"select": [50, 100, 200, 400, 800]},
+        decay_iters={"select": [500, 1000, 2000, 4000, 8000]}
+    )
+    
     # Optimization config
     opt_config = OptimizationConfig(
-        training_iters=3000,
+        training_iters=2000,
         train_batch_size=512,
         test_dataset_size=500,
         checkpoint_type='single_step',
-        optimize_model_types=['mlp', 'rnn', 'transformer'],
-        optimize_sequence_length=True,
-        num_trials=3
+        opt_models=[mlp_opt, rnn_opt, transformer_opt],
+        opt_optimizers=[adamw_opt],
+        opt_lr_schedulers=[None, scheduler_opt],
+        num_trials=10
     )
-
+    
     # Execute training
     onyx.optimize_model(
         dataset_name='brake_train_data',
@@ -160,6 +226,6 @@ if __name__ == '__main__':
     # test_data_upload()
     # test_model_upload()
     # test_model_download()
-    test_train_model()
-    # test_optimize_model()
+    # test_train_model()
+    test_optimize_model()
     # test_use_model()

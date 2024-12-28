@@ -6,7 +6,7 @@ import pandas as pd
 from pydantic import BaseModel
 from onyxengine import DATASETS_PATH, MODELS_PATH
 from onyxengine.data import OnyxDataset, OnyxDatasetConfig
-from onyxengine.modeling import model_from_config_json, TrainingConfig, OptimizationConfig, ModelSimulatorConfig
+from onyxengine.modeling import model_from_config, TrainingConfig, OptimizationConfig, ModelSimulatorConfig
 from .api_utils import handle_post_request, upload_object, download_object, set_object_metadata, monitor_training_job
 import asyncio
 
@@ -250,7 +250,7 @@ def load_model(name: str, use_cache=True) -> torch.nn.Module:
     # Load the model using config and state_dict from local storage
     with open(config_path, 'r') as f:
         config_json = f.read()
-    model = model_from_config_json(config_json)
+    model = model_from_config(config_json)
     model.load_state_dict(torch.load(model_path, weights_only=True))
     model.eval()
     return model
@@ -335,37 +335,90 @@ def optimize_model(dataset_name: str, model_name: str, model_sim_config: ModelSi
         model_name (str): The name of the model to optimize
         model_sim_config (ModelSimulatorConfig): The configuration for the model simulator
         optimization_config (OptimizationConfig): The configuration for the optimization process
+
     
     Example:
-        >>> # Sim config
-        >>> sim_config = ModelSimulatorConfig(
-        ...     outputs=['acceleration'],
-        ...     states=[
-        ...         State(name='velocity', relation='derivative', parent='acceleration'),
-        ...         State(name='position', relation='derivative', parent='velocity'),
-        ...     ],
-        ...     controls=['control_input'],
-        ...     dt=0.0025
-        ... )
-        >>> 
-        >>> # Optimization config
-        >>> opt_config = OptimizationConfig(
-        ...     training_iters=12000,
-        ...     train_batch_size=512,
-        ...     test_dataset_size=500,
-        ...     checkpoint_type='single_step',
-        ...     optimize_model_types=['mlp', 'rnn', 'transformer'],
-        ...     optimize_sequence_length=True,
-        ...     num_trials=3
-        ... )
-        >>> 
-        >>> # Optimize the model
-        >>> onyx.optimize_model(
-        ...     dataset_name='example_train_data',
-        ...     model_name='example_model',
-        ...     model_sim_config=sim_config,
-        ...     optimization_config=opt_config
-        ... )
+    
+    .. code-block:: python
+    
+        sim_config = ModelSimulatorConfig(
+            outputs=['acceleration'],
+            states=[
+                State(name='velocity', relation='derivative', parent='acceleration'),
+                State(name='position', relation='derivative', parent='velocity'),
+            ],
+            controls=['brake_input'],
+            dt=0.0025
+        )
+        
+        mlp_opt = MLPOptConfig(
+            sim_config=sim_config,
+            num_inputs=sim_config.num_inputs,
+            num_outputs=sim_config.num_outputs,
+            sequence_length={"select": [1, 2, 4, 5, 6, 8, 10]},
+            hidden_layers={"range": [2, 4, 1]},
+            hidden_size={"select": [12, 24, 32, 64, 128]},
+            activation={"select": ['relu', 'tanh']},
+            dropout={"range": [0.0, 0.4, 0.1]},
+            bias=True
+        )
+        
+        rnn_opt = RNNOptConfig(
+            sim_config=sim_config,
+            num_inputs=sim_config.num_inputs,
+            num_outputs=sim_config.num_outputs,
+            rnn_type={"select": ['RNN', 'LSTM', 'GRU']},
+            sequence_length={"select": [1, 2, 4, 5, 6, 8, 10, 12, 14, 15]},
+            hidden_layers={"range": [2, 4, 1]},
+            hidden_size={"select": [12, 24, 32, 64, 128]},
+            dropout={"range": [0.0, 0.4, 0.1]},
+            bias=True
+        )
+        
+        transformer_opt = TransformerOptConfig(
+            sim_config=sim_config,
+            num_inputs=sim_config.num_inputs,
+            num_outputs=sim_config.num_outputs,
+            sequence_length={"select": [1, 2, 4, 5, 6, 8, 10, 12, 14, 15]},
+            n_layer={"range": [2, 4, 1]},
+            n_head={"range": [2, 10, 2]},
+            n_embd={"select": [12, 24, 32, 64, 128]},
+            dropout={"range": [0.0, 0.4, 0.1]},
+            bias=True
+        )
+            
+        adamw_opt = AdamWOptConfig(
+            lr={"select": [1e-5, 5e-5, 1e-4, 3e-4, 5e-4, 8e-4, 1e-3, 5e-3, 1e-2]},
+            weight_decay={"select": [1e-4, 1e-3, 1e-2, 1e-1]}
+        )
+        
+        scheduler_opt = CosineDecayWithWarmupOptConfig(
+            max_lr={"select": [1e-4, 3e-4, 5e-4, 8e-4, 1e-3, 3e-3, 5e-3]},
+            min_lr={"select": [1e-6, 5e-6, 1e-5, 3e-5, 5e-5, 8e-5, 1e-4]},
+            warmup_iters={"select": [50, 100, 200, 400, 800]},
+            decay_iters={"select": [500, 1000, 2000, 4000, 8000]}
+        )
+        
+        # Optimization config
+        opt_config = OptimizationConfig(
+            training_iters=2000,
+            train_batch_size=512,
+            test_dataset_size=500,
+            checkpoint_type='single_step',
+            opt_models=[mlp_opt, rnn_opt, transformer_opt],
+            opt_optimizers=[adamw_opt],
+            opt_lr_schedulers=[None, scheduler_opt],
+            num_trials=10
+        )
+        
+        # Execute training
+        onyx.optimize_model(
+            dataset_name='brake_train_data',
+            model_name='brake_model_test',
+            model_sim_config=sim_config,
+            optimization_config=opt_config,
+        )
+
     """
     assert isinstance(dataset_name, str), "dataset_name must be a string."
     assert isinstance(model_name, str), "model_name must be a string."

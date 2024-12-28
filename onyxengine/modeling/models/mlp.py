@@ -1,7 +1,8 @@
 import torch.nn as nn
-from pydantic import BaseModel, Field
-from typing import Literal
-from onyxengine.modeling import ModelSimulatorConfig, ModelSimulator
+from pydantic import BaseModel, Field, model_validator
+from typing_extensions import Self
+from typing import Literal, List, Union, Dict
+from onyxengine.modeling import ModelSimulatorConfig, ModelSimulator, validate_param, validate_opt_param
 
 class MLPConfig(BaseModel):
     """
@@ -29,6 +30,55 @@ class MLPConfig(BaseModel):
     activation: Literal['relu', 'tanh', 'sigmoid'] = 'relu'
     dropout: float = 0.0
     bias: bool = True
+    
+    @model_validator(mode='after')
+    def validate_hyperparameters(self) -> Self:
+        validate_param(self.num_inputs, 'num_inputs', min_val=1)
+        validate_param(self.num_outputs, 'num_outputs', min_val=1)
+        validate_param(self.sequence_length, 'sequence_length', min_val=1, max_val=50)
+        validate_param(self.hidden_layers, 'hidden_layers', min_val=1, max_val=10)
+        validate_param(self.hidden_size, 'hidden_size', min_val=1, max_val=1024)
+        validate_param(self.dropout, 'dropout', min_val=0.0, max_val=1.0)
+        return self
+
+class MLPOptConfig(BaseModel):
+    """
+    Optimization config class for the MLP model.
+    
+    Args:
+        onyx_model_type (str): Model type = 'mlp_opt', immutable.
+        sim_config (ModelSimulatorConfig): Configuration for the model's simulator.
+        num_inputs (int): Number of input features (default is 1).
+        num_outputs (int): Number of output features (default is 1).
+        sequence_length (Union[int, Dict[str, List[int]]): Length of the input sequence (default is {"select": [1, 2, 4, 5, 6, 8, 10]}).
+        hidden_layers (Union[int, Dict[str, List[int]]): Number of hidden layers (default is {"range": [2, 5, 1]}).
+        hidden_size (Union[int, Dict[str, List[int]]): Size of each hidden layer (default is {"select": [12, 24, 32, 64, 128]}).
+        activation (Union[Literal['relu', 'tanh', 'sigmoid'], Dict[str, List[str]]): Activation function (default is {"select": ['relu', 'tanh']}).
+        dropout (Union[float, Dict[str, List[float]]): Dropout rate for layers (default is {"range": [0.0, 0.4, 0.1]}).
+        bias (Union[bool, Dict[str, List[bool]]): Whether to use bias in layers (default is True).
+    """
+    onyx_model_type: str = Field(default='mlp_opt', frozen=True, init=False)
+    sim_config: ModelSimulatorConfig = ModelSimulatorConfig()
+    num_inputs: int = 1
+    num_outputs: int = 1
+    sequence_length: Union[int, Dict[str, List[int]]] = {"select": [1, 2, 4, 5, 6, 8, 10]}
+    hidden_layers: Union[int, Dict[str, List[int]]] = {"range": [2, 5, 1]}
+    hidden_size: Union[int, Dict[str, List[int]]] = {"select": [12, 24, 32, 64, 128]}
+    activation: Union[Literal['relu', 'tanh', 'sigmoid'], Dict[str, List[str]]] = {"select": ['relu', 'tanh']}
+    dropout: Union[float, Dict[str, List[float]]] = {"range": [0.0, 0.4, 0.1]}
+    bias: Union[bool, Dict[str, List[bool]]] = True
+    
+    @model_validator(mode='after')
+    def validate_hyperparameters(self) -> Self:
+        validate_param(self.num_inputs, 'num_inputs', min_val=1)
+        validate_param(self.num_outputs, 'num_outputs', min_val=1)
+        validate_opt_param(self.sequence_length, 'sequence_length', options=['select', 'range'], min_val=1, max_val=50)
+        validate_opt_param(self.hidden_layers, 'hidden_layers', options=['select', 'range'], min_val=1, max_val=10)
+        validate_opt_param(self.hidden_size, 'hidden_size', options=['select', 'range'], min_val=1, max_val=1024)
+        validate_opt_param(self.activation, 'activation', options=['select'], select_from=['relu', 'tanh', 'sigmoid'])
+        validate_opt_param(self.dropout, 'dropout', options=['select', 'range'], min_val=0.0, max_val=1.0)
+        validate_opt_param(self.bias, 'bias', options=['select'], select_from=[True, False])
+        return self
 
 class MLP(nn.Module, ModelSimulator):
     def __init__(self, config: MLPConfig):
@@ -67,16 +117,6 @@ class MLP(nn.Module, ModelSimulator):
         layers.append(nn.Linear(hidden_size, num_outputs, bias=bias))
         
         self.model = nn.Sequential(*layers)
-        
-        # Initialize weights close to zero
-        self._initialize_weights()
-
-    def _initialize_weights(self):
-        for m in self.model:
-            if isinstance(m, nn.Linear):
-                nn.init.uniform_(m.weight, a=-0.01, b=0.01)
-                if m.bias is not None:
-                    nn.init.constant_(m.bias, 0)
     
     def forward(self, x):
         # Sequence input shape (batch_size, sequence_length, num_inputs)
