@@ -16,7 +16,7 @@ def get_object_metadata(object_name: str, object_version: int=None) -> dict:
     
     Args:
         object_name (str): The name of the object to get metadata for
-        object_version (int, optional): The version of the object to get metadata for. (Default is None)
+        object_version (int, optional): The version of the object to get metadata for, None = current_version. (Default is None)
     
     Returns:
         dict: The metadata for the object, or None if the object does not exist.
@@ -25,7 +25,12 @@ def get_object_metadata(object_name: str, object_version: int=None) -> dict:
     
     .. code-block:: python
     
+        # Get metadata for an Onyx object (dataset, model)
         metadata = onyx.get_object_metadata('example_data')
+        print(metadata)
+        
+        # Get metadata for a specific version
+        metadata = onyx.get_object_metadata('example_data', version=1)
         print(metadata)
         
     """
@@ -50,7 +55,7 @@ def save_dataset(name: str, dataset: OnyxDataset, source_datasets: List[Dict[str
     Args:
         name (str): The name for the new dataset
         dataset (OnyxDataset): The OnyxDataset object to save
-        source_datasets (List[Dict[str, Optional[str]]]): The source datasets used as a list of dictionaries like [{'name': 'dataset_name', 'version': 'dataset_version'}]
+        source_datasets (List[Dict[str, Optional[str]]]): The source datasets used as a list of dictionaries, eg. [{'name': 'dataset_name', 'version': 'dataset_version'}]. If no version is provided, the current version will be used.
         
     Example:
     
@@ -64,18 +69,19 @@ def save_dataset(name: str, dataset: OnyxDataset, source_datasets: List[Dict[str
         train_data['acceleration_predicted'] = raw_data.dataframe['acceleration']
         train_data['velocity'] = raw_data.dataframe['velocity']
         train_data['position'] = raw_data.dataframe['position']
-        train_data['brake_input'] = raw_data.dataframe['brake_input']
+        train_data['control_input'] = raw_data.dataframe['control_input']
         train_data = train_data.dropna()
 
         # Save training dataset
         train_dataset = OnyxDataset(
+            features=train_data.columns,
             dataframe=train_data,
             num_outputs=1,
             num_state=2,
             num_control=1,
             dt=0.0025
         )
-        onyx.save_dataset("example_train_data", dataset=train_dataset, source_dataset_names=['example_data'])
+        onyx.save_dataset(name='example_train_data', dataset=train_dataset, source_datasets=[{'name': 'example_data'}])
     
     """
     assert isinstance(name, str), "name must be a string."
@@ -114,15 +120,19 @@ def load_dataset(name: str, version: int=None) -> OnyxDataset:
     
     Args:
         name (str): The name of the dataset to load.
-        use_cache (bool, optional): Whether to use the cached local version of the dataset. Defaults to True.
+        version (int, optional): The version of the dataset to load, None = current_version. (Default is None)
     
     Returns:
         OnyxDataset: The loaded dataset.
         
     Example:
-        >>> # Load a dataset
-        >>> dataset = onyx.load_dataset('example_data')
-        >>> print(dataset.dataframe.head())
+    
+    .. code-block:: python
+
+        # Load the training dataset
+        train_dataset = onyx.load_dataset('example_train_data')
+        print(train_dataset.dataframe.head())
+        
     """
     assert isinstance(name, str), "name must be a string."
     assert version is None or isinstance(version, int), "version must be an integer."
@@ -170,8 +180,8 @@ def save_model(name: str, model: torch.nn.Module, source_datasets: List[Dict[str
     
     Args:
         name (str): The name for the new model.
-        model (torch.nn.Module): The PyTorch model to save.
-        source_datasets (List[Dict[str, Optional[str]]]): The source datasets used as a list of dictionaries like [{'name': 'dataset_name', 'version': 'dataset_version'}]
+        model (torch.nn.Module): The Onyx model to save.
+        source_datasets (List[Dict[str, Optional[str]]]): The source datasets used as a list of dictionaries, eg. [{'name': 'dataset_name', 'version': 'dataset_version'}]. If no version is provided, the current version will be used.
         
     Example:
     
@@ -197,10 +207,10 @@ def save_model(name: str, model: torch.nn.Module, source_datasets: List[Dict[str
              dropout=0.2,
              bias=True
          )
+         
         # Create and save model
         model = MLP(mlp_config)
-        onyx.save_model("example_model", model, 
-                   source_dataset_names=['example_train_data'])
+        onyx.save_model(name='example_model', model=model, source_datasets=[{'name': 'example_train_data'}])
                    
     """
     assert isinstance(name, str), "name must be a string."
@@ -237,32 +247,23 @@ def load_model(name: str, version: int=None) -> torch.nn.Module:
     
     Args:
         name (str): The name of the model to load.
-        use_cache (bool, optional): Whether to use the cached local version of the model. Defaults to True.
+        version (int, optional): The version of the model to load, None = current_version. (Default is None)
     
     Returns:
         torch.nn.Module: The loaded Onyx model.
         
     Example:
-        >>> # Load our model
-        >>> model = load_model('example_model')
-        >>> 
-        >>> # Run basic inference with our model
-        >>> test_input = torch.ones(1, 1, 3)
-        >>> with torch.no_grad():
-        ...     test_output = model(test_input)
-        >>> print(test_output)
-        >>> 
-        >>> # Simulate a trajectory with our model
-        >>> # Model will fill in the x_trajectory tensor with the simulated trajectory
-        >>> batch_size = 1
-        >>> seq_length = 1
-        >>> sim_steps = 100
-        >>> x0 = torch.ones(batch_size, seq_length, 2)
-        >>> u = torch.ones(batch_size, sim_steps, 1)
-        >>> 
-        >>> x_traj = torch.zeros(1, sim_steps, 3)
-        >>> model.simulate(x_traj, x0, u)
-        >>> print(x_traj)
+    
+    .. code-block:: python
+    
+        # Load our model
+        model = onyx.load_model('example_model')
+        print(model.config)
+        
+        # Load a specific version of the model
+        model = onyx.load_model('example_model', version=1)
+        print(model.config)
+        
     """
     assert isinstance(name, str), "name must be a string."
     assert version is None or isinstance(version, int), "version must be an integer."
@@ -322,6 +323,50 @@ def train_model(
         dataset_version (int, optional): The version of the dataset to train on, None = current_version. (Default is None)
         training_config (TrainingConfig): The configuration for the training process. (Default is TrainingConfig())
         monitor_training (bool, optional): Whether to monitor the training job. (Default is True)
+        
+    Example:
+    
+    .. code-block:: python
+    
+        # Model config
+        sim_config = ModelSimulatorConfig(
+            outputs=['acceleration'],
+            states=[
+                State(name='velocity', relation='derivative', parent='acceleration'),
+                State(name='position', relation='derivative', parent='velocity'),
+            ],
+            controls=['control_input'],
+            dt=0.0025
+        )
+        model_config = MLPConfig(
+            sim_config=sim_config,
+            num_inputs=sim_config.num_inputs,
+            num_outputs=sim_config.num_outputs,
+            hidden_layers=2,
+            hidden_size=64,
+            activation='relu',
+            dropout=0.2,
+            bias=True
+        )
+        
+        # Training config
+        training_config = TrainingConfig(
+            training_iters=2000,
+            test_dataset_size=500,
+            checkpoint_type='single_step',
+            optimizer=AdamWConfig(lr=3e-4, weight_decay=1e-2),
+            lr_scheduler=CosineDecayWithWarmupConfig(max_lr=3e-4, min_lr=3e-5, warmup_iters=200, decay_iters=1000)
+        )
+
+        # Execute training
+        onyx.train_model(
+            model_name='example_model',
+            model_config=model_config,
+            dataset_name='example_train_data',
+            training_config=training_config,
+            monitor_training=False
+        )
+        
     """
     assert isinstance(model_name, str), "model_name must be a string."
     assert isinstance(model_config, (MLPConfig, RNNConfig, TransformerConfig)), "model_config must be a model config."
@@ -365,7 +410,7 @@ def optimize_model(
     optimization_config: OptimizationConfig = None,
 ):
     """
-    Optimize a model on the Engine using a specified dataset, model simulator config, and optimization config.
+    Optimize a model on the Engine using a specified dataset, model simulator config, and optimization configs. Optimization configs define the search space for hyperparameters.
     
     Args:
         model_name (str): The name of the model to optimize. (Required)
@@ -374,12 +419,100 @@ def optimize_model(
         dataset_version (int, optional): The version of the dataset to optimize on, None = current_version. (Default is None)
         optimization_config (OptimizationConfig): The configuration for the optimization process. (Required)
 
-    
     Example:
     
     .. code-block:: python
     
-
+        # Model sim config (used across all trials)
+        sim_config = ModelSimulatorConfig(
+            outputs=['acceleration'],
+            states=[
+                State(name='velocity', relation='derivative', parent='acceleration'),
+                State(name='position', relation='derivative', parent='velocity'),
+            ],
+            controls=['control_input'],
+            dt=0.0025
+        )
+        
+        # Model optimization configs
+        mlp_opt = MLPOptConfig(
+            sim_config=sim_config,
+            num_inputs=sim_config.num_inputs,
+            num_outputs=sim_config.num_outputs,
+            sequence_length={"select": [1, 2, 4, 5, 6, 8, 10]},
+            hidden_layers={"range": [2, 4, 1]},
+            hidden_size={"select": [12, 24, 32, 64, 128]},
+            activation={"select": ['relu', 'tanh']},
+            dropout={"range": [0.0, 0.4, 0.1]},
+            bias=True
+        )
+        rnn_opt = RNNOptConfig(
+            sim_config=sim_config,
+            num_inputs=sim_config.num_inputs,
+            num_outputs=sim_config.num_outputs,
+            rnn_type={"select": ['RNN', 'LSTM', 'GRU']},
+            sequence_length={"select": [1, 2, 4, 5, 6, 8, 10, 12, 14, 15]},
+            hidden_layers={"range": [2, 4, 1]},
+            hidden_size={"select": [12, 24, 32, 64, 128]},
+            dropout={"range": [0.0, 0.4, 0.1]},
+            bias=True
+        )
+        transformer_opt = TransformerOptConfig(
+            sim_config=sim_config,
+            num_inputs=sim_config.num_inputs,
+            num_outputs=sim_config.num_outputs,
+            sequence_length={"select": [1, 2, 4, 5, 6, 8, 10, 12, 14, 15]},
+            n_layer={"range": [2, 4, 1]},
+            n_head={"range": [2, 10, 2]},
+            n_embd={"select": [12, 24, 32, 64, 128]},
+            dropout={"range": [0.0, 0.4, 0.1]},
+            bias=True
+        )
+            
+        # Optimizer configs
+        adamw_opt = AdamWOptConfig(
+            lr={"select": [1e-5, 5e-5, 1e-4, 3e-4, 5e-4, 8e-4, 1e-3, 5e-3, 1e-2]},
+            weight_decay={"select": [1e-4, 1e-3, 1e-2, 1e-1]}
+        )
+        sgd_opt = SGDOptConfig(
+            lr={"select": [1e-5, 5e-5, 1e-4, 3e-4, 5e-4, 8e-4, 1e-3, 5e-3, 1e-2]},
+            weight_decay={"select": [1e-4, 1e-3, 1e-2, 1e-1]},
+            momentum={"select": [0, 0.8, 0.9, 0.95, 0.99]}
+        )
+        
+        # Learning rate scheduler configs
+        cos_decay_opt = CosineDecayWithWarmupOptConfig(
+            max_lr={"select": [1e-4, 3e-4, 5e-4, 8e-4, 1e-3, 3e-3, 5e-3]},
+            min_lr={"select": [1e-6, 5e-6, 1e-5, 3e-5, 5e-5, 8e-5, 1e-4]},
+            warmup_iters={"select": [50, 100, 200, 400, 800]},
+            decay_iters={"select": [500, 1000, 2000, 4000, 8000]}
+        )
+        cos_anneal_opt = CosineAnnealingWarmRestartsOptConfig(
+            T_0={"select": [200, 500, 1000, 2000, 5000, 10000]},
+            T_mult={"select": [1, 2, 3]},
+            eta_min={"select": [1e-6, 5e-6, 1e-5, 3e-5, 5e-5, 8e-5, 1e-4, 3e-4]}
+        )
+        
+        # Optimization config
+        opt_config = OptimizationConfig(
+            training_iters=2000,
+            train_batch_size=512,
+            test_dataset_size=500,
+            checkpoint_type='single_step',
+            opt_models=[mlp_opt, rnn_opt, transformer_opt],
+            opt_optimizers=[adamw_opt, sgd_opt],
+            opt_lr_schedulers=[None, cos_decay_opt, cos_anneal_opt],
+            num_trials=5
+        )
+        
+        # Execute training
+        onyx.optimize_model(
+            model_name='example_model_optimized',
+            model_sim_config=sim_config,
+            dataset_name='example_train_data',
+            optimization_config=opt_config,
+        )
+        
     """
     assert isinstance(model_name, str), "model_name must be a string."
     assert isinstance(model_sim_config, ModelSimulatorConfig), "model_sim_config is required and must be a ModelSimulatorConfig."
