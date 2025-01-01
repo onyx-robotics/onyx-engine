@@ -1,6 +1,8 @@
 import os
 import json
 import requests
+from typing import List, Optional
+from pydantic import BaseModel
 from tqdm import tqdm
 from requests_toolbelt import MultipartEncoder, MultipartEncoderMonitor
 from onyxengine import SERVER_URL, WSS_URL, ONYX_API_KEY, ONYX_PATH
@@ -58,9 +60,9 @@ def upload_object(filename, object_type):
             except requests.exceptions.RequestException:
                 raise SystemExit("Onyx Engine API error: An unexpected error occurred.", e)
 
-def download_object(filename, object_type):
+def download_object(filename, object_type, version: Optional[int] = None):
     # Get secure download URL from the cloud
-    response = handle_post_request("/generate_download_url", {"object_filename": filename, "object_type": object_type})
+    response = handle_post_request("/generate_download_url", {"object_filename": filename, "object_type": object_type, "version": version})
     download_url = response["download_url"]
 
     # Download the object using the secure URL
@@ -87,13 +89,17 @@ def download_object(filename, object_type):
                 progress_bar.update(len(data))
                 file.write(data)
 
-def set_object_metadata(object_name, object_type, object_config, object_source_names=[]):
+class SourceObject(BaseModel):
+    name: str
+    version: Optional[int] = None
+
+def set_object_metadata(object_name, object_type, object_config, object_sources: List[SourceObject]=[]):
     # Request to set metadata for the object in onyx engine
     response = handle_post_request("/set_object_metadata", {
         "object_name": object_name,
         "object_type": object_type,
         "object_config": object_config,
-        "object_source_names": object_source_names,
+        "object_sources": [source.model_dump() for source in object_sources],
     })
     
 async def monitor_training_job(job_id: str, training_config: TrainingConfig):
