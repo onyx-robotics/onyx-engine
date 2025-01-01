@@ -26,7 +26,6 @@ from onyxengine.modeling import (
 def test_metadata_get():
     data = onyx.get_object_metadata('brake_model_test_test')
     print(data)
-    #print(data['data'][0]['object_config'])
 
 def test_data_download():
     # Load the training dataset
@@ -76,6 +75,7 @@ def test_model_upload():
         dropout=0.2,
         bias=True
     )
+    
     model = MLP(mlp_config)
     onyx.save_model(name='brake_model_test', model=model, source_datasets=[{'name': 'brake_train_data'}])
     
@@ -124,6 +124,7 @@ def test_train_model():
     )
     
 def test_optimize_model():
+    # Model sim config (used across all trials)
     sim_config = ModelSimulatorConfig(
         outputs=['acceleration'],
         states=[
@@ -134,6 +135,7 @@ def test_optimize_model():
         dt=0.0025
     )
     
+    # Model optimization configs
     mlp_opt = MLPOptConfig(
         sim_config=sim_config,
         num_inputs=sim_config.num_inputs,
@@ -145,7 +147,6 @@ def test_optimize_model():
         dropout={"range": [0.0, 0.4, 0.1]},
         bias=True
     )
-    
     rnn_opt = RNNOptConfig(
         sim_config=sim_config,
         num_inputs=sim_config.num_inputs,
@@ -157,7 +158,6 @@ def test_optimize_model():
         dropout={"range": [0.0, 0.4, 0.1]},
         bias=True
     )
-    
     transformer_opt = TransformerOptConfig(
         sim_config=sim_config,
         num_inputs=sim_config.num_inputs,
@@ -170,24 +170,24 @@ def test_optimize_model():
         bias=True
     )
         
+    # Optimizer configs
     adamw_opt = AdamWOptConfig(
         lr={"select": [1e-5, 5e-5, 1e-4, 3e-4, 5e-4, 8e-4, 1e-3, 5e-3, 1e-2]},
         weight_decay={"select": [1e-4, 1e-3, 1e-2, 1e-1]}
     )
-    
     sgd_opt = SGDOptConfig(
         lr={"select": [1e-5, 5e-5, 1e-4, 3e-4, 5e-4, 8e-4, 1e-3, 5e-3, 1e-2]},
         weight_decay={"select": [1e-4, 1e-3, 1e-2, 1e-1]},
         momentum={"select": [0, 0.8, 0.9, 0.95, 0.99]}
     )
     
+    # Learning rate scheduler configs
     cos_decay_opt = CosineDecayWithWarmupOptConfig(
         max_lr={"select": [1e-4, 3e-4, 5e-4, 8e-4, 1e-3, 3e-3, 5e-3]},
         min_lr={"select": [1e-6, 5e-6, 1e-5, 3e-5, 5e-5, 8e-5, 1e-4]},
         warmup_iters={"select": [50, 100, 200, 400, 800]},
         decay_iters={"select": [500, 1000, 2000, 4000, 8000]}
     )
-    
     cos_anneal_opt = CosineAnnealingWarmRestartsOptConfig(
         T_0={"select": [200, 500, 1000, 2000, 5000, 10000]},
         T_mult={"select": [1, 2, 3]},
@@ -196,7 +196,7 @@ def test_optimize_model():
     
     # Optimization config
     opt_config = OptimizationConfig(
-        training_iters=500,
+        training_iters=2000,
         train_batch_size=512,
         test_dataset_size=500,
         checkpoint_type='single_step',
@@ -211,7 +211,6 @@ def test_optimize_model():
         model_name='brake_model_optimized',
         model_sim_config=sim_config,
         dataset_name='brake_train_data',
-        dataset_version=None,
         optimization_config=opt_config,
     )
     
