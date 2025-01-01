@@ -1,7 +1,8 @@
-from onyxengine.modeling.models import *
 import json
+from typing import Union
+from onyxengine.modeling.models import *
 
-def model_from_config(model_config):
+def model_from_config(model_config: Union[str, dict]):
     config_dict = json.loads(model_config) if isinstance(model_config, str) else model_config
     model_type = config_dict['onyx_model_type']
     config_dict.pop('onyx_model_type')
@@ -20,7 +21,7 @@ def model_from_config(model_config):
 
     return model
 
-def opt_model_config_from_config(opt_model_config):
+def opt_model_config_from_config(opt_model_config: Union[str, dict]):
     config_dict = json.loads(opt_model_config) if isinstance(opt_model_config, str) else opt_model_config
     opt_model_type = config_dict['onyx_model_type']
     config_dict.pop('onyx_model_type')

@@ -3,9 +3,10 @@ import os
 
 # API Constants
 SERVER = "api.onyx-robotics.com"
-#SERVER = "localhost:8000"
-SERVER_URL = f"https://{SERVER}" if SERVER != "localhost:8000" else f"http://{SERVER}"
-WSS_URL = f"wss://{SERVER}/ws" if SERVER != "localhost:8000" else f"ws://{SERVER}/ws"
+DEV_SERVER = "localhost:8000"
+DEV_MODE = False
+SERVER_URL = f"https://{SERVER}" if not DEV_MODE else f"http://{DEV_SERVER}"
+WSS_URL = f"wss://{SERVER}/ws" if not DEV_MODE else f"ws://{DEV_SERVER}/ws"
 ONYX_API_KEY = os.environ.get('ONYX_API_KEY')
 if ONYX_API_KEY is None:
     print('Warning ONYX_API_KEY environment variable not found.')
