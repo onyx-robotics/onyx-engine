@@ -1,4 +1,5 @@
 requests-toolbelt==1.0.0
+websockets==13.1
 pandas
 pydantic
 tqdm
