@@ -1,3 +1,5 @@
+.. _onyxengine.modeling:
+
 onyxengine.modeling
 ===========================
 

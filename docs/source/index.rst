@@ -6,12 +6,23 @@
 Engine documentation
 ====================
 
-Documentation for the Onyx Engine.
+Welcome to the Onyx Engine Python API documentation!
 
+The onyx-engine library is an API for optimizing AI models to simulate and control hardware systems.
+The library is lightweight, easy to interface with, and works alongside the Onyx Engine Platform.
+
+If you're ready to train and optimize your first model, check out :ref:`installation`.
+
+.. toctree::
+   :maxdepth: 2
+   :caption: Getting Started
+
+   installation
+   training-models
 
 .. toctree::
    :maxdepth: 3
-   :caption: Contents:
+   :caption: Modules:
 
    onyxengine
    onyxengine.data
