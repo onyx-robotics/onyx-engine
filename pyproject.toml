@@ -1,0 +1,26 @@
+[build-system]
+requires = ["setuptools", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "onyxengine"
+version = "0.1.0"
+description = "The official Python library for the Onyx Engine."
+readme = "README.md"
+license = {file = "LICENSE"}
+authors = [{name = "Onyx", email = "support@onyx-robotics.com"}]
+dependencies = [
+    "requests-toolbelt==1.0.0",
+    "websockets>=13, <15",
+    "pandas",
+    "pydantic",
+    "tqdm"
+]
+classifiers=[
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: Apache Software License",
+    "Operating System :: OS Independent",
+]
+
+[project.urls]
+Homepage = "https://github.com/onyx-robotics/onyx-engine"
