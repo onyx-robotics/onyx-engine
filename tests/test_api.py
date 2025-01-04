@@ -8,6 +8,7 @@ from onyxengine.modeling import (
     MLPConfig,
     MLP,
     RNNConfig,
+    TransformerConfig,
     TrainingConfig, 
     OptimizationConfig,
     AdamWConfig,
@@ -108,6 +109,7 @@ def test_train_model():
     # Training config
     training_config = TrainingConfig(
         training_iters=2000,
+        train_batch_size=32,
         test_dataset_size=500,
         checkpoint_type='single_step',
         optimizer=AdamWConfig(lr=3e-4, weight_decay=1e-2),
@@ -206,7 +208,7 @@ def test_optimize_model():
         num_trials=5
     )
     
-    # Execute training
+    # Execute model optimization
     onyx.optimize_model(
         model_name='brake_model_optimized',
         model_sim_config=sim_config,

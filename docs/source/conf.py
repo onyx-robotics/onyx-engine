@@ -7,7 +7,7 @@
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
 project = 'Engine'
-copyright = '2024, Onyx Robotics Inc.'
+copyright = '2024, Onyx Robotics Inc'
 author = 'Onyx'
 release = '0.0.1'
 

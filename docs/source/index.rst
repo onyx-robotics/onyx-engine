@@ -19,10 +19,12 @@ If you're ready to train and optimize your first model, check out :ref:`installa
 
    installation
    training-models
+   optimizing-models
+   simulating-models
 
 .. toctree::
    :maxdepth: 3
-   :caption: Modules:
+   :caption: API Reference:
 
    onyxengine
    onyxengine.data
