@@ -1,3 +1,5 @@
+.. _onyxengine.data:
+
 onyxengine.data
 =======================
 

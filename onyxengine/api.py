@@ -352,6 +352,7 @@ def train_model(
         # Training config
         training_config = TrainingConfig(
             training_iters=2000,
+            train_batch_size=32,
             test_dataset_size=500,
             checkpoint_type='single_step',
             optimizer=AdamWConfig(lr=3e-4, weight_decay=1e-2),
@@ -364,7 +365,7 @@ def train_model(
             model_config=model_config,
             dataset_name='example_train_data',
             training_config=training_config,
-            monitor_training=False
+            monitor_training=True
         )
         
     """
@@ -505,7 +506,7 @@ def optimize_model(
             num_trials=5
         )
         
-        # Execute training
+        # Execute model optimization
         onyx.optimize_model(
             model_name='example_model_optimized',
             model_sim_config=sim_config,
