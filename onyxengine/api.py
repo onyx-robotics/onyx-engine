@@ -383,8 +383,18 @@ def train_model(
         raise SystemExit("Onyx Engine API error: Dataset name must be a non-empty string.")
 
     # Check that the dataset exists
-    if get_object_metadata(dataset_name, dataset_version) is None:
+    data_metadata = get_object_metadata(dataset_name, dataset_version)
+    if data_metadata is None:
         raise SystemExit(f"Onyx Engine API error: Dataset [{dataset_name}:v{dataset_version}] not found in the Engine.")
+    data_config = OnyxDatasetConfig.model_validate(data_metadata['object_config'])
+    # Check that sim config of model matches features of dataset
+    if model_config.sim_config.num_inputs != data_config.num_state + data_config.num_control:
+        raise SystemExit(f"Onyx Engine API error: Number of inputs in model config does not match dataset.")
+    if model_config.sim_config.num_outputs != data_config.num_outputs:
+        raise SystemExit(f"Onyx Engine API error: Number of outputs in model config does not match dataset.")
+    # Check that sim config dt is an integer multiple of dataset dt
+    if model_config.sim_config.dt % data_config.dt != 0:
+        raise SystemExit(f"Onyx Engine API error: Model config dt must be an integer multiple of dataset dt.")
 
     # Request the onyx server to train the model
     response = handle_post_request("/train_model", {
@@ -528,8 +538,19 @@ def optimize_model(
         raise SystemExit("Onyx Engine API error: Dataset name must be a non-empty string.")
 
     # Check that the dataset exists
-    if get_object_metadata(dataset_name) is None:
-        raise SystemExit(f"Onyx Engine API error: Dataset [{dataset_name}] not found in the Engine.")
+    data_metadata = get_object_metadata(dataset_name, dataset_version)
+    if data_metadata is None:
+        raise SystemExit(f"Onyx Engine API error: Dataset [{dataset_name}:v{dataset_version}] not found in the Engine.")
+    data_config = OnyxDatasetConfig.model_validate(data_metadata['object_config'])
+    # Check that sim config of model matches features of dataset
+    for opt_model in optimization_config.opt_models:
+        if opt_model.sim_config.num_inputs != data_config.num_state + data_config.num_control:
+            raise SystemExit(f"Onyx Engine API error: Number of inputs in model config does not match dataset.")
+        if opt_model.sim_config.num_outputs != data_config.num_outputs:
+            raise SystemExit(f"Onyx Engine API error: Number of outputs in model config does not match dataset.")
+        # Check that sim config dt is an integer multiple of dataset dt
+        if opt_model.sim_config.dt % data_config.dt != 0:
+            raise SystemExit(f"Onyx Engine API error: Model config dt must be an integer multiple of dataset dt.")
 
     # Request the onyx server to train the model
     response = handle_post_request("/optimize_model", {
