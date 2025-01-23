@@ -119,7 +119,7 @@ def test_train_model():
 
     # Execute training
     onyx.train_model(
-        model_name='brake_model_optimized',
+        model_name='brake_model_test1',
         model_config=model_config,
         dataset_name='brake_train_data',
         training_config=training_config,
@@ -242,11 +242,11 @@ def test_use_model():
     print(x_traj)
     
 if __name__ == '__main__':
-    # test_metadata_get()
+    test_metadata_get()
     # test_data_download()
     # test_data_upload()
     # test_model_upload()
     # test_model_download()
-    test_train_model()
+    # test_train_model()
     # test_optimize_model()
     # test_use_model()
