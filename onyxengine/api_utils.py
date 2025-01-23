@@ -105,12 +105,14 @@ def set_object_metadata(object_name, object_type, object_config, object_sources:
 async def monitor_training_job(job_id: str, training_config: TrainingConfig):
     headers = {
         "x-api-key": ONYX_API_KEY,
+    }
+    query_params = {
         "client": "api",
-        "monitor-type": "job_id",
         "job-id": job_id
     }
+    query_string = "&".join([f"{key}={value}" for key, value in query_params.items()])
     try:
-        async with connect(WSS_URL + "/monitor_training", additional_headers=headers) as websocket:
+        async with connect(f"{WSS_URL}/monitor_training?{query_string}", additional_headers=headers) as websocket:
             total_iters = training_config.training_iters
             with tqdm(total=total_iters, desc="Training: ", bar_format="{desc}{percentage:.1f}%|{bar}|{n_fmt}/{total_fmt} train_iters") as pbar:
                 while True:

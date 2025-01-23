@@ -25,7 +25,7 @@ from onyxengine.modeling import (
 )
 
 def test_metadata_get():
-    data = onyx.get_object_metadata('brake_model_test_test')
+    data = onyx.get_object_metadata('brake_model')
     print(data)
 
 def test_data_download():
@@ -99,7 +99,8 @@ def test_train_model():
         sim_config=sim_config,
         num_inputs=sim_config.num_inputs,
         num_outputs=sim_config.num_outputs,
-        hidden_layers=2,
+        sequence_length=8,
+        hidden_layers=3,
         hidden_size=64,
         activation='relu',
         dropout=0.2,
@@ -109,16 +110,16 @@ def test_train_model():
     # Training config
     training_config = TrainingConfig(
         training_iters=2000,
-        train_batch_size=32,
+        train_batch_size=64,
         test_dataset_size=500,
-        checkpoint_type='single_step',
-        optimizer=AdamWConfig(lr=3e-4, weight_decay=1e-2),
+        checkpoint_type='multi_step',
+        optimizer=AdamWConfig(lr=3e-5, weight_decay=1e-2),
         lr_scheduler=CosineDecayWithWarmupConfig(max_lr=3e-4, min_lr=3e-5, warmup_iters=200, decay_iters=1000)
     )
 
     # Execute training
     onyx.train_model(
-        model_name='brake_model_test',
+        model_name='brake_model_test1',
         model_config=model_config,
         dataset_name='brake_train_data',
         training_config=training_config,
@@ -198,14 +199,14 @@ def test_optimize_model():
     
     # Optimization config
     opt_config = OptimizationConfig(
-        training_iters=2000,
+        training_iters=1000,
         train_batch_size=512,
         test_dataset_size=500,
-        checkpoint_type='single_step',
+        checkpoint_type='multi_step',
         opt_models=[mlp_opt, rnn_opt, transformer_opt],
         opt_optimizers=[adamw_opt, sgd_opt],
         opt_lr_schedulers=[None, cos_decay_opt, cos_anneal_opt],
-        num_trials=5
+        num_trials=3
     )
     
     # Execute model optimization
