@@ -9,7 +9,7 @@
 project = 'Engine'
 copyright = '2024, Onyx Robotics Inc'
 author = 'Onyx'
-release = '0.0.1'
+release = '0.1.0'
 
 import os
 import sys
