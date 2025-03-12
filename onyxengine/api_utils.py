@@ -32,9 +32,9 @@ def handle_post_request(endpoint, data=None):
         
     return response.json()
 
-def upload_object(filename, object_type):
+def upload_object(filename, object_type, object_id):
     # Get secure upload URL from the cloud
-    response = handle_post_request("/generate_upload_url", {"object_filename": filename, "object_type": object_type})
+    response = handle_post_request("/generate_upload_url", {"object_filename": filename, "object_type": object_type, "object_id": object_id})
 
     # Upload the object using the secure URL
     local_copy_path = os.path.join(ONYX_PATH, object_type + 's', filename)
@@ -60,9 +60,9 @@ def upload_object(filename, object_type):
             except requests.exceptions.RequestException:
                 raise SystemExit("Onyx Engine API error: An unexpected error occurred.", e)
 
-def download_object(filename, object_type, version: Optional[int] = None):
+def download_object(filename, object_type, object_id: Optional[str] = None):
     # Get secure download URL from the cloud
-    response = handle_post_request("/generate_download_url", {"object_filename": filename, "object_type": object_type, "version": version})
+    response = handle_post_request("/generate_download_url", {"object_filename": filename, "object_type": object_type, "object_id": object_id})
     download_url = response["download_url"]
 
     # Download the object using the secure URL
@@ -91,16 +91,22 @@ def download_object(filename, object_type, version: Optional[int] = None):
 
 class SourceObject(BaseModel):
     name: str
-    version: Optional[int] = None
+    id: Optional[str] = None
 
 def set_object_metadata(object_name, object_type, object_config, object_sources: List[SourceObject]=[]):
     # Request to set metadata for the object in onyx engine
-    response = handle_post_request("/set_object_metadata", {
+    metadata = handle_post_request("/set_object_metadata", {
         "object_name": object_name,
         "object_type": object_type,
         "object_config": object_config,
         "object_sources": [source.model_dump() for source in object_sources],
     })
+    if metadata is None:
+        return None
+    if isinstance(metadata['config'], str):
+        metadata['config'] = json.loads(metadata['config'])
+ 
+    return metadata
     
 async def monitor_training_job(job_id: str, training_config: TrainingConfig):
     headers = {
