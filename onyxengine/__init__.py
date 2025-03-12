@@ -2,9 +2,9 @@
 import os
 
 # API Constants
+DEV_MODE = False
 SERVER = "api.onyx-robotics.com"
 DEV_SERVER = "localhost:7000"
-DEV_MODE = False
 SERVER_URL = f"https://{SERVER}" if not DEV_MODE else f"http://{DEV_SERVER}"
 WSS_URL = f"wss://{SERVER}/ws" if not DEV_MODE else f"ws://{DEV_SERVER}/ws"
 ONYX_API_KEY = os.environ.get('ONYX_API_KEY')
