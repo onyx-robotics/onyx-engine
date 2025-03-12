@@ -30,7 +30,7 @@ def test_metadata_get():
 
 def test_data_download():
     # Load the training dataset
-    train_dataset = onyx.load_dataset('brake_train_data')
+    train_dataset = onyx.load_dataset('brake_data')
     print(train_dataset.dataframe.head())
 
 def test_data_upload():
@@ -81,7 +81,7 @@ def test_model_upload():
     onyx.save_model(name='brake_model_test', model=model, source_datasets=[{'name': 'brake_train_data'}])
     
 def test_model_download():
-    model = onyx.load_model('brake_model_test_test')
+    model = onyx.load_model('brake_model_optimized')
     print(model.config)
     
 def test_train_model():
@@ -119,7 +119,7 @@ def test_train_model():
 
     # Execute training
     onyx.train_model(
-        model_name='brake_model_test1',
+        model_name='brake_model',
         model_config=model_config,
         dataset_name='brake_train_data',
         training_config=training_config,
@@ -219,7 +219,7 @@ def test_optimize_model():
     
 def test_use_model():    
     # Load our model
-    model = onyx.load_model('brake_model_test')
+    model = onyx.load_model('brake_model')
     num_inputs = model.config.sim_config.num_inputs
     num_states = model.config.sim_config.num_states
     num_controls = model.config.sim_config.num_controls
@@ -242,11 +242,11 @@ def test_use_model():
     print(x_traj)
     
 if __name__ == '__main__':
-    test_metadata_get()
+    # test_metadata_get()
     # test_data_download()
     # test_data_upload()
     # test_model_upload()
     # test_model_download()
     # test_train_model()
-    # test_optimize_model()
+    test_optimize_model()
     # test_use_model()
