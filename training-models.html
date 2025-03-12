@@ -1,0 +1,351 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Training Models &mdash; Engine 0.1.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
+      <link rel="stylesheet" type="text/css" href="_static/css/custom.css" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=01f34227"></script>
+      <script src="_static/doctools.js?v=9bcbadda"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="_static/clipboard.min.js?v=a7894cd8"></script>
+      <script src="_static/copybutton.js?v=f281be69"></script>
+      <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Optimizing Models" href="optimizing-models.html" />
+    <link rel="prev" title="Installation" href="installation.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html">
+            
+              <img src="_static/engine_logo.svg" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Training Models</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#training-script">Training Script</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#model-configuration">Model Configuration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#training-configuration">Training Configuration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#train-model">train_model()</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="optimizing-models.html">Optimizing Models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="simulating-models.html">Simulating Models</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Reference:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="onyxengine.html">onyxengine</a></li>
+<li class="toctree-l1"><a class="reference internal" href="onyxengine.data.html">onyxengine.data</a></li>
+<li class="toctree-l1"><a class="reference internal" href="onyxengine.modeling.html">onyxengine.modeling</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Engine</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Training Models</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/training-models.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="training-models">
+<span id="id1"></span><h1>Training Models<a class="headerlink" href="#training-models" title="Link to this heading"></a></h1>
+<p>To train a model in the Engine, we just need to configure the training run.</p>
+<section id="training-script">
+<h2>Training Script<a class="headerlink" href="#training-script" title="Link to this heading"></a></h2>
+<p>We will train our first model on the dataset “example_train_data” that is provided for you in the Engine. We can examine the dataset’s info via the <a class="reference external" href="https://engine.onyx-robotics.com">Engine Platform</a> or by running the following code:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">onyxengine</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">onyx</span>
+
+<span class="n">metadata</span> <span class="o">=</span> <span class="n">onyx</span><span class="o">.</span><span class="n">get_object_metadata</span><span class="p">(</span><span class="s1">&#39;example_train_data&#39;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">metadata</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">2</span><span class="p">))</span>
+</pre></div>
+</div>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>{
+  &quot;name&quot;: &quot;example_train_data&quot;,
+  &quot;object_type&quot;: &quot;dataset&quot;,
+  &quot;object_config&quot;: {
+    &quot;features&quot;: [
+      &quot;acceleration&quot;,
+      &quot;velocity&quot;,
+      &quot;position&quot;,
+      &quot;control_input&quot;
+    ],
+    &quot;num_outputs&quot;: 1,
+    &quot;num_state&quot;: 2,
+    &quot;num_control&quot;: 1,
+    &quot;dt&quot;: 0.0025
+  },
+  &quot;status&quot;: &quot;active&quot;,
+  &quot;owner&quot;: &quot;Ted Lutkus&quot;,
+  &quot;last_updated&quot;: &quot;2025-01-01T14:22:34.427448+00:00&quot;,
+  &quot;date_created&quot;: &quot;2025-01-01T14:22:34.427448+00:00&quot;,
+  &quot;version&quot;: 1
+}
+</pre></div>
+</div>
+<p>We will train a model on this dataset using the following training code, you can paste this into your editor and then follow the explanation of each part below:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">onyxengine.modeling</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">ModelSimulatorConfig</span><span class="p">,</span>
+    <span class="n">State</span><span class="p">,</span>
+    <span class="n">MLPConfig</span><span class="p">,</span>
+    <span class="n">TrainingConfig</span><span class="p">,</span>
+    <span class="n">AdamWConfig</span><span class="p">,</span>
+    <span class="n">CosineDecayWithWarmupConfig</span>
+<span class="p">)</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">onyxengine</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">onyx</span>
+
+<span class="c1"># Model config</span>
+<span class="n">sim_config</span> <span class="o">=</span> <span class="n">ModelSimulatorConfig</span><span class="p">(</span>
+    <span class="n">outputs</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;acceleration&#39;</span><span class="p">],</span>
+    <span class="n">states</span><span class="o">=</span><span class="p">[</span>
+        <span class="n">State</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;velocity&#39;</span><span class="p">,</span> <span class="n">relation</span><span class="o">=</span><span class="s1">&#39;derivative&#39;</span><span class="p">,</span> <span class="n">parent</span><span class="o">=</span><span class="s1">&#39;acceleration&#39;</span><span class="p">),</span>
+        <span class="n">State</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;position&#39;</span><span class="p">,</span> <span class="n">relation</span><span class="o">=</span><span class="s1">&#39;derivative&#39;</span><span class="p">,</span> <span class="n">parent</span><span class="o">=</span><span class="s1">&#39;velocity&#39;</span><span class="p">),</span>
+    <span class="p">],</span>
+    <span class="n">controls</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;control_input&#39;</span><span class="p">],</span>
+    <span class="n">dt</span><span class="o">=</span><span class="mf">0.0025</span>
+<span class="p">)</span>
+<span class="n">model_config</span> <span class="o">=</span> <span class="n">MLPConfig</span><span class="p">(</span>
+    <span class="n">sim_config</span><span class="o">=</span><span class="n">sim_config</span><span class="p">,</span>
+    <span class="n">num_inputs</span><span class="o">=</span><span class="n">sim_config</span><span class="o">.</span><span class="n">num_inputs</span><span class="p">,</span>
+    <span class="n">num_outputs</span><span class="o">=</span><span class="n">sim_config</span><span class="o">.</span><span class="n">num_outputs</span><span class="p">,</span>
+    <span class="n">hidden_layers</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+    <span class="n">hidden_size</span><span class="o">=</span><span class="mi">64</span><span class="p">,</span>
+    <span class="n">activation</span><span class="o">=</span><span class="s1">&#39;relu&#39;</span><span class="p">,</span>
+    <span class="n">dropout</span><span class="o">=</span><span class="mf">0.2</span><span class="p">,</span>
+    <span class="n">bias</span><span class="o">=</span><span class="kc">True</span>
+<span class="p">)</span>
+
+<span class="c1"># Training config</span>
+<span class="n">training_config</span> <span class="o">=</span> <span class="n">TrainingConfig</span><span class="p">(</span>
+    <span class="n">training_iters</span><span class="o">=</span><span class="mi">2000</span><span class="p">,</span>
+    <span class="n">test_dataset_size</span><span class="o">=</span><span class="mi">500</span><span class="p">,</span>
+    <span class="n">checkpoint_type</span><span class="o">=</span><span class="s1">&#39;single_step&#39;</span><span class="p">,</span>
+    <span class="n">optimizer</span><span class="o">=</span><span class="n">AdamWConfig</span><span class="p">(</span><span class="n">lr</span><span class="o">=</span><span class="mf">3e-4</span><span class="p">,</span> <span class="n">weight_decay</span><span class="o">=</span><span class="mf">1e-2</span><span class="p">),</span>
+    <span class="n">lr_scheduler</span><span class="o">=</span><span class="n">CosineDecayWithWarmupConfig</span><span class="p">(</span><span class="n">max_lr</span><span class="o">=</span><span class="mf">3e-4</span><span class="p">,</span> <span class="n">min_lr</span><span class="o">=</span><span class="mf">3e-5</span><span class="p">,</span> <span class="n">warmup_iters</span><span class="o">=</span><span class="mi">200</span><span class="p">,</span> <span class="n">decay_iters</span><span class="o">=</span><span class="mi">1000</span><span class="p">)</span>
+<span class="p">)</span>
+
+<span class="c1"># Execute training</span>
+<span class="n">onyx</span><span class="o">.</span><span class="n">train_model</span><span class="p">(</span>
+    <span class="n">model_name</span><span class="o">=</span><span class="s1">&#39;example_model&#39;</span><span class="p">,</span>
+    <span class="n">model_config</span><span class="o">=</span><span class="n">model_config</span><span class="p">,</span>
+    <span class="n">dataset_name</span><span class="o">=</span><span class="s1">&#39;example_train_data&#39;</span><span class="p">,</span>
+    <span class="n">training_config</span><span class="o">=</span><span class="n">training_config</span><span class="p">,</span>
+    <span class="n">monitor_training</span><span class="o">=</span><span class="kc">True</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="model-configuration">
+<h2>Model Configuration<a class="headerlink" href="#model-configuration" title="Link to this heading"></a></h2>
+<p>The first thing you’ll notice is the definition of a <cite>ModelSimulatorConfig</cite>.</p>
+<p>By default, AI models typically predict one step at a time. But for simulation and controls, we need to predict more than a single step and instead simulate trajectories over multiple steps. Managing state relations, numerical integration, and recursive model calls is tedious, so we provide a <cite>ModelSimulator</cite> to handle this for you efficiently.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">sim_config</span> <span class="o">=</span> <span class="n">ModelSimulatorConfig</span><span class="p">(</span>
+    <span class="n">outputs</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;acceleration&#39;</span><span class="p">],</span>
+    <span class="n">states</span><span class="o">=</span><span class="p">[</span>
+        <span class="n">State</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;velocity&#39;</span><span class="p">,</span> <span class="n">relation</span><span class="o">=</span><span class="s1">&#39;derivative&#39;</span><span class="p">,</span> <span class="n">parent</span><span class="o">=</span><span class="s1">&#39;acceleration&#39;</span><span class="p">),</span>
+        <span class="n">State</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;position&#39;</span><span class="p">,</span> <span class="n">relation</span><span class="o">=</span><span class="s1">&#39;derivative&#39;</span><span class="p">,</span> <span class="n">parent</span><span class="o">=</span><span class="s1">&#39;velocity&#39;</span><span class="p">),</span>
+    <span class="p">],</span>
+    <span class="n">controls</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;control_input&#39;</span><span class="p">],</span>
+    <span class="n">dt</span><span class="o">=</span><span class="mf">0.0025</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p>Sim configs are similar to dynamical system state-space models, where <span class="math notranslate nohighlight">\(\dot{x} = f(x, u)\)</span>. In this example:</p>
+<ul class="simple">
+<li><dl class="simple">
+<dt>Model Outputs</dt><dd><ul>
+<li><p><strong>acceleration</strong> (<span class="math notranslate nohighlight">\(\dot{x}\)</span>) is the output of the model.</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>Model Inputs</dt><dd><ul>
+<li><p><strong>velocity</strong> (<span class="math notranslate nohighlight">\(x_1\)</span>) is the first state, whose parent <strong>acceleration</strong> is its derivative.</p></li>
+<li><p><strong>position</strong> (<span class="math notranslate nohighlight">\(x_2\)</span>) is the second state, whose parent <strong>velocity</strong> is its derivative.</p></li>
+<li><p><strong>control_input</strong> (<span class="math notranslate nohighlight">\(u\)</span>) is a control input and provided at each time step.</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+<p>We will show how to simulate models in <a class="reference internal" href="simulating-models.html#simulating-models"><span class="std std-ref">Simulating Models</span></a>, but for training we just need to provide the configuration.</p>
+<p>Now, we can pass the simulator config to any Onyx model architecture. We’ll use a simple Multi-Layer Perceptron (MLP) model:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">model_config</span> <span class="o">=</span> <span class="n">MLPConfig</span><span class="p">(</span>
+    <span class="n">sim_config</span><span class="o">=</span><span class="n">sim_config</span><span class="p">,</span>
+    <span class="n">num_inputs</span><span class="o">=</span><span class="n">sim_config</span><span class="o">.</span><span class="n">num_inputs</span><span class="p">,</span>
+    <span class="n">num_outputs</span><span class="o">=</span><span class="n">sim_config</span><span class="o">.</span><span class="n">num_outputs</span><span class="p">,</span>
+    <span class="n">hidden_layers</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+    <span class="n">hidden_size</span><span class="o">=</span><span class="mi">64</span><span class="p">,</span>
+    <span class="n">activation</span><span class="o">=</span><span class="s1">&#39;relu&#39;</span><span class="p">,</span>
+    <span class="n">dropout</span><span class="o">=</span><span class="mf">0.2</span><span class="p">,</span>
+    <span class="n">bias</span><span class="o">=</span><span class="kc">True</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p>And that’s it! The model is ready to be trained.</p>
+</section>
+<section id="training-configuration">
+<h2>Training Configuration<a class="headerlink" href="#training-configuration" title="Link to this heading"></a></h2>
+<p>The training configuration specifies how the model will be trained:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">training_config</span> <span class="o">=</span> <span class="n">TrainingConfig</span><span class="p">(</span>
+    <span class="n">training_iters</span><span class="o">=</span><span class="mi">2000</span><span class="p">,</span>
+    <span class="n">train_batch_size</span><span class="o">=</span><span class="mi">32</span><span class="p">,</span>
+    <span class="n">test_dataset_size</span><span class="o">=</span><span class="mi">500</span><span class="p">,</span>
+    <span class="n">checkpoint_type</span><span class="o">=</span><span class="s1">&#39;single_step&#39;</span><span class="p">,</span>
+    <span class="n">optimizer</span><span class="o">=</span><span class="n">AdamWConfig</span><span class="p">(</span><span class="n">lr</span><span class="o">=</span><span class="mf">3e-4</span><span class="p">,</span> <span class="n">weight_decay</span><span class="o">=</span><span class="mf">1e-2</span><span class="p">),</span>
+    <span class="n">lr_scheduler</span><span class="o">=</span><span class="n">CosineDecayWithWarmupConfig</span><span class="p">(</span><span class="n">max_lr</span><span class="o">=</span><span class="mf">3e-4</span><span class="p">,</span> <span class="n">min_lr</span><span class="o">=</span><span class="mf">3e-5</span><span class="p">,</span> <span class="n">warmup_iters</span><span class="o">=</span><span class="mi">200</span><span class="p">,</span> <span class="n">decay_iters</span><span class="o">=</span><span class="mi">1000</span><span class="p">)</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p>This training is set to run for 2000 iterations, where each iteration processes a batch of 32 data samples.</p>
+<p>During training, the dataset will be split into three parts:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p><strong>Train</strong>: The bulk of the dataset, used to train the model’s weights.</p></li>
+<li><p><strong>Validation</strong>: A smaller split (~10% of the data), used to validate that we are not overfitting to the training data.</p></li>
+<li><p><strong>Test</strong>: A final set of data that is used to visualize the model’s predictions in the Engine.</p></li>
+</ul>
+</div></blockquote>
+<p>The <strong>checkpoint_type</strong> specifies whether the Engine should train the model for the best single-step or multi-step prediction.</p>
+<blockquote>
+<div><ul class="simple">
+<li><p><strong>single_step</strong>: Saves best model weights for predicting a <strong>single step</strong> into the future, this is the conventional AI model evaluation. Even if your goal is multi-step simulation, single-step checkpointing is useful for seeing how “modelable” a dataset is, or what dynamics the model is capturing.</p></li>
+<li><p><strong>multi_step</strong>: Saves best model weights for predicting <strong>multiple steps</strong> into the future (ie. simulating trajectories). This is the metric is often what we care most about for simulation and control.</p></li>
+</ul>
+</div></blockquote>
+</section>
+<section id="train-model">
+<h2>train_model()<a class="headerlink" href="#train-model" title="Link to this heading"></a></h2>
+<p>Now that we have the model and training configurations, we can train the model:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">onyx</span><span class="o">.</span><span class="n">train_model</span><span class="p">(</span>
+    <span class="n">model_name</span><span class="o">=</span><span class="s1">&#39;example_model&#39;</span><span class="p">,</span>
+    <span class="n">model_config</span><span class="o">=</span><span class="n">model_config</span><span class="p">,</span>
+    <span class="n">dataset_name</span><span class="o">=</span><span class="s1">&#39;example_train_data&#39;</span><span class="p">,</span>
+    <span class="n">training_config</span><span class="o">=</span><span class="n">training_config</span><span class="p">,</span>
+    <span class="n">monitor_training</span><span class="o">=</span><span class="kc">True</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p>This will initiate training in the Engine. The progress of the training will be displayed in the python console (exiting the console will not stop the training).</p>
+<p>We recommend monitoring the training process via the Engine Platform, where more details/visualizations are available to help you get the best training results.</p>
+<p>Congratulations! You’ve trained your first model in the Engine. Here are some quick things to try with this script:</p>
+<ul>
+<li><p>Our model used the current value of the inputs to make predictions, but often times hardware AI models benefit from using a history sequence of inputs. To increase the sequence length, we can simply change the <strong>sequence_length</strong> parameter of Onyx models and re-run the training script:</p>
+<blockquote>
+<div><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">model_config</span> <span class="o">=</span> <span class="n">MLPConfig</span><span class="p">(</span>
+    <span class="n">sim_config</span><span class="o">=</span><span class="n">sim_config</span><span class="p">,</span>
+    <span class="n">num_inputs</span><span class="o">=</span><span class="n">sim_config</span><span class="o">.</span><span class="n">num_inputs</span><span class="p">,</span>
+    <span class="n">num_outputs</span><span class="o">=</span><span class="n">sim_config</span><span class="o">.</span><span class="n">num_outputs</span><span class="p">,</span>
+    <span class="n">sequence_length</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="c1"># Increased sequence length to 5</span>
+    <span class="n">hidden_layers</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+    <span class="n">hidden_size</span><span class="o">=</span><span class="mi">64</span><span class="p">,</span>
+    <span class="n">activation</span><span class="o">=</span><span class="s1">&#39;relu&#39;</span><span class="p">,</span>
+    <span class="n">dropout</span><span class="o">=</span><span class="mf">0.2</span><span class="p">,</span>
+    <span class="n">bias</span><span class="o">=</span><span class="kc">True</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</div></blockquote>
+</li>
+<li><p>If you want to see how easy it is to swap model architectures, try replacing the model_config with a <strong>Transformer</strong> model:</p>
+<blockquote>
+<div><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">onyxengine.modeling</span><span class="w"> </span><span class="kn">import</span> <span class="n">TransformerConfig</span>
+
+<span class="n">model_config</span> <span class="o">=</span> <span class="n">TransformerConfig</span><span class="p">(</span>
+    <span class="n">sim_config</span><span class="o">=</span><span class="n">sim_config</span><span class="p">,</span>
+    <span class="n">num_inputs</span><span class="o">=</span><span class="n">sim_config</span><span class="o">.</span><span class="n">num_inputs</span><span class="p">,</span>
+    <span class="n">num_outputs</span><span class="o">=</span><span class="n">sim_config</span><span class="o">.</span><span class="n">num_outputs</span><span class="p">,</span>
+    <span class="n">sequence_length</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
+    <span class="n">n_layer</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+    <span class="n">n_head</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span>
+    <span class="n">n_embd</span><span class="o">=</span><span class="mi">64</span><span class="p">,</span>
+    <span class="n">dropout</span><span class="o">=</span><span class="mf">0.2</span><span class="p">,</span>
+    <span class="n">bias</span><span class="o">=</span><span class="kc">True</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</div></blockquote>
+</li>
+<li><p>Or, if you want to let the Engine optimize a model for you, check out <a class="reference internal" href="optimizing-models.html#optimizing-models"><span class="std std-ref">Optimizing Models</span></a>.</p></li>
+</ul>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="installation.html" class="btn btn-neutral float-left" title="Installation" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="optimizing-models.html" class="btn btn-neutral float-right" title="Optimizing Models" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Onyx Robotics Inc.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

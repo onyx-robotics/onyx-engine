@@ -1,0 +1,264 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>onyxengine.modeling &mdash; Engine 0.1.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
+      <link rel="stylesheet" type="text/css" href="_static/css/custom.css" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=01f34227"></script>
+      <script src="_static/doctools.js?v=9bcbadda"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="_static/clipboard.min.js?v=a7894cd8"></script>
+      <script src="_static/copybutton.js?v=f281be69"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="onyxengine.data" href="onyxengine.data.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html">
+            
+              <img src="_static/engine_logo.svg" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="training-models.html">Training Models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="optimizing-models.html">Optimizing Models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="simulating-models.html">Simulating Models</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Reference:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="onyxengine.html">onyxengine</a></li>
+<li class="toctree-l1"><a class="reference internal" href="onyxengine.data.html">onyxengine.data</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">onyxengine.modeling</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#model-training">Model Training</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#onyxengine.modeling.TrainingConfig"><code class="docutils literal notranslate"><span class="pre">TrainingConfig</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#model-simulation">Model Simulation</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#onyxengine.modeling.State"><code class="docutils literal notranslate"><span class="pre">State</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#onyxengine.modeling.ModelSimulatorConfig"><code class="docutils literal notranslate"><span class="pre">ModelSimulatorConfig</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#models">Models</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#onyxengine.modeling.MLPConfig"><code class="docutils literal notranslate"><span class="pre">MLPConfig</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#onyxengine.modeling.RNNConfig"><code class="docutils literal notranslate"><span class="pre">RNNConfig</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#onyxengine.modeling.TransformerConfig"><code class="docutils literal notranslate"><span class="pre">TransformerConfig</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Engine</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">onyxengine.modeling</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/onyxengine.modeling.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="onyxengine-modeling">
+<span id="id1"></span><h1>onyxengine.modeling<a class="headerlink" href="#onyxengine-modeling" title="Link to this heading"></a></h1>
+<p>The models and training config for the Engine.</p>
+<section id="model-training">
+<h2>Model Training<a class="headerlink" href="#model-training" title="Link to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="onyxengine.modeling.TrainingConfig">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">onyxengine.modeling.</span></span><span class="sig-name descname"><span class="pre">TrainingConfig</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">training_iters</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">3000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">train_batch_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">32</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">train_val_split_ratio</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.9</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">test_dataset_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">500</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">checkpoint_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Literal</span><span class="p"><span class="pre">[</span></span><span class="s"><span class="pre">'single_step'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'multi_step'</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'single_step'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">optimizer</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">AdamWConfig</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">SGDConfig</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">AdamWConfig(name='adamw',</span> <span class="pre">lr=0.0003,</span> <span class="pre">weight_decay=0.01)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lr_scheduler</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">None</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">CosineDecayWithWarmupConfig</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">CosineAnnealingWarmRestartsConfig</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/onyxengine/modeling/model_training.html#TrainingConfig"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#onyxengine.modeling.TrainingConfig" title="Link to this definition"></a></dt>
+<dd><p>Configuration for the training of a model.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>training_iters</strong> (<em>int</em>) – Number of training iterations (default is 3000).</p></li>
+<li><p><strong>train_batch_size</strong> (<em>int</em>) – Batch size for training (default is 32).</p></li>
+<li><p><strong>train_val_split_ratio</strong> (<em>float</em>) – Ratio of training data to validation data (default is 0.9).</p></li>
+<li><p><strong>test_dataset_size</strong> (<em>int</em>) – Number of samples in the test dataset (default is 500).</p></li>
+<li><p><strong>checkpoint_type</strong> (<em>Literal</em><em>[</em><em>'single_step'</em><em>, </em><em>'multi_step'</em><em>]</em>) – Type of checkpointing (default is ‘single_step’).</p></li>
+<li><p><strong>optimizer</strong> (<em>Union</em><em>[</em><em>AdamWConfig</em><em>, </em><em>SGDConfig</em><em>]</em>) – Optimizer configuration (default is AdamWConfig()).</p></li>
+<li><p><strong>lr_scheduler</strong> (<em>Union</em><em>[</em><em>None</em><em>, </em><em>CosineDecayWithWarmupConfig</em><em>, </em><em>CosineAnnealingWarmRestartsConfig</em><em>]</em>) – Learning rate scheduler configuration (default is None).</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="model-simulation">
+<h2>Model Simulation<a class="headerlink" href="#model-simulation" title="Link to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="onyxengine.modeling.State">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">onyxengine.modeling.</span></span><span class="sig-name descname"><span class="pre">State</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">relation</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Literal</span><span class="p"><span class="pre">[</span></span><span class="s"><span class="pre">'output'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'delta'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'derivative'</span></span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parent</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/onyxengine/modeling/model_simulator.html#State"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#onyxengine.modeling.State" title="Link to this definition"></a></dt>
+<dd><p>State variable used in ModelSimulatorConfig.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>name</strong> (<em>str</em>) – Variable name.</p></li>
+<li><p><strong>relation</strong> (<em>Literal</em><em>[</em><em>'output'</em><em>, </em><em>'delta'</em><em>, </em><em>'derivative'</em><em>]</em>) – Method to solve for the variable: variable is an output of the model, parent is the delta of the variable, or parent is the derivative of the variable.</p></li>
+<li><p><strong>parent</strong> (<em>str</em>) – Parent variable to derive from.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="onyxengine.modeling.ModelSimulatorConfig">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">onyxengine.modeling.</span></span><span class="sig-name descname"><span class="pre">ModelSimulatorConfig</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">outputs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">states</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#onyxengine.modeling.State" title="onyxengine.modeling.model_simulator.State"><span class="pre">State</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">controls</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dt</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/onyxengine/modeling/model_simulator.html#ModelSimulatorConfig"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#onyxengine.modeling.ModelSimulatorConfig" title="Link to this definition"></a></dt>
+<dd><p>Configuration class for the model simulator.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>outputs</strong> (<em>List</em><em>[</em><em>str</em><em>]</em>) – List of output variables.</p></li>
+<li><p><strong>states</strong> (<em>List</em><em>[</em><a class="reference internal" href="#onyxengine.modeling.State" title="onyxengine.modeling.State"><em>State</em></a><em>]</em>) – List of state variables.</p></li>
+<li><p><strong>controls</strong> (<em>List</em><em>[</em><em>str</em><em>]</em>) – List of control variables.</p></li>
+<li><p><strong>dt</strong> (<em>float</em>) – Time step for simulation.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="models">
+<h2>Models<a class="headerlink" href="#models" title="Link to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="onyxengine.modeling.MLPConfig">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">onyxengine.modeling.</span></span><span class="sig-name descname"><span class="pre">MLPConfig</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">onyx_model_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'mlp'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sim_config</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#onyxengine.modeling.ModelSimulatorConfig" title="onyxengine.modeling.model_simulator.ModelSimulatorConfig"><span class="pre">ModelSimulatorConfig</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">ModelSimulatorConfig(outputs=[],</span> <span class="pre">states=[],</span> <span class="pre">controls=[],</span> <span class="pre">dt=0)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_inputs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_outputs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sequence_length</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hidden_layers</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hidden_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">32</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">activation</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Literal</span><span class="p"><span class="pre">[</span></span><span class="s"><span class="pre">'relu'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'tanh'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'sigmoid'</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'relu'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dropout</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bias</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/onyxengine/modeling/models/mlp.html#MLPConfig"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#onyxengine.modeling.MLPConfig" title="Link to this definition"></a></dt>
+<dd><p>Configuration class for the MLP model.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>onyx_model_type</strong> (<em>str</em>) – Model type = ‘mlp’, immutable.</p></li>
+<li><p><strong>sim_config</strong> (<a class="reference internal" href="#onyxengine.modeling.ModelSimulatorConfig" title="onyxengine.modeling.ModelSimulatorConfig"><em>ModelSimulatorConfig</em></a>) – Configuration for the model’s simulator.</p></li>
+<li><p><strong>num_inputs</strong> (<em>int</em>) – Number of input features (default is 1).</p></li>
+<li><p><strong>num_outputs</strong> (<em>int</em>) – Number of output features (default is 1).</p></li>
+<li><p><strong>sequence_length</strong> (<em>int</em>) – Length of the input sequence (default is 1).</p></li>
+<li><p><strong>hidden_layers</strong> (<em>int</em>) – Number of hidden layers (default is 2).</p></li>
+<li><p><strong>hidden_size</strong> (<em>int</em>) – Size of each hidden layer (default is 32).</p></li>
+<li><p><strong>activation</strong> (<em>Literal</em><em>[</em><em>'relu'</em><em>, </em><em>'tanh'</em><em>, </em><em>'sigmoid'</em><em>]</em>) – Activation function (default is ‘relu’).</p></li>
+<li><p><strong>dropout</strong> (<em>float</em>) – Dropout rate for layers (default is 0.0).</p></li>
+<li><p><strong>bias</strong> (<em>bool</em>) – Whether to use bias in layers (default is True).</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="onyxengine.modeling.RNNConfig">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">onyxengine.modeling.</span></span><span class="sig-name descname"><span class="pre">RNNConfig</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">onyx_model_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'rnn'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sim_config</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#onyxengine.modeling.ModelSimulatorConfig" title="onyxengine.modeling.model_simulator.ModelSimulatorConfig"><span class="pre">ModelSimulatorConfig</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">ModelSimulatorConfig(outputs=[],</span> <span class="pre">states=[],</span> <span class="pre">controls=[],</span> <span class="pre">dt=0)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_inputs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_outputs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rnn_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Literal</span><span class="p"><span class="pre">[</span></span><span class="s"><span class="pre">'RNN'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'LSTM'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'GRU'</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'LSTM'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sequence_length</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hidden_layers</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hidden_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">32</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dropout</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bias</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/onyxengine/modeling/models/rnn.html#RNNConfig"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#onyxengine.modeling.RNNConfig" title="Link to this definition"></a></dt>
+<dd><p>Configuration class for the RNN model.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>onyx_model_type</strong> (<em>str</em>) – Model type = ‘rnn’, immutable.</p></li>
+<li><p><strong>sim_config</strong> (<a class="reference internal" href="#onyxengine.modeling.ModelSimulatorConfig" title="onyxengine.modeling.ModelSimulatorConfig"><em>ModelSimulatorConfig</em></a>) – Configuration for the model’s simulator.</p></li>
+<li><p><strong>num_inputs</strong> (<em>int</em>) – Number of input features (default is 1).</p></li>
+<li><p><strong>num_outputs</strong> (<em>int</em>) – Number of output features (default is 1).</p></li>
+<li><p><strong>sequence_length</strong> (<em>int</em>) – Length of input sequences (default is 1).</p></li>
+<li><p><strong>rnn_type</strong> (<em>Literal</em><em>[</em><em>'RNN'</em><em>, </em><em>'LSTM'</em><em>, </em><em>'GRU'</em><em>]</em>) – Type of RNN to use (default is ‘LSTM’).</p></li>
+<li><p><strong>hidden_layers</strong> (<em>int</em>) – Number of hidden layers in the RNN (default is 2).</p></li>
+<li><p><strong>hidden_size</strong> (<em>int</em>) – Number of hidden units in each layer (default is 32).</p></li>
+<li><p><strong>dropout</strong> (<em>float</em>) – Dropout rate (default is 0.0).</p></li>
+<li><p><strong>bias</strong> (<em>bool</em>) – Whether or not to include bias in the RNN (default is True).</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="onyxengine.modeling.TransformerConfig">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">onyxengine.modeling.</span></span><span class="sig-name descname"><span class="pre">TransformerConfig</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">onyx_model_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'transformer'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sim_config</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#onyxengine.modeling.ModelSimulatorConfig" title="onyxengine.modeling.model_simulator.ModelSimulatorConfig"><span class="pre">ModelSimulatorConfig</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">ModelSimulatorConfig(outputs=[],</span> <span class="pre">states=[],</span> <span class="pre">controls=[],</span> <span class="pre">dt=0)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_inputs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_outputs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sequence_length</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_layer</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_head</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">4</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_embd</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">32</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dropout</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bias</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/onyxengine/modeling/models/transformer.html#TransformerConfig"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#onyxengine.modeling.TransformerConfig" title="Link to this definition"></a></dt>
+<dd><p>Configuration class for the Transformer model.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>onyx_model_type</strong> (<em>str</em>) – Model type = ‘transformer’, immutable.</p></li>
+<li><p><strong>sim_config</strong> (<a class="reference internal" href="#onyxengine.modeling.ModelSimulatorConfig" title="onyxengine.modeling.ModelSimulatorConfig"><em>ModelSimulatorConfig</em></a>) – Configuration for the model’s simulator.</p></li>
+<li><p><strong>num_inputs</strong> (<em>int</em>) – Number of input features (default is 1).</p></li>
+<li><p><strong>num_outputs</strong> (<em>int</em>) – Number of output features (default is 1).</p></li>
+<li><p><strong>sequence_length</strong> (<em>int</em>) – Length of the input sequence (default is 1).</p></li>
+<li><p><strong>n_layer</strong> (<em>int</em>) – Number of transformer layers (default is 1).</p></li>
+<li><p><strong>n_head</strong> (<em>int</em>) – Number of attention heads (default is 4).</p></li>
+<li><p><strong>n_embd</strong> (<em>int</em>) – Size of the embedding dimension (default is 32).</p></li>
+<li><p><strong>dropout</strong> (<em>float</em>) – Dropout rate for layers (default is 0.0).</p></li>
+<li><p><strong>bias</strong> (<em>bool</em>) – Whether to use bias in layers (default is True).</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="onyxengine.data.html" class="btn btn-neutral float-left" title="onyxengine.data" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Onyx Robotics Inc.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

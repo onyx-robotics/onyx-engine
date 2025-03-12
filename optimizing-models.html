@@ -1,0 +1,332 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Optimizing Models &mdash; Engine 0.1.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
+      <link rel="stylesheet" type="text/css" href="_static/css/custom.css" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=01f34227"></script>
+      <script src="_static/doctools.js?v=9bcbadda"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="_static/clipboard.min.js?v=a7894cd8"></script>
+      <script src="_static/copybutton.js?v=f281be69"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Simulating Models" href="simulating-models.html" />
+    <link rel="prev" title="Training Models" href="training-models.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html">
+            
+              <img src="_static/engine_logo.svg" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="training-models.html">Training Models</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Optimizing Models</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#optimization-script">Optimization Script</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#optconfigs">OptConfigs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#optimize-model">optimize_model()</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="simulating-models.html">Simulating Models</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Reference:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="onyxengine.html">onyxengine</a></li>
+<li class="toctree-l1"><a class="reference internal" href="onyxengine.data.html">onyxengine.data</a></li>
+<li class="toctree-l1"><a class="reference internal" href="onyxengine.modeling.html">onyxengine.modeling</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Engine</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Optimizing Models</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/optimizing-models.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="optimizing-models">
+<span id="id1"></span><h1>Optimizing Models<a class="headerlink" href="#optimizing-models" title="Link to this heading"></a></h1>
+<p>Optimizing models is similar in code to <a class="reference internal" href="training-models.html#training-models"><span class="std std-ref">Training Models</span></a>. Now, however, we can let the Engine experiment with different training/model configurations to find the best model for our system.</p>
+<section id="optimization-script">
+<h2>Optimization Script<a class="headerlink" href="#optimization-script" title="Link to this heading"></a></h2>
+<p>We will optimize a model using the following code, you can paste this into your editor and then follow the explanation below:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">onyxengine.modeling</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">ModelSimulatorConfig</span><span class="p">,</span>
+    <span class="n">State</span><span class="p">,</span>
+    <span class="n">MLPOptConfig</span><span class="p">,</span>
+    <span class="n">RNNOptConfig</span><span class="p">,</span>
+    <span class="n">TransformerOptConfig</span><span class="p">,</span>
+    <span class="n">AdamWOptConfig</span><span class="p">,</span>
+    <span class="n">SGDOptConfig</span><span class="p">,</span>
+    <span class="n">CosineDecayWithWarmupOptConfig</span><span class="p">,</span>
+    <span class="n">CosineAnnealingWarmRestartsOptConfig</span><span class="p">,</span>
+    <span class="n">OptimizationConfig</span>
+<span class="p">)</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">onyxengine</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">onyx</span>
+
+<span class="c1"># Model sim config (used across all trials)</span>
+<span class="n">sim_config</span> <span class="o">=</span> <span class="n">ModelSimulatorConfig</span><span class="p">(</span>
+    <span class="n">outputs</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;acceleration&#39;</span><span class="p">],</span>
+    <span class="n">states</span><span class="o">=</span><span class="p">[</span>
+        <span class="n">State</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;velocity&#39;</span><span class="p">,</span> <span class="n">relation</span><span class="o">=</span><span class="s1">&#39;derivative&#39;</span><span class="p">,</span> <span class="n">parent</span><span class="o">=</span><span class="s1">&#39;acceleration&#39;</span><span class="p">),</span>
+        <span class="n">State</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;position&#39;</span><span class="p">,</span> <span class="n">relation</span><span class="o">=</span><span class="s1">&#39;derivative&#39;</span><span class="p">,</span> <span class="n">parent</span><span class="o">=</span><span class="s1">&#39;velocity&#39;</span><span class="p">),</span>
+    <span class="p">],</span>
+    <span class="n">controls</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;brake_input&#39;</span><span class="p">],</span>
+    <span class="n">dt</span><span class="o">=</span><span class="mf">0.0025</span>
+<span class="p">)</span>
+
+<span class="c1"># Model optimization configs</span>
+<span class="n">mlp_opt</span> <span class="o">=</span> <span class="n">MLPOptConfig</span><span class="p">(</span>
+    <span class="n">sim_config</span><span class="o">=</span><span class="n">sim_config</span><span class="p">,</span>
+    <span class="n">num_inputs</span><span class="o">=</span><span class="n">sim_config</span><span class="o">.</span><span class="n">num_inputs</span><span class="p">,</span>
+    <span class="n">num_outputs</span><span class="o">=</span><span class="n">sim_config</span><span class="o">.</span><span class="n">num_outputs</span><span class="p">,</span>
+    <span class="n">sequence_length</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;select&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">10</span><span class="p">]},</span>
+    <span class="n">hidden_layers</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;range&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">1</span><span class="p">]},</span>
+    <span class="n">hidden_size</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;select&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">12</span><span class="p">,</span> <span class="mi">24</span><span class="p">,</span> <span class="mi">32</span><span class="p">,</span> <span class="mi">64</span><span class="p">,</span> <span class="mi">128</span><span class="p">]},</span>
+    <span class="n">activation</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;select&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;relu&#39;</span><span class="p">,</span> <span class="s1">&#39;tanh&#39;</span><span class="p">]},</span>
+    <span class="n">dropout</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;range&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.4</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">]},</span>
+    <span class="n">bias</span><span class="o">=</span><span class="kc">True</span>
+<span class="p">)</span>
+<span class="n">rnn_opt</span> <span class="o">=</span> <span class="n">RNNOptConfig</span><span class="p">(</span>
+    <span class="n">sim_config</span><span class="o">=</span><span class="n">sim_config</span><span class="p">,</span>
+    <span class="n">num_inputs</span><span class="o">=</span><span class="n">sim_config</span><span class="o">.</span><span class="n">num_inputs</span><span class="p">,</span>
+    <span class="n">num_outputs</span><span class="o">=</span><span class="n">sim_config</span><span class="o">.</span><span class="n">num_outputs</span><span class="p">,</span>
+    <span class="n">rnn_type</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;select&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;RNN&#39;</span><span class="p">,</span> <span class="s1">&#39;LSTM&#39;</span><span class="p">,</span> <span class="s1">&#39;GRU&#39;</span><span class="p">]},</span>
+    <span class="n">sequence_length</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;select&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">12</span><span class="p">,</span> <span class="mi">14</span><span class="p">,</span> <span class="mi">15</span><span class="p">]},</span>
+    <span class="n">hidden_layers</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;range&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">1</span><span class="p">]},</span>
+    <span class="n">hidden_size</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;select&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">12</span><span class="p">,</span> <span class="mi">24</span><span class="p">,</span> <span class="mi">32</span><span class="p">,</span> <span class="mi">64</span><span class="p">,</span> <span class="mi">128</span><span class="p">]},</span>
+    <span class="n">dropout</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;range&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.4</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">]},</span>
+    <span class="n">bias</span><span class="o">=</span><span class="kc">True</span>
+<span class="p">)</span>
+<span class="n">transformer_opt</span> <span class="o">=</span> <span class="n">TransformerOptConfig</span><span class="p">(</span>
+    <span class="n">sim_config</span><span class="o">=</span><span class="n">sim_config</span><span class="p">,</span>
+    <span class="n">num_inputs</span><span class="o">=</span><span class="n">sim_config</span><span class="o">.</span><span class="n">num_inputs</span><span class="p">,</span>
+    <span class="n">num_outputs</span><span class="o">=</span><span class="n">sim_config</span><span class="o">.</span><span class="n">num_outputs</span><span class="p">,</span>
+    <span class="n">sequence_length</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;select&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">12</span><span class="p">,</span> <span class="mi">14</span><span class="p">,</span> <span class="mi">15</span><span class="p">]},</span>
+    <span class="n">n_layer</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;range&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">1</span><span class="p">]},</span>
+    <span class="n">n_head</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;range&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">2</span><span class="p">]},</span>
+    <span class="n">n_embd</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;select&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">12</span><span class="p">,</span> <span class="mi">24</span><span class="p">,</span> <span class="mi">32</span><span class="p">,</span> <span class="mi">64</span><span class="p">,</span> <span class="mi">128</span><span class="p">]},</span>
+    <span class="n">dropout</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;range&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.4</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">]},</span>
+    <span class="n">bias</span><span class="o">=</span><span class="kc">True</span>
+<span class="p">)</span>
+
+<span class="c1"># Optimizer configs</span>
+<span class="n">adamw_opt</span> <span class="o">=</span> <span class="n">AdamWOptConfig</span><span class="p">(</span>
+    <span class="n">lr</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;select&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mf">1e-5</span><span class="p">,</span> <span class="mf">5e-5</span><span class="p">,</span> <span class="mf">1e-4</span><span class="p">,</span> <span class="mf">3e-4</span><span class="p">,</span> <span class="mf">5e-4</span><span class="p">,</span> <span class="mf">8e-4</span><span class="p">,</span> <span class="mf">1e-3</span><span class="p">,</span> <span class="mf">5e-3</span><span class="p">,</span> <span class="mf">1e-2</span><span class="p">]},</span>
+    <span class="n">weight_decay</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;select&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mf">1e-4</span><span class="p">,</span> <span class="mf">1e-3</span><span class="p">,</span> <span class="mf">1e-2</span><span class="p">,</span> <span class="mf">1e-1</span><span class="p">]}</span>
+<span class="p">)</span>
+<span class="n">sgd_opt</span> <span class="o">=</span> <span class="n">SGDOptConfig</span><span class="p">(</span>
+    <span class="n">lr</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;select&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mf">1e-5</span><span class="p">,</span> <span class="mf">5e-5</span><span class="p">,</span> <span class="mf">1e-4</span><span class="p">,</span> <span class="mf">3e-4</span><span class="p">,</span> <span class="mf">5e-4</span><span class="p">,</span> <span class="mf">8e-4</span><span class="p">,</span> <span class="mf">1e-3</span><span class="p">,</span> <span class="mf">5e-3</span><span class="p">,</span> <span class="mf">1e-2</span><span class="p">]},</span>
+    <span class="n">weight_decay</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;select&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mf">1e-4</span><span class="p">,</span> <span class="mf">1e-3</span><span class="p">,</span> <span class="mf">1e-2</span><span class="p">,</span> <span class="mf">1e-1</span><span class="p">]},</span>
+    <span class="n">momentum</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;select&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mf">0.8</span><span class="p">,</span> <span class="mf">0.9</span><span class="p">,</span> <span class="mf">0.95</span><span class="p">,</span> <span class="mf">0.99</span><span class="p">]}</span>
+<span class="p">)</span>
+
+<span class="c1"># Learning rate scheduler configs</span>
+<span class="n">cos_decay_opt</span> <span class="o">=</span> <span class="n">CosineDecayWithWarmupOptConfig</span><span class="p">(</span>
+    <span class="n">max_lr</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;select&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mf">1e-4</span><span class="p">,</span> <span class="mf">3e-4</span><span class="p">,</span> <span class="mf">5e-4</span><span class="p">,</span> <span class="mf">8e-4</span><span class="p">,</span> <span class="mf">1e-3</span><span class="p">,</span> <span class="mf">3e-3</span><span class="p">,</span> <span class="mf">5e-3</span><span class="p">]},</span>
+    <span class="n">min_lr</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;select&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mf">1e-6</span><span class="p">,</span> <span class="mf">5e-6</span><span class="p">,</span> <span class="mf">1e-5</span><span class="p">,</span> <span class="mf">3e-5</span><span class="p">,</span> <span class="mf">5e-5</span><span class="p">,</span> <span class="mf">8e-5</span><span class="p">,</span> <span class="mf">1e-4</span><span class="p">]},</span>
+    <span class="n">warmup_iters</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;select&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">50</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="mi">200</span><span class="p">,</span> <span class="mi">400</span><span class="p">,</span> <span class="mi">800</span><span class="p">]},</span>
+    <span class="n">decay_iters</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;select&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">500</span><span class="p">,</span> <span class="mi">1000</span><span class="p">,</span> <span class="mi">2000</span><span class="p">,</span> <span class="mi">4000</span><span class="p">,</span> <span class="mi">8000</span><span class="p">]}</span>
+<span class="p">)</span>
+<span class="n">cos_anneal_opt</span> <span class="o">=</span> <span class="n">CosineAnnealingWarmRestartsOptConfig</span><span class="p">(</span>
+    <span class="n">T_0</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;select&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">200</span><span class="p">,</span> <span class="mi">500</span><span class="p">,</span> <span class="mi">1000</span><span class="p">,</span> <span class="mi">2000</span><span class="p">,</span> <span class="mi">5000</span><span class="p">,</span> <span class="mi">10000</span><span class="p">]},</span>
+    <span class="n">T_mult</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;select&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">]},</span>
+    <span class="n">eta_min</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;select&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mf">1e-6</span><span class="p">,</span> <span class="mf">5e-6</span><span class="p">,</span> <span class="mf">1e-5</span><span class="p">,</span> <span class="mf">3e-5</span><span class="p">,</span> <span class="mf">5e-5</span><span class="p">,</span> <span class="mf">8e-5</span><span class="p">,</span> <span class="mf">1e-4</span><span class="p">,</span> <span class="mf">3e-4</span><span class="p">]}</span>
+<span class="p">)</span>
+
+<span class="c1"># Optimization config</span>
+<span class="n">opt_config</span> <span class="o">=</span> <span class="n">OptimizationConfig</span><span class="p">(</span>
+    <span class="n">training_iters</span><span class="o">=</span><span class="mi">2000</span><span class="p">,</span>
+    <span class="n">train_batch_size</span><span class="o">=</span><span class="mi">512</span><span class="p">,</span>
+    <span class="n">test_dataset_size</span><span class="o">=</span><span class="mi">500</span><span class="p">,</span>
+    <span class="n">checkpoint_type</span><span class="o">=</span><span class="s1">&#39;single_step&#39;</span><span class="p">,</span>
+    <span class="n">opt_models</span><span class="o">=</span><span class="p">[</span><span class="n">mlp_opt</span><span class="p">,</span> <span class="n">rnn_opt</span><span class="p">,</span> <span class="n">transformer_opt</span><span class="p">],</span>
+    <span class="n">opt_optimizers</span><span class="o">=</span><span class="p">[</span><span class="n">adamw_opt</span><span class="p">,</span> <span class="n">sgd_opt</span><span class="p">],</span>
+    <span class="n">opt_lr_schedulers</span><span class="o">=</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="n">cos_decay_opt</span><span class="p">,</span> <span class="n">cos_anneal_opt</span><span class="p">],</span> <span class="c1"># None means no scheduler, ie. constant learning rate</span>
+    <span class="n">num_trials</span><span class="o">=</span><span class="mi">5</span>
+<span class="p">)</span>
+
+<span class="c1"># Execute training</span>
+<span class="n">onyx</span><span class="o">.</span><span class="n">optimize_model</span><span class="p">(</span>
+    <span class="n">model_name</span><span class="o">=</span><span class="s1">&#39;brake_model_optimized&#39;</span><span class="p">,</span>
+    <span class="n">model_sim_config</span><span class="o">=</span><span class="n">sim_config</span><span class="p">,</span>
+    <span class="n">dataset_name</span><span class="o">=</span><span class="s1">&#39;brake_train_data&#39;</span><span class="p">,</span>
+    <span class="n">optimization_config</span><span class="o">=</span><span class="n">opt_config</span><span class="p">,</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="optconfigs">
+<h2>OptConfigs<a class="headerlink" href="#optconfigs" title="Link to this heading"></a></h2>
+<p>Every Onyx model, model weight optimizer, and learning rate scheduler has its own “OptConfig” which allows you to specify the search spaces for hyperparameters.</p>
+<p>Search spaces can be defined with the following:</p>
+<ul>
+<li><p><strong>A value</strong> - Constrain the Engine to one value for all optimization trials.</p>
+<blockquote>
+<div><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">mlp_opt</span> <span class="o">=</span> <span class="n">MLPOptConfig</span><span class="p">(</span>
+    <span class="n">hidden_layers</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+    <span class="n">hidden_size</span><span class="o">=</span><span class="mi">32</span><span class="p">,</span>
+    <span class="n">activation</span><span class="o">=</span><span class="s1">&#39;relu&#39;</span><span class="p">,</span>
+    <span class="n">dropout</span><span class="o">=</span><span class="mf">0.2</span><span class="p">,</span>
+    <span class="n">bias</span><span class="o">=</span><span class="kc">True</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</div></blockquote>
+</li>
+<li><p><strong>“select”</strong> - A selection of values the Engine can choose from for each trial.</p>
+<blockquote>
+<div><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">mlp_opt</span> <span class="o">=</span> <span class="n">MLPOptConfig</span><span class="p">(</span>
+    <span class="n">hidden_layers</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;select&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">]},</span>
+    <span class="n">hidden_size</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;select&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">12</span><span class="p">,</span> <span class="mi">24</span><span class="p">,</span> <span class="mi">32</span><span class="p">,</span> <span class="mi">64</span><span class="p">,</span> <span class="mi">128</span><span class="p">]},</span>
+    <span class="n">activation</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;select&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;relu&#39;</span><span class="p">,</span> <span class="s1">&#39;tanh&#39;</span><span class="p">]},</span>
+    <span class="n">dropout</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;select&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">,</span> <span class="mf">0.2</span><span class="p">,</span> <span class="mf">0.3</span><span class="p">,</span> <span class="mf">0.4</span><span class="p">]}</span>
+    <span class="n">bias</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;select&quot;</span><span class="p">:</span> <span class="p">[</span><span class="kc">True</span><span class="p">,</span> <span class="kc">False</span><span class="p">]}</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</div></blockquote>
+</li>
+<li><p><strong>“range”</strong> - A range of values the Engine can choose from for each trial. Ranges must be defined as a list of three values: [start, end, step].</p>
+<blockquote>
+<div><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">mlp_opt</span> <span class="o">=</span> <span class="n">MLPOptConfig</span><span class="p">(</span>
+    <span class="n">hidden_layers</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;range&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">1</span><span class="p">]},</span>
+    <span class="n">hidden_size</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;range&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">12</span><span class="p">,</span> <span class="mi">128</span><span class="p">,</span> <span class="mi">16</span><span class="p">]},</span>
+    <span class="n">activation</span><span class="o">=</span><span class="s1">&#39;relu&#39;</span><span class="p">,</span> <span class="c1"># Ranges not supported for strings</span>
+    <span class="n">dropout</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;range&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.4</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">]}</span>
+    <span class="n">bias</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="c1"># Ranges not supported for booleans</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</div></blockquote>
+</li>
+<li><p><strong>All of the above</strong> - You can mix these methods to define the search space for each hyperparameter.</p>
+<blockquote>
+<div><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">mlp_opt</span> <span class="o">=</span> <span class="n">MLPOptConfig</span><span class="p">(</span>
+    <span class="n">hidden_layers</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;range&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">1</span><span class="p">]},</span>
+    <span class="n">hidden_size</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;select&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">12</span><span class="p">,</span> <span class="mi">24</span><span class="p">,</span> <span class="mi">32</span><span class="p">,</span> <span class="mi">64</span><span class="p">,</span> <span class="mi">128</span><span class="p">]},</span>
+    <span class="n">activation</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;select&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;relu&#39;</span><span class="p">,</span> <span class="s1">&#39;tanh&#39;</span><span class="p">]},</span>
+    <span class="n">dropout</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;range&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.4</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">]},</span>
+    <span class="n">bias</span><span class="o">=</span><span class="kc">True</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</div></blockquote>
+</li>
+</ul>
+<p>Once you’ve defined your OptConfigs, you can pass them to the complete OptimizationConfig</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Optimization config</span>
+<span class="n">opt_config</span> <span class="o">=</span> <span class="n">OptimizationConfig</span><span class="p">(</span>
+    <span class="n">training_iters</span><span class="o">=</span><span class="mi">2000</span><span class="p">,</span>
+    <span class="n">train_batch_size</span><span class="o">=</span><span class="mi">512</span><span class="p">,</span>
+    <span class="n">test_dataset_size</span><span class="o">=</span><span class="mi">500</span><span class="p">,</span>
+    <span class="n">checkpoint_type</span><span class="o">=</span><span class="s1">&#39;single_step&#39;</span><span class="p">,</span>
+    <span class="n">opt_models</span><span class="o">=</span><span class="p">[</span><span class="n">mlp_opt</span><span class="p">,</span> <span class="n">rnn_opt</span><span class="p">,</span> <span class="n">transformer_opt</span><span class="p">],</span>
+    <span class="n">opt_optimizers</span><span class="o">=</span><span class="p">[</span><span class="n">adamw_opt</span><span class="p">,</span> <span class="n">sgd_opt</span><span class="p">],</span>
+    <span class="n">opt_lr_schedulers</span><span class="o">=</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="n">cos_decay_opt</span><span class="p">,</span> <span class="n">cos_anneal_opt</span><span class="p">],</span> <span class="c1"># None means no scheduler, ie. constant learning rate</span>
+    <span class="n">num_trials</span><span class="o">=</span><span class="mi">5</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p>The <cite>TrainingConfig</cite> parameters like <strong>training_iters</strong>, <strong>checkpoint_type</strong>, <strong>etc.</strong> define the training process for each trial.</p>
+<p>The <strong>num_trials</strong> parameter specifies how many trials the Engine will run.</p>
+<p>In general, the default values our team has selected for OptConfigs tend to be good starting points for model optimization.</p>
+</section>
+<section id="optimize-model">
+<h2>optimize_model()<a class="headerlink" href="#optimize-model" title="Link to this heading"></a></h2>
+<p>We are now ready to optimize our model in the Engine:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Execute model optimization</span>
+<span class="n">onyx</span><span class="o">.</span><span class="n">optimize_model</span><span class="p">(</span>
+    <span class="n">model_name</span><span class="o">=</span><span class="s1">&#39;brake_model_optimized&#39;</span><span class="p">,</span>
+    <span class="n">model_sim_config</span><span class="o">=</span><span class="n">sim_config</span><span class="p">,</span>
+    <span class="n">dataset_name</span><span class="o">=</span><span class="s1">&#39;brake_train_data&#39;</span><span class="p">,</span>
+    <span class="n">optimization_config</span><span class="o">=</span><span class="n">opt_config</span><span class="p">,</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p>You can monitor the optimization process via the Engine Platform. The different trials of the model optimization will be stored as separate versions of the model in the Engine. To download a specific model version, you can use the <strong>version</strong> parameter of the <code class="xref py py-meth docutils literal notranslate"><span class="pre">onyx.load_model()</span></code> function.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">onyx</span><span class="o">.</span><span class="n">load_model</span><span class="p">(</span><span class="s1">&#39;brake_model_optimized&#39;</span><span class="p">,</span> <span class="n">version</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Now that we have optimized our model, we can deploy it for simulation in <a class="reference internal" href="simulating-models.html#simulating-models"><span class="std std-ref">Simulating Models</span></a>.</p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="training-models.html" class="btn btn-neutral float-left" title="Training Models" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="simulating-models.html" class="btn btn-neutral float-right" title="Simulating Models" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Onyx Robotics Inc.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
