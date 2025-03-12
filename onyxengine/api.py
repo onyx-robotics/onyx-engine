@@ -10,13 +10,13 @@ from onyxengine.modeling import model_from_config, TrainingConfig, OptimizationC
 from .api_utils import handle_post_request, upload_object, download_object, set_object_metadata, monitor_training_job, SourceObject
 import asyncio
 
-def get_object_metadata(object_name: str, object_version: int=None) -> dict:
+def get_object_metadata(name: str, version_id: str=None) -> dict:
     """
     Get the metadata for an object in the Engine.
     
     Args:
-        object_name (str): The name of the object to get metadata for
-        object_version (int, optional): The version of the object to get metadata for, None = current_version. (Default is None)
+        name (str): The name of the object to get metadata for
+        version_id (str, optional): The version id of the object to get metadata for, None = latest_version. (Default is None)
     
     Returns:
         dict: The metadata for the object, or None if the object does not exist.
@@ -30,22 +30,20 @@ def get_object_metadata(object_name: str, object_version: int=None) -> dict:
         print(metadata)
         
         # Get metadata for a specific version
-        metadata = onyx.get_object_metadata('example_data', version=1)
+        metadata = onyx.get_object_metadata('example_data', version_id='a05fb872-0a7d-4a68-b189-aeece143c7e4')
         print(metadata)
         
     """
-    assert isinstance(object_name, str), "object_name must be a string."
-    assert object_version is None or isinstance(object_version, int), "object_version must be an integer."
+    assert isinstance(name, str), "name must be a string."
+    assert version_id is None or isinstance(version_id, str), "version must be an string."
     
     # Get metadata for the object in onyx engine
-    response = handle_post_request("/get_object_metadata", {"object_name": object_name, "object_version": object_version})
-    if response is None:
+    metadata = handle_post_request("/get_object_metadata", {"object_name": name, "object_id": version_id})
+    if metadata is None:
         return None
-    
-    metadata = json.loads(response)
-    if isinstance(metadata['object_config'], str):
-        metadata['object_config'] = json.loads(metadata['object_config'])
-    
+    if isinstance(metadata['config'], str):
+        metadata['config'] = json.loads(metadata['config'])
+            
     return metadata
 
 def save_dataset(name: str, dataset: OnyxDataset, source_datasets: List[Dict[str, Optional[str]]]=[]):
@@ -55,7 +53,7 @@ def save_dataset(name: str, dataset: OnyxDataset, source_datasets: List[Dict[str
     Args:
         name (str): The name for the new dataset
         dataset (OnyxDataset): The OnyxDataset object to save
-        source_datasets (List[Dict[str, Optional[str]]]): The source datasets used as a list of dictionaries, eg. [{'name': 'dataset_name', 'version': 'dataset_version'}]. If no version is provided, the current version will be used.
+        source_datasets (List[Dict[str, Optional[str]]]): The source datasets used as a list of dictionaries, eg. [{'name': 'dataset_name', 'version_id': 'dataset_version'}]. If no version is provided, the latest version will be used.
         
     Example:
     
@@ -86,15 +84,15 @@ def save_dataset(name: str, dataset: OnyxDataset, source_datasets: List[Dict[str
     """
     assert isinstance(name, str), "name must be a string."
     assert isinstance(dataset, OnyxDataset), "dataset must be an OnyxDataset."
-    source_datasets = [SourceObject.model_validate(source) for source in source_datasets]
+    sources = [SourceObject.model_validate({"name": source["name"], "id": source.get("version_id")}) for source in source_datasets]
     
     # Validate the dataset dataframe, name, and source datasets
     if dataset.dataframe.empty:
         raise SystemExit("Onyx Engine API error: Dataset dataframe is empty.")
     if name == '':
         raise SystemExit("Onyx Engine API error: Dataset name must be a non-empty string.")
-    for source in source_datasets:
-        if get_object_metadata(source.name, source.version) is None:
+    for source in sources:
+        if get_object_metadata(source.name, source.id) is None:
             raise SystemExit(f"Onyx Engine API error: Source dataset [{source}] not found in the Engine.")
     
     # Save a local copy of the dataset
@@ -104,23 +102,24 @@ def save_dataset(name: str, dataset: OnyxDataset, source_datasets: List[Dict[str
     dataset.dataframe.to_csv(os.path.join(DATASETS_PATH, dataset_filename), index=False)
     
     # Upload the dataset and config to the cloud
-    upload_object(dataset_filename, 'dataset')
-    set_object_metadata(name, 'dataset', dataset.config.model_dump_json(), source_datasets)
+    metadata = set_object_metadata(name, 'dataset', dataset.config.model_dump_json(), sources)
+    upload_object(dataset_filename, 'dataset', metadata['id'])
+    handle_post_request("/notify_dataset_uploaded", {"dataset_name": name, "dataset_id": metadata['id']})
     
-    # Get the object metadata and save locally
-    metadata = get_object_metadata(name)
+    # Save local copy of metadata
+    full_metadata = get_object_metadata(name, metadata['id'])
     with open(os.path.join(DATASETS_PATH, name + '.json'), 'w') as f:
-        f.write(json.dumps(metadata, indent=2))
+        f.write(json.dumps(full_metadata, indent=2))
         
     print(f'Dataset [{name}] saved to the Engine.')
 
-def load_dataset(name: str, version: int=None) -> OnyxDataset:
+def load_dataset(name: str, version_id: str=None) -> OnyxDataset:
     """
     Load a dataset from the Engine, either from a local cached copy or by downloading from the Engine.
     
     Args:
         name (str): The name of the dataset to load.
-        version (int, optional): The version of the dataset to load, None = current_version. (Default is None)
+        version_id (str, optional): The version id of the dataset to load, None = latest_version. (Default is None)
     
     Returns:
         OnyxDataset: The loaded dataset.
@@ -135,19 +134,19 @@ def load_dataset(name: str, version: int=None) -> OnyxDataset:
         
     """
     assert isinstance(name, str), "name must be a string."
-    assert version is None or isinstance(version, int), "version must be an integer."
+    assert version_id is None or isinstance(version_id, str), "version_id must be an string."
     config_filename = name + '.json'
     dataset_filename = name + '.csv'
     dataset_path = os.path.join(DATASETS_PATH, dataset_filename)
     config_path = os.path.join(DATASETS_PATH, config_filename)
 
     # Get dataset metadata
-    metadata = get_object_metadata(name, version)
+    metadata = get_object_metadata(name, version_id)
     if metadata is None:
-        raise SystemExit(f"Onyx Engine API error: Dataset [{name}:v{version}] not found in the Engine.")
+        raise SystemExit(f"Onyx Engine API error: Dataset [{name}: {version_id}] not found in the Engine.")
 
     def download_dataset():
-        download_object(dataset_filename, 'dataset', version)
+        download_object(dataset_filename, 'dataset', version_id)
         with open(os.path.join(config_path), 'w') as f:
             f.write(json.dumps(metadata, indent=2))
 
@@ -160,16 +159,16 @@ def load_dataset(name: str, version: int=None) -> OnyxDataset:
         # Else check if local version is outdated or does not match requested version
         with open(os.path.join(config_path), 'r') as f:
             local_metadata = json.load(f)
-        if version is None and metadata['version'] != local_metadata['version']:
+        if version_id is None and metadata['id'] != local_metadata['id']:
             download_dataset()
-        elif version is not None and version != local_metadata['version']:
+        elif version_id is not None and version_id != local_metadata['id']:
             download_dataset()
 
     # Load the dataset from local storage
     dataset_dataframe = pd.read_csv(dataset_path)
     with open(config_path, 'r') as f:
         config_json = json.loads(f.read())
-    dataset_config = OnyxDatasetConfig.model_validate(config_json["object_config"])
+    dataset_config = OnyxDatasetConfig.model_validate(config_json["config"])
     dataset = OnyxDataset(config=dataset_config, dataframe=dataset_dataframe)
 
     return dataset
@@ -181,7 +180,7 @@ def save_model(name: str, model: torch.nn.Module, source_datasets: List[Dict[str
     Args:
         name (str): The name for the new model.
         model (torch.nn.Module): The Onyx model to save.
-        source_datasets (List[Dict[str, Optional[str]]]): The source datasets used as a list of dictionaries, eg. [{'name': 'dataset_name', 'version': 'dataset_version'}]. If no version is provided, the current version will be used.
+        source_datasets (List[Dict[str, Optional[str]]]): The source datasets used as a list of dictionaries, eg. [{'name': 'dataset_name', 'version_id': 'dataset_version'}]. If no version is provided, the latest version will be used.
         
     Example:
     
@@ -215,13 +214,13 @@ def save_model(name: str, model: torch.nn.Module, source_datasets: List[Dict[str
     """
     assert isinstance(name, str), "name must be a string."
     assert isinstance(model, torch.nn.Module), "model must be an Onyx model."
-    source_datasets = [SourceObject.model_validate(source) for source in source_datasets]
+    sources = [SourceObject.model_validate({"name": source["name"], "id": source.get("version_id")}) for source in source_datasets]
     
     # Validate the model name and source datasets
     if name == '':
         raise SystemExit("Onyx Engine API error: Model name must be a non-empty string.")
-    for source in source_datasets:
-        if get_object_metadata(source.name, source.version) is None:
+    for source in sources:
+        if get_object_metadata(source.name, source.id) is None:
             raise SystemExit(f"Onyx Engine API error: Source dataset [{source}] not found in the Engine.")
     
     # Save model to local storage
@@ -231,23 +230,23 @@ def save_model(name: str, model: torch.nn.Module, source_datasets: List[Dict[str
     torch.save(model.state_dict(), os.path.join(MODELS_PATH, model_filename))
     
     # Upload the model and config to the cloud
-    upload_object(model_filename, 'model')
-    set_object_metadata(name, 'model', model.config.model_dump_json(), source_datasets)
+    metadata = set_object_metadata(name, 'model', model.config.model_dump_json(), sources)
+    upload_object(model_filename, 'model', metadata['id'])
     
-    # Get the object metadata and save locally
-    metadata = get_object_metadata(name)
+    # Save local copy of metadata
+    full_metadata = get_object_metadata(name, metadata['id'])
     with open(os.path.join(MODELS_PATH, name + '.json'), 'w') as f:
-        f.write(json.dumps(metadata, indent=2))
+        f.write(json.dumps(full_metadata, indent=2))
     
     print(f'Model [{name}] saved to the Engine.')
 
-def load_model(name: str, version: int=None) -> torch.nn.Module:
+def load_model(name: str, version_id: str=None) -> torch.nn.Module:
     """
     Load a model from the Engine, either from a local cached copy or by downloading from the Engine.
     
     Args:
         name (str): The name of the model to load.
-        version (int, optional): The version of the model to load, None = current_version. (Default is None)
+        version_id (str, optional): The version of the model to load, None = latest_version. (Default is None)
     
     Returns:
         torch.nn.Module: The loaded Onyx model.
@@ -261,24 +260,24 @@ def load_model(name: str, version: int=None) -> torch.nn.Module:
         print(model.config)
         
         # Load a specific version of the model
-        model = onyx.load_model('example_model', version=1)
+        model = onyx.load_model('example_model', version_id='a05fb872-0a7d-4a68-b189-aeece143c7e4')
         print(model.config)
         
     """
     assert isinstance(name, str), "name must be a string."
-    assert version is None or isinstance(version, int), "version must be an integer."
+    assert version_id is None or isinstance(version_id, str), "version_id must be an string."
     model_filename = name + '.pt'
     config_filename = name + '.json'
     model_path = os.path.join(MODELS_PATH, model_filename)
     config_path = os.path.join(MODELS_PATH, config_filename)
 
     # Get model metadata
-    metadata = get_object_metadata(name, version)
+    metadata = get_object_metadata(name, version_id)
     if metadata is None:
-        raise SystemExit(f"Onyx Engine API error: Model [{name}:v{version}] not found in the Engine.")
+        raise SystemExit(f"Onyx Engine API error: Model [{name}: {version_id}] not found in the Engine.")
 
     def download_model():
-        download_object(model_filename, 'model', version)
+        download_object(model_filename, 'model', version_id)
         with open(os.path.join(config_path), 'w') as f:
             f.write(json.dumps(metadata, indent=2))
 
@@ -291,15 +290,15 @@ def load_model(name: str, version: int=None) -> torch.nn.Module:
         # Else check if local version is outdated or does not match requested version
         with open(os.path.join(config_path), 'r') as f:
             local_metadata = json.load(f)
-        if version is None and metadata['version'] != local_metadata['version']:
+        if version_id is None and metadata['id'] != local_metadata['id']:
             download_model()
-        elif version is not None and version != local_metadata['version']:
+        elif version_id is not None and version_id != local_metadata['id']:
             download_model()
 
     # Load the model from local storage
     with open(config_path, 'r') as f:
         config_json = json.loads(f.read())
-    model = model_from_config(config_json['object_config'])
+    model = model_from_config(config_json['config'])
     model.load_state_dict(torch.load(model_path, weights_only=True))
     model.eval()
 
@@ -309,7 +308,7 @@ def train_model(
     model_name: str = "",
     model_config: Union[MLPConfig, RNNConfig, TransformerConfig] = None,
     dataset_name: str = "",
-    dataset_version: Optional[int] = None,
+    dataset_version_id: Optional[str] = None,
     training_config: TrainingConfig = TrainingConfig(),
     monitor_training: bool = True,
 ):
@@ -320,7 +319,7 @@ def train_model(
         model_name (str): The name of the model to train. (Required)
         model_config (Union[MLPConfig, RNNConfig, TransformerConfig]): The configuration for the model to train. (Required)
         dataset_name (str): The name of the dataset to train on. (Required)
-        dataset_version (int, optional): The version of the dataset to train on, None = current_version. (Default is None)
+        dataset_version_id (str, optional): The version of the dataset to train on, None = latest_version. (Default is None)
         training_config (TrainingConfig): The configuration for the training process. (Default is TrainingConfig())
         monitor_training (bool, optional): Whether to monitor the training job. (Default is True)
         
@@ -372,7 +371,7 @@ def train_model(
     assert isinstance(model_name, str), "model_name must be a string."
     assert isinstance(model_config, (MLPConfig, RNNConfig, TransformerConfig)), "model_config must be a model config."
     assert isinstance(dataset_name, str), "dataset_name must be a string."
-    assert dataset_version is None or isinstance(dataset_version, int), "dataset_version must be an integer."
+    assert dataset_version_id is None or isinstance(dataset_version_id, str), "dataset_version_id must be an string."
     assert isinstance(training_config, TrainingConfig), "training_config must be a TrainingConfig."
     assert isinstance(monitor_training, bool), "monitor_training must be a boolean."
 
@@ -383,10 +382,10 @@ def train_model(
         raise SystemExit("Onyx Engine API error: Dataset name must be a non-empty string.")
 
     # Check that the dataset exists
-    data_metadata = get_object_metadata(dataset_name, dataset_version)
+    data_metadata = get_object_metadata(dataset_name, dataset_version_id)
     if data_metadata is None:
-        raise SystemExit(f"Onyx Engine API error: Dataset [{dataset_name}:v{dataset_version}] not found in the Engine.")
-    data_config = OnyxDatasetConfig.model_validate(data_metadata['object_config'])
+        raise SystemExit(f"Onyx Engine API error: Dataset [{dataset_name}: {dataset_version_id}] not found in the Engine.")
+    data_config = OnyxDatasetConfig.model_validate(data_metadata['config'])
     # Check that sim config of model matches features of dataset
     if model_config.sim_config.num_inputs != data_config.num_state + data_config.num_control:
         raise SystemExit(f"Onyx Engine API error: Number of inputs in model config does not match dataset.")
@@ -401,7 +400,7 @@ def train_model(
         "onyx_model_name": model_name,
         "onyx_model_config": model_config.model_dump_json(),
         "dataset_name": dataset_name,
-        "dataset_version": dataset_version,
+        "dataset_id": dataset_version_id,
         "training_config": training_config.model_dump_json(),
     })
 
@@ -417,7 +416,7 @@ def optimize_model(
     model_name: str = "",
     model_sim_config: ModelSimulatorConfig = None,
     dataset_name: str = "",
-    dataset_version: Optional[int] = None,
+    dataset_version_id: Optional[str] = None,
     optimization_config: OptimizationConfig = None,
 ):
     """
@@ -427,7 +426,7 @@ def optimize_model(
         model_name (str): The name of the model to optimize. (Required)
         model_sim_config (ModelSimulatorConfig): The configuration for the model simulator. (Required)
         dataset_name (str): The name of the dataset to optimize on. (Required)
-        dataset_version (int, optional): The version of the dataset to optimize on, None = current_version. (Default is None)
+        dataset_version_id (str, optional): The version of the dataset to optimize on, None = latest_version. (Default is None)
         optimization_config (OptimizationConfig): The configuration for the optimization process. (Required)
 
     Example:
@@ -528,7 +527,7 @@ def optimize_model(
     assert isinstance(model_name, str), "model_name must be a string."
     assert isinstance(model_sim_config, ModelSimulatorConfig), "model_sim_config is required and must be a ModelSimulatorConfig."
     assert isinstance(dataset_name, str), "dataset_name must be a string."
-    assert dataset_version is None or isinstance(dataset_version, int), "dataset_version must be an integer."
+    assert dataset_version_id is None or isinstance(dataset_version_id, str), "dataset_version_id must be an string."
     assert isinstance(optimization_config, OptimizationConfig), "optimization_config is required and must be an OptimizationConfig."
 
     # Check that model/dataset names are not empty
@@ -538,10 +537,10 @@ def optimize_model(
         raise SystemExit("Onyx Engine API error: Dataset name must be a non-empty string.")
 
     # Check that the dataset exists
-    data_metadata = get_object_metadata(dataset_name, dataset_version)
+    data_metadata = get_object_metadata(dataset_name, dataset_version_id)
     if data_metadata is None:
-        raise SystemExit(f"Onyx Engine API error: Dataset [{dataset_name}:v{dataset_version}] not found in the Engine.")
-    data_config = OnyxDatasetConfig.model_validate(data_metadata['object_config'])
+        raise SystemExit(f"Onyx Engine API error: Dataset [{dataset_name}: {dataset_version_id}] not found in the Engine.")
+    data_config = OnyxDatasetConfig.model_validate(data_metadata['config'])
     # Check that sim config of model matches features of dataset
     for opt_model in optimization_config.opt_models:
         if opt_model.sim_config.num_inputs != data_config.num_state + data_config.num_control:
@@ -557,7 +556,7 @@ def optimize_model(
         "onyx_model_name": model_name,
         "onyx_model_sim_config": model_sim_config.model_dump_json(),
         "dataset_name": dataset_name,
-        "dataset_version": dataset_version,
+        "dataset_id": dataset_version_id,
         "optimization_config": optimization_config.model_dump_json(),
     })
 
