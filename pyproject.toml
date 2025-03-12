@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "onyxengine"
-version = "0.1.0"
+version = "0.1.1"
 description = "The official Python library for the Onyx Engine."
 readme = "README.md"
 license = {file = "LICENSE"}
