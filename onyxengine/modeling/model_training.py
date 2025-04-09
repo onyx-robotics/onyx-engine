@@ -1,7 +1,13 @@
 from pydantic import BaseModel, Field, model_validator
 from typing_extensions import Self
-from typing import Literal, List, Union, Dict
-from onyxengine.modeling import MLPOptConfig, RNNOptConfig, TransformerOptConfig, validate_param, validate_opt_param
+from typing import Union, Dict, List, Literal
+from onyxengine.modeling import (
+    validate_param,
+    validate_opt_param,
+    MLPOptConfig,
+    RNNOptConfig,
+    TransformerOptConfig,
+)
 
 class AdamWConfig(BaseModel):
     """
@@ -11,7 +17,7 @@ class AdamWConfig(BaseModel):
         lr (float): Learning rate (default is 3e-4).
         weight_decay (float): Weight decay (default is 1e-2).
     """
-    name: str = Field(default='adamw', frozen=True, init=False)
+    type: Literal['adamw'] = Field(default='adamw', frozen=True, init=False)
     lr: float = 3e-4
     weight_decay: float = 1e-2
     
@@ -29,7 +35,7 @@ class AdamWOptConfig(BaseModel):
         lr (Union[float, Dict[str, List[float]]): Learning rate (default is {"select": [1e-5, 5e-5, 1e-4, 3e-4, 5e-4, 8e-4, 1e-3, 5e-3, 1e-2]}).
         weight_decay (Union[float, Dict[str, List[float]]): Weight decay (default is {"select": [1e-4, 1e-3, 1e-2, 1e-1]}).
     """
-    name: str = Field(default='adamw_opt', frozen=True, init=False)
+    type: Literal['adamw_opt'] = Field(default='adamw_opt', frozen=True, init=False)
     lr: Union[float, Dict[str, List[float]]] = {"select": [1e-5, 5e-5, 1e-4, 3e-4, 5e-4, 8e-4, 1e-3, 5e-3, 1e-2]}
     weight_decay: Union[float, Dict[str, List[float]]] = {"select": [1e-4, 1e-3, 1e-2, 1e-1]}
     
@@ -48,7 +54,7 @@ class SGDConfig(BaseModel):
         weight_decay (float): Weight decay (default is 1e-2).
         momentum (float): Momentum (default is 0.9).
     """
-    name: str = Field(default='sgd', frozen=True, init=False)
+    type: Literal['sgd'] = Field(default='sgd', frozen=True, init=False)
     lr: float = 3e-4
     weight_decay: float = 1e-2
     momentum: float = 0.9
@@ -69,7 +75,7 @@ class SGDOptConfig(BaseModel):
         weight_decay (Union[float, Dict[str, List[float]]): Weight decay (default is {"select": [1e-4, 1e-3, 1e-2, 1e-1]}).
         momentum (Union[float, Dict[str, List[float]]): Momentum (default is {"select": [0.0, 0.8, 0.9, 0.95, 0.99]}).
     """
-    name: str = Field(default='sgd_opt', frozen=True, init=False)
+    type: Literal['sgd_opt'] = Field(default='sgd_opt', frozen=True, init=False)
     lr: Union[float, Dict[str, List[float]]] = {"select": [1e-5, 5e-5, 1e-4, 3e-4, 5e-4, 8e-4, 1e-3, 5e-3, 1e-2]}
     weight_decay: Union[float, Dict[str, List[float]]] = {"select": [1e-4, 1e-3, 1e-2, 1e-1]}
     momentum: Union[float, Dict[str, List[float]]] = {"select": [0.0, 0.8, 0.9, 0.95, 0.99]}
@@ -81,6 +87,12 @@ class SGDOptConfig(BaseModel):
         validate_opt_param(self.momentum, 'momentum', options=['select', 'range'], min_val=0.0, max_val=1.0)
         return self
 
+class OptimizerConfig(BaseModel):
+    config: Union[AdamWConfig, SGDConfig] = Field(..., discriminator='type')
+
+class OptimizerOptConfig(BaseModel):
+    config: Union[AdamWOptConfig, SGDOptConfig] = Field(..., discriminator='type')
+
 class CosineDecayWithWarmupConfig(BaseModel):
     """
     Configuration for learning rate scheduler with cosine decay and linear warmup.
@@ -91,7 +103,7 @@ class CosineDecayWithWarmupConfig(BaseModel):
         warmup_iters (int): Number of warmup iterations (default is 200).
         decay_iters (int): Number of decay iterations (default is 1000).
     """
-    name: str = Field(default='cosine_decay_with_warmup', frozen=True, init=False)
+    type: Literal['cosine_decay_with_warmup'] = Field(default='cosine_decay_with_warmup', frozen=True, init=False)
     max_lr: float = 3e-4
     min_lr: float = 3e-5
     warmup_iters: int = 200
@@ -104,7 +116,7 @@ class CosineDecayWithWarmupConfig(BaseModel):
         validate_param(self.warmup_iters, 'warmup_iters', min_val=0)
         validate_param(self.decay_iters, 'decay_iters', min_val=0)
         return self
-    
+
 class CosineDecayWithWarmupOptConfig(BaseModel):
     """
     Optimization config for learning rate scheduler with cosine decay and linear warmup.
@@ -116,7 +128,7 @@ class CosineDecayWithWarmupOptConfig(BaseModel):
         decay_iters (Union[int, Dict[str, List[int]]): Number of decay iterations (default is {"select": [500, 1000, 2000, 4000, 8000]}).
     
     """
-    name: str = Field(default='cosine_decay_with_warmup_opt', frozen=True, init=False)
+    type: Literal['cosine_decay_with_warmup_opt'] = Field(default='cosine_decay_with_warmup_opt', frozen=True, init=False)
     max_lr: Union[float, Dict[str, List[float]]] = {"select": [1e-4, 3e-4, 5e-4, 8e-4, 1e-3, 3e-3, 5e-3]}
     min_lr: Union[float, Dict[str, List[float]]] = {"select": [1e-6, 5e-6, 1e-5, 3e-5, 5e-5, 8e-5, 1e-4]}
     warmup_iters: Union[int, Dict[str, List[int]]] = {"select": [50, 100, 200, 400, 800]}
@@ -129,7 +141,7 @@ class CosineDecayWithWarmupOptConfig(BaseModel):
         validate_opt_param(self.warmup_iters, 'warmup_iters', options=['select', 'range'], min_val=0)
         validate_opt_param(self.decay_iters, 'decay_iters', options=['select', 'range'], min_val=0)
         return self
-    
+
 class CosineAnnealingWarmRestartsConfig(BaseModel):
     """
     Configuration for learning rate scheduler with cosine annealing and warm restarts.
@@ -139,7 +151,7 @@ class CosineAnnealingWarmRestartsConfig(BaseModel):
         T_mult (int): Multiplicative factor for the period of learning rate decay (default is 1).
         eta_min (float): Minimum learning rate (default is 3e-5).
     """
-    name: str = Field(default='cosine_annealing_warm_restarts', frozen=True, init=False)
+    type: Literal['cosine_annealing_warm_restarts'] = Field(default='cosine_annealing_warm_restarts', frozen=True, init=False)
     T_0: int = 2000
     T_mult: int = 1
     eta_min: float = 3e-5
@@ -160,7 +172,7 @@ class CosineAnnealingWarmRestartsOptConfig(BaseModel):
         T_mult (Union[int, Dict[str, List[int]]]): Multiplicative factor for the period of learning rate decay (default is {"select": [1, 2, 3]}).
         eta_min (Union[float, Dict[str, List[float]]]): Minimum learning rate (default is {"select": [1e-6, 5e-6, 1e-5, 3e-5, 5e-5, 8e-5, 1e-4, 3e-4]}).
     """
-    name: str = Field(default='cosine_annealing_warm_restarts_opt', frozen=True, init=False)
+    type: Literal['cosine_annealing_warm_restarts_opt'] = Field(default='cosine_annealing_warm_restarts_opt', frozen=True, init=False)
     T_0: Union[int, Dict[str, List[int]]] = {"select": [200, 500, 1000, 2000, 5000, 10000]}
     T_mult: Union[int, Dict[str, List[int]]] = {"select": [1, 2, 3]}
     eta_min: Union[float, Dict[str, List[float]]] = {"select": [1e-6, 5e-6, 1e-5, 3e-5, 5e-5, 8e-5, 1e-4, 3e-4]}
@@ -171,6 +183,12 @@ class CosineAnnealingWarmRestartsOptConfig(BaseModel):
         validate_opt_param(self.T_mult, 'T_mult', options=['select', 'range'], min_val=0)
         validate_opt_param(self.eta_min, 'eta_min', options=['select', 'range'], min_val=0.0)
         return self
+
+class SchedulerConfig(BaseModel):
+    config: Union[CosineDecayWithWarmupConfig, CosineAnnealingWarmRestartsConfig] = Field(..., discriminator='type')
+
+class SchedulerOptConfig(BaseModel):
+    config: Union[CosineDecayWithWarmupOptConfig, CosineAnnealingWarmRestartsOptConfig] = Field(..., discriminator='type')
 
 class TrainingConfig(BaseModel):
     """
@@ -185,6 +203,7 @@ class TrainingConfig(BaseModel):
         optimizer (Union[AdamWConfig, SGDConfig]): Optimizer configuration (default is AdamWConfig()).
         lr_scheduler (Union[None, CosineDecayWithWarmupConfig, CosineAnnealingWarmRestartsConfig]): Learning rate scheduler configuration (default is None).
     """
+    type: Literal['training_config'] = Field(default='training_config', frozen=True, init=False)
     training_iters: int = 3000
     train_batch_size: int = 32
     train_val_split_ratio: float = 0.9
@@ -192,7 +211,7 @@ class TrainingConfig(BaseModel):
     checkpoint_type: Literal['single_step', 'multi_step'] = 'single_step'
     optimizer: Union[AdamWConfig, SGDConfig] = AdamWConfig()
     lr_scheduler: Union[None, CosineDecayWithWarmupConfig, CosineAnnealingWarmRestartsConfig] = None
-    
+
 class OptimizationConfig(BaseModel):
     """
     Configuration for the optimization of models.
@@ -208,6 +227,7 @@ class OptimizationConfig(BaseModel):
         opt_lr_schedulers (List[Union[None, CosineDecayWithWarmupOptConfig, CosineAnnealingWarmRestartsOptConfig]]): List of learning rate scheduler optimization configurations.
         num_trials (int): Number of optimization trials (default is 10).
     """
+    type: Literal['optimization_config'] = Field(default='optimization_config', frozen=True, init=False)
     training_iters: int = 3000
     train_batch_size: int = 32
     train_val_split_ratio: float = 0.9

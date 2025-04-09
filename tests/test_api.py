@@ -2,9 +2,10 @@ import torch
 import pandas as pd
 import onyxengine as onyx
 from onyxengine.data import OnyxDataset
-from onyxengine.modeling import (
-    ModelSimulatorConfig, 
-    State, 
+from onyxengine.modeling import ( 
+    Output,
+    Input,
+    State,
     MLPConfig,
     MLP,
     RNNConfig,
@@ -30,75 +31,82 @@ def test_metadata_get():
 
 def test_data_download():
     # Load the training dataset
-    train_dataset = onyx.load_dataset('brake_data')
+    train_dataset = onyx.load_dataset('raw_data')
     print(train_dataset.dataframe.head())
 
 def test_data_upload():
     # Load data
-    raw_data = onyx.load_dataset('brake_data')
+    # raw_data = onyx.load_dataset('brake_data')
+    raw_data = pd.read_csv('onyx/datasets/brake_data.csv')
 
     # Pull out features for model training
     train_data = pd.DataFrame()
-    train_data['acceleration_predicted'] = raw_data.dataframe['acceleration']
-    train_data['velocity'] = raw_data.dataframe['velocity']
-    train_data['position'] = raw_data.dataframe['position']
-    train_data['brake_input'] = raw_data.dataframe['brake_input']
+    train_data['acceleration'] = raw_data['acceleration']
+    train_data['velocity'] = raw_data['velocity']
+    train_data['position'] = raw_data['position']
+    train_data['brake_input'] = raw_data['brake_input']
     train_data = train_data.dropna()
 
     # Save training dataset
     train_dataset = OnyxDataset(
-        features=train_data.columns,
         dataframe=train_data,
-        num_outputs=1,
-        num_state=2,
-        num_control=1,
-        dt=0.0025
-    )
-    onyx.save_dataset(name='brake_train_data', dataset=train_dataset, source_datasets=[{'name': 'brake_data'}])
-    
-def test_model_upload():
-    sim_config = ModelSimulatorConfig(
         outputs=['acceleration'],
-        states=[
-            State(name='velocity', relation='derivative', parent='acceleration'),
-            State(name='position', relation='derivative', parent='velocity'),
-        ],
-        controls=['brake_input'],
+        inputs=['velocity', 'position', 'brake_input'],
         dt=0.0025
     )
-    mlp_config = MLPConfig(
-        sim_config=sim_config,
-        num_inputs=sim_config.num_inputs,
-        num_outputs=sim_config.num_outputs,
-        hidden_layers=2,
-        hidden_size=32,
-        activation='relu',
-        dropout=0.2,
-        bias=True
-    )
+    onyx.save_dataset(name='raw_data', dataset=train_dataset)#, source_datasets=[{'name': 'brake_data'}])
+
+# def test_model_upload():
+#     sim_config = ModelSimulatorConfig(
+#         outputs=['acceleration'],
+#         states=[
+#             State(name='velocity', relation='derivative', parent='acceleration'),
+#             State(name='position', relation='derivative', parent='velocity'),
+#         ],
+#         controls=['brake_input'],
+#         dt=0.0025
+#     )
+#     mlp_config = MLPConfig(
+#         sim_config=sim_config,
+#         num_inputs=sim_config.num_inputs,
+#         num_outputs=sim_config.num_outputs,
+#         hidden_layers=2,
+#         hidden_size=32,
+#         activation='relu',
+#         dropout=0.2,
+#         bias=True
+#     )
     
-    model = MLP(mlp_config)
-    onyx.save_model(name='brake_model_test', model=model, source_datasets=[{'name': 'brake_train_data'}])
-    
+#     model = MLP(mlp_config)
+#     onyx.save_model(name='brake_model_test', model=model, source_datasets=[{'name': 'brake_train_data'}])
+
 def test_model_download():
     model = onyx.load_model('brake_model_optimized')
     print(model.config)
-    
+
 def test_train_model():
     # Model config
-    sim_config = ModelSimulatorConfig(
-        outputs=['acceleration'],
-        states=[
-            State(name='velocity', relation='derivative', parent='acceleration'),
-            State(name='position', relation='derivative', parent='velocity'),
-        ],
-        controls=['brake_input'],
-        dt=0.0025
-    )
+    outputs = [
+        Output(name='acceleration', scale='mean'),
+    ]
+    inputs = [
+        State(name='velocity', relation='derivative', parent='acceleration'),
+        State(name='position', relation='derivative', parent='velocity'),
+        Input(name='brake_input', scale='mean'),
+    ]
+    # sim_config = ModelSimulatorConfig(
+    #     outputs=['acceleration'],
+    #     states=[
+    #         State(name='velocity', relation='derivative', parent='acceleration'),
+    #         State(name='position', relation='derivative', parent='velocity'),
+    #     ],
+    #     controls=['brake_input'],
+    #     dt=0.0025
+    # )
     model_config = MLPConfig(
-        sim_config=sim_config,
-        num_inputs=sim_config.num_inputs,
-        num_outputs=sim_config.num_outputs,
+        outputs=outputs,
+        inputs=inputs,
+        dt=0.0025,
         sequence_length=8,
         hidden_layers=3,
         hidden_size=64,
@@ -119,30 +127,38 @@ def test_train_model():
 
     # Execute training
     onyx.train_model(
-        model_name='brake_model',
+        model_name='small_embedded_model',
         model_config=model_config,
-        dataset_name='brake_train_data',
+        dataset_name='training_data',
         training_config=training_config,
         monitor_training=False
     )
-    
+
 def test_optimize_model():
     # Model sim config (used across all trials)
-    sim_config = ModelSimulatorConfig(
-        outputs=['acceleration'],
-        states=[
-            State(name='velocity', relation='derivative', parent='acceleration'),
-            State(name='position', relation='derivative', parent='velocity'),
-        ],
-        controls=['brake_input'],
-        dt=0.0025
-    )
+    # sim_config = ModelSimulatorConfig(
+    #     outputs=['acceleration'],
+    #     states=[
+    #         State(name='velocity', relation='derivative', parent='acceleration'),
+    #         State(name='position', relation='derivative', parent='velocity'),
+    #     ],
+    #     controls=['brake_input'],
+    #     dt=0.0025
+    # )
+    outputs = [
+        Output(name='acceleration', scale='mean'),
+    ]
+    inputs = [
+        State(name='velocity', relation='derivative', parent='acceleration'),
+        State(name='position', relation='derivative', parent='velocity'),
+        Input(name='brake_input', scale='mean'),
+    ]
     
     # Model optimization configs
     mlp_opt = MLPOptConfig(
-        sim_config=sim_config,
-        num_inputs=sim_config.num_inputs,
-        num_outputs=sim_config.num_outputs,
+        outputs=outputs,
+        inputs=inputs,
+        dt=0.0025,
         sequence_length={"select": [1, 2, 4, 5, 6, 8, 10]},
         hidden_layers={"range": [2, 4, 1]},
         hidden_size={"select": [12, 24, 32, 64, 128]},
@@ -151,9 +167,9 @@ def test_optimize_model():
         bias=True
     )
     rnn_opt = RNNOptConfig(
-        sim_config=sim_config,
-        num_inputs=sim_config.num_inputs,
-        num_outputs=sim_config.num_outputs,
+        outputs=outputs,
+        inputs=inputs,
+        dt=0.0025,
         rnn_type={"select": ['RNN', 'LSTM', 'GRU']},
         sequence_length={"select": [1, 2, 4, 5, 6, 8, 10, 12, 14, 15]},
         hidden_layers={"range": [2, 4, 1]},
@@ -162,9 +178,9 @@ def test_optimize_model():
         bias=True
     )
     transformer_opt = TransformerOptConfig(
-        sim_config=sim_config,
-        num_inputs=sim_config.num_inputs,
-        num_outputs=sim_config.num_outputs,
+        outputs=outputs,
+        inputs=inputs,
+        dt=0.0025,
         sequence_length={"select": [1, 2, 4, 5, 6, 8, 10, 12, 14, 15]},
         n_layer={"range": [2, 4, 1]},
         n_head={"range": [2, 10, 2]},
@@ -202,7 +218,7 @@ def test_optimize_model():
         training_iters=1000,
         train_batch_size=512,
         test_dataset_size=500,
-        checkpoint_type='multi_step',
+        checkpoint_type='single_step',
         opt_models=[mlp_opt, rnn_opt, transformer_opt],
         opt_optimizers=[adamw_opt, sgd_opt],
         opt_lr_schedulers=[None, cos_decay_opt, cos_anneal_opt],
@@ -211,12 +227,11 @@ def test_optimize_model():
     
     # Execute model optimization
     onyx.optimize_model(
-        model_name='brake_model_optimized',
-        model_sim_config=sim_config,
-        dataset_name='brake_train_data',
+        model_name='small_embedded_model',
+        dataset_name='training_data',
         optimization_config=opt_config,
     )
-    
+
 def test_use_model():    
     # Load our model
     model = onyx.load_model('brake_model')
@@ -240,7 +255,7 @@ def test_use_model():
     x_traj = torch.zeros(1, sim_steps, num_inputs)
     model.simulate(x_traj, x0, u)
     print(x_traj)
-    
+
 if __name__ == '__main__':
     # test_metadata_get()
     # test_data_download()

@@ -3,12 +3,18 @@ import math
 import torch
 import torch.nn as nn
 from torch.nn import functional as F
-from pydantic import BaseModel, Field, model_validator
+from pydantic import Field, model_validator
 from typing_extensions import Self
-from typing import List, Union, Dict
-from onyxengine.modeling import ModelSimulatorConfig, ModelSimulator, validate_param, validate_opt_param
+from typing import List, Union, Dict, Literal
+from onyxengine.modeling import (
+    OnyxModelBaseConfig,
+    OnyxModelOptBaseConfig,
+    validate_param,
+    validate_opt_param,
+    ModelSimulator,
+)
 
-class TransformerConfig(BaseModel):
+class TransformerConfig(OnyxModelBaseConfig):
     """
     Configuration class for the Transformer model.
     
@@ -24,11 +30,7 @@ class TransformerConfig(BaseModel):
         dropout (float): Dropout rate for layers (default is 0.0).
         bias (bool): Whether to use bias in layers (default is True).
     """
-    onyx_model_type: str = Field(default='transformer', frozen=True, init=False)
-    sim_config: ModelSimulatorConfig = ModelSimulatorConfig()
-    num_inputs: int = 1
-    num_outputs: int = 1
-    sequence_length: int = 1
+    type: Literal['transformer'] = Field(default='transformer', frozen=True, init=False)
     n_layer: int = 1
     n_head: int = 4
     n_embd: int = 32
@@ -37,9 +39,6 @@ class TransformerConfig(BaseModel):
 
     @model_validator(mode='after')
     def validate_hyperparameters(self) -> Self:
-        validate_param(self.num_inputs, 'num_inputs', min_val=1)
-        validate_param(self.num_outputs, 'num_outputs', min_val=1)
-        validate_param(self.sequence_length, 'sequence_length', min_val=1, max_val=50)
         validate_param(self.n_layer, 'n_layer', min_val=1, max_val=10)
         validate_param(self.n_head, 'n_head', min_val=1, max_val=12)
         validate_param(self.n_embd, 'n_embd', min_val=1, max_val=1024)
@@ -49,7 +48,7 @@ class TransformerConfig(BaseModel):
             raise ValueError(f"n_embd ({self.n_embd}) must be divisible by n_head ({self.n_head})")
         return self
 
-class TransformerOptConfig(BaseModel):
+class TransformerOptConfig(OnyxModelOptBaseConfig):
     """
     Optimization config class for the Transformer model.
     
@@ -65,11 +64,7 @@ class TransformerOptConfig(BaseModel):
         dropout (Union[float, Dict[str, List[float]]): Dropout rate for layers (default is {"range": [0.0, 0.4, 0.1]}).
         bias (Union[bool, Dict[str, List[bool]]): Whether to use bias in layers (default is True).
     """
-    onyx_model_type: str = Field(default='transformer_opt', frozen=True, init=False)
-    sim_config: ModelSimulatorConfig = ModelSimulatorConfig()
-    num_inputs: int = 1
-    num_outputs: int = 1
-    sequence_length: Union[int, Dict[str, List[int]]] = {"select": [1, 2, 4, 5, 6, 8, 10, 12, 14, 15]}
+    type: Literal['transformer_opt'] = Field(default='transformer_opt', frozen=True, init=False)
     n_layer: Union[int, Dict[str, List[int]]] = {"range": [2, 5, 1]}
     n_head: Union[int, Dict[str, List[int]]] = {"range": [2, 10, 2]}
     n_embd: Union[int, Dict[str, List[int]]] = {"select": [12, 24, 32, 64, 128]}
@@ -78,9 +73,6 @@ class TransformerOptConfig(BaseModel):
 
     @model_validator(mode='after')
     def validate_hyperparameters(self) -> Self:
-        validate_param(self.num_inputs, 'num_inputs', min_val=1)
-        validate_param(self.num_outputs, 'num_outputs', min_val=1)
-        validate_opt_param(self.sequence_length, 'sequence_length', options=['select', 'range'], min_val=1, max_val=50)
         validate_opt_param(self.n_layer, 'n_layer', options=['select', 'range'], min_val=1, max_val=10)
         validate_opt_param(self.n_head, 'n_head', options=['select', 'range'], min_val=1, max_val=12)
         validate_opt_param(self.n_embd, 'n_embd', options=['select', 'range'], min_val=1, max_val=1024)
@@ -167,19 +159,27 @@ class DecoderBlock(nn.Module):
 class Transformer(nn.Module, ModelSimulator):
     def __init__(self, config: TransformerConfig):
         nn.Module.__init__(self)
-        ModelSimulator.__init__(self, config.sim_config)
+        ModelSimulator.__init__(
+            self,
+            outputs=config.outputs,
+            inputs=config.inputs,
+            sequence_length=config.sequence_length,
+            dt=config.dt,
+        )        
         self.config = config
+        num_inputs = len(config.inputs)
+        num_outputs = len(config.outputs)
         
         # Continuous states embedded with linear layer instead of token-level nn.Embedding
         self.transformer = nn.ModuleDict(dict(
-            state_embedding = nn.Linear(config.num_inputs, config.n_embd),
+            state_embedding = nn.Linear(num_inputs, config.n_embd),
             pos_embedding = nn.Embedding(config.sequence_length, config.n_embd),
             drop = nn.Dropout(config.dropout),
             h = nn.ModuleList([DecoderBlock(config) for _ in range(config.n_layer)]),
             ln_f = nn.LayerNorm(config.n_embd, bias=config.bias),
         ))
         
-        self.lm_head = nn.Linear(config.n_embd, config.num_outputs, bias=False)
+        self.lm_head = nn.Linear(config.n_embd, num_outputs, bias=False)
         
         # init all weights
         self.apply(self._init_weights)
