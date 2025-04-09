@@ -87,10 +87,10 @@ def test_model_download():
 def test_train_model():
     # Model config
     outputs = [
-        Output(name='acceleration', scale='mean'),
+        Output(name='acceleration_prediction', scale='mean'),
     ]
     inputs = [
-        State(name='velocity', relation='derivative', parent='acceleration'),
+        State(name='velocity', relation='derivative', parent='acceleration_prediction'),
         State(name='position', relation='derivative', parent='velocity'),
         Input(name='brake_input', scale='mean'),
     ]
@@ -146,10 +146,10 @@ def test_optimize_model():
     #     dt=0.0025
     # )
     outputs = [
-        Output(name='acceleration', scale='mean'),
+        Output(name='acceleration_prediction', scale='mean'),
     ]
     inputs = [
-        State(name='velocity', relation='derivative', parent='acceleration'),
+        State(name='velocity', relation='derivative', parent='acceleration_prediction'),
         State(name='position', relation='derivative', parent='velocity'),
         Input(name='brake_input', scale='mean'),
     ]
@@ -234,10 +234,10 @@ def test_optimize_model():
 
 def test_use_model():    
     # Load our model
-    model = onyx.load_model('brake_model')
-    num_inputs = model.config.sim_config.num_inputs
-    num_states = model.config.sim_config.num_states
-    num_controls = model.config.sim_config.num_controls
+    model = onyx.load_model('small_embedded_model')
+    num_inputs = len(model.config.inputs)
+    num_states = len([s for s in model.config.inputs if isinstance(s, State)])
+    num_controls = num_inputs - num_states
     seq_length = model.config.sequence_length
 
     # Run inference with our model
@@ -251,8 +251,8 @@ def test_use_model():
     # Model will fill in the x_traj tensor with the simulated trajectory
     sim_steps = 10
     x0 = torch.ones(batch_size, seq_length, num_states)
-    u = torch.ones(batch_size, sim_steps, num_controls)
-    x_traj = torch.zeros(1, sim_steps, num_inputs)
+    u = torch.ones(batch_size, seq_length+sim_steps, num_controls)
+    x_traj = torch.zeros(1, seq_length+sim_steps, num_inputs)
     model.simulate(x_traj, x0, u)
     print(x_traj)
 
@@ -262,6 +262,6 @@ if __name__ == '__main__':
     # test_data_upload()
     # test_model_upload()
     # test_model_download()
-    # test_train_model()
-    test_optimize_model()
+    test_train_model()
+    # test_optimize_model()
     # test_use_model()
