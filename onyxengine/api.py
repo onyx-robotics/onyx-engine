@@ -6,7 +6,7 @@ import pandas as pd
 from onyxengine import DATASETS_PATH, MODELS_PATH
 from onyxengine.data import OnyxDataset, OnyxDatasetConfig
 from onyxengine.modeling.models import *
-from onyxengine.modeling import model_from_config, TrainingConfig, OptimizationConfig, ModelSimulatorConfig
+from onyxengine.modeling import model_from_config, TrainingConfig, OptimizationConfig
 from .api_utils import handle_post_request, upload_object, download_object, set_object_metadata, monitor_training_job, SourceObject
 import asyncio
 
@@ -386,13 +386,13 @@ def train_model(
     if data_metadata is None:
         raise SystemExit(f"Onyx Engine API error: Dataset [{dataset_name}: {dataset_version_id}] not found in the Engine.")
     data_config = OnyxDatasetConfig.model_validate(data_metadata['config'])
-    # Check that sim config of model matches features of dataset
-    if model_config.sim_config.num_inputs != data_config.num_state + data_config.num_control:
+    # Check that config of model matches features of dataset
+    if len(model_config.inputs) != len(data_config.inputs):
         raise SystemExit(f"Onyx Engine API error: Number of inputs in model config does not match dataset.")
-    if model_config.sim_config.num_outputs != data_config.num_outputs:
+    if len(model_config.outputs) != len(data_config.outputs):
         raise SystemExit(f"Onyx Engine API error: Number of outputs in model config does not match dataset.")
-    # Check that sim config dt is an integer multiple of dataset dt
-    if model_config.sim_config.dt % data_config.dt != 0:
+    # Check that config dt is an integer multiple of dataset dt
+    if abs((model_config.dt % data_config.dt)) > 1e-9:
         raise SystemExit(f"Onyx Engine API error: Model config dt must be an integer multiple of dataset dt.")
 
     # Request the onyx server to train the model
@@ -414,7 +414,6 @@ def train_model(
 
 def optimize_model(
     model_name: str = "",
-    model_sim_config: ModelSimulatorConfig = None,
     dataset_name: str = "",
     dataset_version_id: Optional[str] = None,
     optimization_config: OptimizationConfig = None,
@@ -525,7 +524,6 @@ def optimize_model(
         
     """
     assert isinstance(model_name, str), "model_name must be a string."
-    assert isinstance(model_sim_config, ModelSimulatorConfig), "model_sim_config is required and must be a ModelSimulatorConfig."
     assert isinstance(dataset_name, str), "dataset_name must be a string."
     assert dataset_version_id is None or isinstance(dataset_version_id, str), "dataset_version_id must be an string."
     assert isinstance(optimization_config, OptimizationConfig), "optimization_config is required and must be an OptimizationConfig."
@@ -541,20 +539,16 @@ def optimize_model(
     if data_metadata is None:
         raise SystemExit(f"Onyx Engine API error: Dataset [{dataset_name}: {dataset_version_id}] not found in the Engine.")
     data_config = OnyxDatasetConfig.model_validate(data_metadata['config'])
-    # Check that sim config of model matches features of dataset
+    # Check that config of model matches features of dataset
     for opt_model in optimization_config.opt_models:
-        if opt_model.sim_config.num_inputs != data_config.num_state + data_config.num_control:
+        if len(opt_model.inputs) != len(data_config.inputs):
             raise SystemExit(f"Onyx Engine API error: Number of inputs in model config does not match dataset.")
-        if opt_model.sim_config.num_outputs != data_config.num_outputs:
+        if len(opt_model.outputs) != len(data_config.outputs):
             raise SystemExit(f"Onyx Engine API error: Number of outputs in model config does not match dataset.")
-        # Check that sim config dt is an integer multiple of dataset dt
-        if opt_model.sim_config.dt % data_config.dt != 0:
-            raise SystemExit(f"Onyx Engine API error: Model config dt must be an integer multiple of dataset dt.")
 
     # Request the onyx server to train the model
     response = handle_post_request("/optimize_model", {
         "onyx_model_name": model_name,
-        "onyx_model_sim_config": model_sim_config.model_dump_json(),
         "dataset_name": dataset_name,
         "dataset_id": dataset_version_id,
         "optimization_config": optimization_config.model_dump_json(),

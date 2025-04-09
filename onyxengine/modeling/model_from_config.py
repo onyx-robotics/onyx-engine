@@ -1,38 +1,26 @@
 import json
 from typing import Union
+from pydantic import BaseModel, Field
 from onyxengine.modeling.models import *
+
+class ModelConfig(BaseModel):
+    config: Union[MLPConfig, RNNConfig, TransformerConfig] = Field(..., discriminator='type')
+    
+class ModelOptConfig(BaseModel):
+    config: Union[MLPOptConfig, RNNOptConfig, TransformerOptConfig] = Field(..., discriminator='type')
 
 def model_from_config(model_config: Union[str, dict]):
     config_dict = json.loads(model_config) if isinstance(model_config, str) else model_config
-    model_type = config_dict['onyx_model_type']
-    config_dict.pop('onyx_model_type')
-
-    if model_type == 'mlp':
-        mlp_config = MLPConfig.model_validate(config_dict)
-        model = MLP(mlp_config)
-    elif model_type == 'rnn':
-        rnn_config = RNNConfig.model_validate(config_dict)
-        model = RNN(rnn_config)
-    elif model_type == 'transformer':
-        transformer_config = TransformerConfig.model_validate(config_dict)
-        model = Transformer(transformer_config)
+    config = ModelConfig(config=config_dict).config
+    type = config.type
+    
+    if type == 'mlp':
+        model = MLP(config)
+    elif type == 'rnn':
+        model = RNN(config)
+    elif type == 'transformer':
+        model = Transformer(config)
     else:
-        raise ValueError(f"Could not find model type {model_type}")
+        raise ValueError(f"Could not find model type {type}")
 
     return model
-
-def opt_model_config_from_config(opt_model_config: Union[str, dict]):
-    config_dict = json.loads(opt_model_config) if isinstance(opt_model_config, str) else opt_model_config
-    opt_model_type = config_dict['onyx_model_type']
-    config_dict.pop('onyx_model_type')
-    
-    if opt_model_type == 'mlp_opt':
-        opt_model = MLPOptConfig.model_validate(config_dict)
-    elif opt_model_type == 'rnn_opt':
-        opt_model = RNNOptConfig.model_validate(config_dict)
-    elif opt_model_type == 'transformer_opt':
-        opt_model = TransformerOptConfig.model_validate(config_dict)
-    else:
-        raise ValueError(f"Could not find optimization model type {opt_model_type}")
-    
-    return opt_model
