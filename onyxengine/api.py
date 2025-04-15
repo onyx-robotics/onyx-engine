@@ -72,11 +72,9 @@ def save_dataset(name: str, dataset: OnyxDataset, source_datasets: List[Dict[str
 
         # Save training dataset
         train_dataset = OnyxDataset(
-            features=train_data.columns,
             dataframe=train_data,
-            num_outputs=1,
-            num_state=2,
-            num_control=1,
+            outputs=['acceleration_predicted'],
+            inputs=['velocity', 'position', 'control_input'],
             dt=0.0025
         )
         onyx.save_dataset(name='example_train_data', dataset=train_dataset, source_datasets=[{'name': 'example_data'}])
@@ -173,13 +171,13 @@ def load_dataset(name: str, version_id: str=None) -> OnyxDataset:
 
     return dataset
 
-def save_model(name: str, model: torch.nn.Module, source_datasets: List[Dict[str, Optional[str]]]=[]):
+def save_model(name: str, model: MLP | RNN | Transformer, source_datasets: List[Dict[str, Optional[str]]]=[]):
     """
     Save a model to the Engine. Generally you won't need to use this function as the Engine will save models it trains automatically.
     
     Args:
         name (str): The name for the new model.
-        model (torch.nn.Module): The Onyx model to save.
+        model (MLP | RNN | Transformer): The Onyx model to save.
         source_datasets (List[Dict[str, Optional[str]]]): The source datasets used as a list of dictionaries, eg. [{'name': 'dataset_name', 'version_id': 'dataset_version'}]. If no version is provided, the latest version will be used.
         
     Example:
@@ -187,25 +185,25 @@ def save_model(name: str, model: torch.nn.Module, source_datasets: List[Dict[str
     .. code-block:: python
     
         # Create model configuration
-        sim_config = ModelSimulatorConfig(
-             outputs=['acceleration'],
-             states=[
-                 State(name='velocity', relation='derivative', parent='acceleration'),
-                 State(name='position', relation='derivative', parent='velocity'),
-             ],
-             controls=['control_input'],
-             dt=0.0025
-         )
+        outputs = [
+            Output(name='acceleration_prediction'),
+        ]
+        inputs = [
+            State(name='velocity', relation='derivative', parent='acceleration_prediction'),
+            State(name='position', relation='derivative', parent='velocity'),
+            Input(name='control_input'),
+        ]
         mlp_config = MLPConfig(
-             sim_config=sim_config,
-             num_inputs=sim_config.num_inputs,
-             num_outputs=sim_config.num_outputs,
-             hidden_layers=2,
-             hidden_size=32,
-             activation='relu',
-             dropout=0.2,
-             bias=True
-         )
+            outputs=outputs,
+            inputs=inputs,
+            dt=0.0025,
+            sequence_length=8,
+            hidden_layers=3,
+            hidden_size=64,
+            activation='relu',
+            dropout=0.2,
+            bias=True
+        )
          
         # Create and save model
         model = MLP(mlp_config)
@@ -213,7 +211,7 @@ def save_model(name: str, model: torch.nn.Module, source_datasets: List[Dict[str
                    
     """
     assert isinstance(name, str), "name must be a string."
-    assert isinstance(model, torch.nn.Module), "model must be an Onyx model."
+    assert isinstance(model, (MLP, RNN, Transformer)), "model must be an MLP, RNN, or Transformer model."
     sources = [SourceObject.model_validate({"name": source["name"], "id": source.get("version_id")}) for source in source_datasets]
     
     # Validate the model name and source datasets
@@ -240,7 +238,7 @@ def save_model(name: str, model: torch.nn.Module, source_datasets: List[Dict[str
     
     print(f'Model [{name}] saved to the Engine.')
 
-def load_model(name: str, version_id: str=None) -> torch.nn.Module:
+def load_model(name: str, version_id: str=None) -> MLP | RNN | Transformer:
     """
     Load a model from the Engine, either from a local cached copy or by downloading from the Engine.
     
@@ -249,7 +247,7 @@ def load_model(name: str, version_id: str=None) -> torch.nn.Module:
         version_id (str, optional): The version of the model to load, None = latest_version. (Default is None)
     
     Returns:
-        torch.nn.Module: The loaded Onyx model.
+        MLP | RNN | Transformer: The loaded Onyx model.
         
     Example:
     
@@ -328,20 +326,21 @@ def train_model(
     .. code-block:: python
     
         # Model config
-        sim_config = ModelSimulatorConfig(
-            outputs=['acceleration'],
-            states=[
-                State(name='velocity', relation='derivative', parent='acceleration'),
-                State(name='position', relation='derivative', parent='velocity'),
-            ],
-            controls=['control_input'],
-            dt=0.0025
-        )
+        outputs = [
+            Output(name='acceleration_prediction'),
+        ]
+        inputs = [
+            State(name='velocity', relation='derivative', parent='acceleration_prediction'),
+            State(name='position', relation='derivative', parent='velocity'),
+            Input(name='control_input'),
+        ]
+
         model_config = MLPConfig(
-            sim_config=sim_config,
-            num_inputs=sim_config.num_inputs,
-            num_outputs=sim_config.num_outputs,
-            hidden_layers=2,
+            outputs=outputs,
+            inputs=inputs,
+            dt=0.0025,
+            sequence_length=8,
+            hidden_layers=3,
             hidden_size=64,
             activation='relu',
             dropout=0.2,
@@ -432,22 +431,21 @@ def optimize_model(
     
     .. code-block:: python
     
-        # Model sim config (used across all trials)
-        sim_config = ModelSimulatorConfig(
-            outputs=['acceleration'],
-            states=[
-                State(name='velocity', relation='derivative', parent='acceleration'),
-                State(name='position', relation='derivative', parent='velocity'),
-            ],
-            controls=['control_input'],
-            dt=0.0025
-        )
+        # Model inputs/outputs
+        outputs = [
+            Output(name='acceleration_prediction'),
+        ]
+        inputs = [
+            State(name='velocity', relation='derivative', parent='acceleration_prediction'),
+            State(name='position', relation='derivative', parent='velocity'),
+            Input(name='control_input'),
+        ]
         
         # Model optimization configs
         mlp_opt = MLPOptConfig(
-            sim_config=sim_config,
-            num_inputs=sim_config.num_inputs,
-            num_outputs=sim_config.num_outputs,
+            outputs=outputs,
+            inputs=inputs,
+            dt=0.0025,
             sequence_length={"select": [1, 2, 4, 5, 6, 8, 10]},
             hidden_layers={"range": [2, 4, 1]},
             hidden_size={"select": [12, 24, 32, 64, 128]},
@@ -456,9 +454,9 @@ def optimize_model(
             bias=True
         )
         rnn_opt = RNNOptConfig(
-            sim_config=sim_config,
-            num_inputs=sim_config.num_inputs,
-            num_outputs=sim_config.num_outputs,
+            outputs=outputs,
+            inputs=inputs,
+            dt=0.0025,
             rnn_type={"select": ['RNN', 'LSTM', 'GRU']},
             sequence_length={"select": [1, 2, 4, 5, 6, 8, 10, 12, 14, 15]},
             hidden_layers={"range": [2, 4, 1]},
@@ -467,9 +465,9 @@ def optimize_model(
             bias=True
         )
         transformer_opt = TransformerOptConfig(
-            sim_config=sim_config,
-            num_inputs=sim_config.num_inputs,
-            num_outputs=sim_config.num_outputs,
+            outputs=outputs,
+            inputs=inputs,
+            dt=0.0025,
             sequence_length={"select": [1, 2, 4, 5, 6, 8, 10, 12, 14, 15]},
             n_layer={"range": [2, 4, 1]},
             n_head={"range": [2, 10, 2]},

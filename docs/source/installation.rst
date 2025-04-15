@@ -48,25 +48,30 @@ Welcome to the Onyx Engine! To quickly get started, follow these steps:
 	.. code-block:: text
 
 		{
-		  "name": "example_train_data",
-		  "object_type": "dataset",
-		  "object_config": {
-			"features": [
-			  "acceleration",
-			  "velocity",
-			  "position",
-			  "control_input"
+		"name": "example_train_data",
+		"type": "dataset",
+		"created_at": "2025-04-14T15:54:40.516003+00:00",
+		"config": {
+			"type": "dataset",
+			"outputs": [
+			"acceleration_predicted"
 			],
-			"num_outputs": 1,
-			"num_state": 2,
-			"num_control": 1,
+			"inputs": [
+			"velocity",
+			"position",
+			"control_input"
+			],
 			"dt": 0.0025
-		  },
-		  "status": "active",
-		  "owner": "Ted Lutkus",
-		  "last_updated": "2025-01-01T14:22:34.427448+00:00",
-		  "date_created": "2025-01-01T14:22:34.427448+00:00",
-		  "version": 1
+		},
+		"status": "active",
+		"team_id": "7e6c03eb-217e-41d6-82d2-4b5d6109694f",
+		"id": "52aea6f3-f61e-487b-981b-901e11b4a9c0",
+		"user_id": "e28647cf-b254-483b-ac59-1db7668f7f03",
+		"type_metadata": {
+			"id": "52aea6f3-f61e-487b-981b-901e11b4a9c0",
+			"num_points": 960800,
+			"memory_bytes": 71807741
+		}
 		}
 
     If you see the metadata of the example dataset, your installation was successful! Now you're ready to start :ref:`training-models`. 

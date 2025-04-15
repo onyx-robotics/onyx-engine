@@ -26,8 +26,13 @@ from onyxengine.modeling import (
 )
 
 def test_metadata_get():
-    data = onyx.get_object_metadata('brake_model')
-    print(data)
+    # Get metadata for an Onyx object (dataset, model)
+    metadata = onyx.get_object_metadata('raw_data')
+    print(metadata)
+    
+    # Get metadata for a specific version
+    metadata = onyx.get_object_metadata('raw_data', version_id='dcfec841-1748-47e2-b6c7-3c821cc69b4a')
+    print(metadata)
 
 def test_data_download():
     # Load the training dataset
@@ -56,53 +61,46 @@ def test_data_upload():
     )
     onyx.save_dataset(name='raw_data', dataset=train_dataset)#, source_datasets=[{'name': 'brake_data'}])
 
-# def test_model_upload():
-#     sim_config = ModelSimulatorConfig(
-#         outputs=['acceleration'],
-#         states=[
-#             State(name='velocity', relation='derivative', parent='acceleration'),
-#             State(name='position', relation='derivative', parent='velocity'),
-#         ],
-#         controls=['brake_input'],
-#         dt=0.0025
-#     )
-#     mlp_config = MLPConfig(
-#         sim_config=sim_config,
-#         num_inputs=sim_config.num_inputs,
-#         num_outputs=sim_config.num_outputs,
-#         hidden_layers=2,
-#         hidden_size=32,
-#         activation='relu',
-#         dropout=0.2,
-#         bias=True
-#     )
+def test_model_upload():
+    # Create model configuration
+    outputs = [
+        Output(name='acceleration_prediction'),
+    ]
+    inputs = [
+        State(name='velocity', relation='derivative', parent='acceleration_prediction'),
+        State(name='position', relation='derivative', parent='velocity'),
+        Input(name='brake_input'),
+    ]
+    mlp_config = MLPConfig(
+        outputs=outputs,
+        inputs=inputs,
+        dt=0.0025,
+        sequence_length=8,
+        hidden_layers=3,
+        hidden_size=64,
+        activation='relu',
+        dropout=0.2,
+        bias=True
+    )
     
-#     model = MLP(mlp_config)
-#     onyx.save_model(name='brake_model_test', model=model, source_datasets=[{'name': 'brake_train_data'}])
+    model = MLP(mlp_config)
+    onyx.save_model(name='small_embedded_model', model=model, source_datasets=[{'name': 'train_data'}])
 
 def test_model_download():
-    model = onyx.load_model('brake_model_optimized')
+    model = onyx.load_model('small_embedded_model')
     print(model.config)
 
 def test_train_model():
     # Model config
     outputs = [
-        Output(name='acceleration', scale='mean'),
+        Output(name='acceleration_prediction'),
     ]
     inputs = [
-        State(name='velocity', relation='derivative', parent='acceleration'),
+        State(name='velocity', relation='derivative', parent='acceleration_prediction'),
         State(name='position', relation='derivative', parent='velocity'),
-        Input(name='brake_input', scale='mean'),
+        Input(name='brake_input'),
     ]
-    # sim_config = ModelSimulatorConfig(
-    #     outputs=['acceleration'],
-    #     states=[
-    #         State(name='velocity', relation='derivative', parent='acceleration'),
-    #         State(name='position', relation='derivative', parent='velocity'),
-    #     ],
-    #     controls=['brake_input'],
-    #     dt=0.0025
-    # )
+
     model_config = MLPConfig(
         outputs=outputs,
         inputs=inputs,
@@ -135,23 +133,14 @@ def test_train_model():
     )
 
 def test_optimize_model():
-    # Model sim config (used across all trials)
-    # sim_config = ModelSimulatorConfig(
-    #     outputs=['acceleration'],
-    #     states=[
-    #         State(name='velocity', relation='derivative', parent='acceleration'),
-    #         State(name='position', relation='derivative', parent='velocity'),
-    #     ],
-    #     controls=['brake_input'],
-    #     dt=0.0025
-    # )
+    # Model inputs/outputs
     outputs = [
-        Output(name='acceleration', scale='mean'),
+        Output(name='acceleration_prediction'),
     ]
     inputs = [
-        State(name='velocity', relation='derivative', parent='acceleration'),
+        State(name='velocity', relation='derivative', parent='acceleration_prediction'),
         State(name='position', relation='derivative', parent='velocity'),
-        Input(name='brake_input', scale='mean'),
+        Input(name='brake_input'),
     ]
     
     # Model optimization configs
@@ -234,34 +223,34 @@ def test_optimize_model():
 
 def test_use_model():    
     # Load our model
-    model = onyx.load_model('brake_model')
-    num_inputs = model.config.sim_config.num_inputs
-    num_states = model.config.sim_config.num_states
-    num_controls = model.config.sim_config.num_controls
-    seq_length = model.config.sequence_length
+    model = onyx.load_model('example_model')
+    total_inputs = len(model.config.inputs)
+    num_states = len([s for s in model.config.inputs if isinstance(s, State)])
+    num_inputs = total_inputs - num_states
 
-    # Run inference with our model
+    # Example 1: Run inference with our model (using normal pytorch model prediction)
     batch_size = 1
-    test_input = torch.ones(batch_size, seq_length, num_inputs)
+    seq_length = model.config.sequence_length
+    test_input = torch.ones(batch_size, seq_length, total_inputs)
     with torch.no_grad():
         test_output = model(test_input)
     print(test_output)
     
-    # Simulate a trajectory with our model
+    # Example 2: Simulate a trajectory with our model
     # Model will fill in the x_traj tensor with the simulated trajectory
     sim_steps = 10
-    x0 = torch.ones(batch_size, seq_length, num_states)
-    u = torch.ones(batch_size, sim_steps, num_controls)
-    x_traj = torch.zeros(1, sim_steps, num_inputs)
-    model.simulate(x_traj, x0, u)
-    print(x_traj)
+    state_x0 = torch.ones(batch_size, seq_length, num_states)
+    inputs = torch.ones(batch_size, seq_length+sim_steps, num_inputs)
+    state_traj = torch.zeros(1, seq_length+sim_steps, total_inputs)
+    model.simulate(state_traj, state_x0, inputs)
+    print(state_traj)
 
 if __name__ == '__main__':
-    # test_metadata_get()
-    # test_data_download()
-    # test_data_upload()
-    # test_model_upload()
-    # test_model_download()
+    test_metadata_get()
+    test_data_download()
+    test_data_upload()
+    test_model_upload()
+    test_model_download()
     # test_train_model()
-    test_optimize_model()
-    # test_use_model()
+    # test_optimize_model()
+    test_use_model()
