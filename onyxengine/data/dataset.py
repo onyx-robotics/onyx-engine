@@ -25,9 +25,9 @@ class OnyxDataset:
     Onyx dataset class for storing dataframe and metadata for the dataset. Can be initialized with a configuration object or by parameter.
     
     Args:
+        dataframe (pd.DataFrame): Dataframe containing the dataset.
         outputs (List[str]): List of output feature names.
         inputs (List[str]): List of input feature names.
-        dataframe (pd.DataFrame): Dataframe containing the dataset.
         dt (float): Time step of the dataset.
         config (OnyxDatasetConfig): Configuration object for the dataset. (Optional if other parameters are provided)
     """

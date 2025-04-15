@@ -16,10 +16,10 @@ class RNNConfig(OnyxModelBaseConfig):
     Configuration class for the RNN model.
     
     Args:
-        onyx_model_type (str): Model type = 'rnn', immutable.
-        sim_config (ModelSimulatorConfig): Configuration for the model's simulator.
-        num_inputs (int): Number of input features (default is 1).
-        num_outputs (int): Number of output features (default is 1).
+        type (str): Model type = 'rnn', immutable.
+        outputs (List[Output]): List of output variables.
+        inputs (List[Input | State]): List of input variables.
+        dt (float): Time step for the model.
         sequence_length (int): Length of input sequences (default is 1).
         rnn_type (Literal['RNN', 'LSTM', 'GRU']): Type of RNN to use (default is 'LSTM').
         hidden_layers (int): Number of hidden layers in the RNN (default is 2).
@@ -46,10 +46,10 @@ class RNNOptConfig(OnyxModelOptBaseConfig):
     Optimization config for the RNN model.
     
     Args:
-        onyx_model_type (str): Model type = 'rnn_opt', immutable.
-        sim_config (ModelSimulatorConfig): Configuration for the model's simulator.
-        num_inputs (int): Number of input features (default is 1).
-        num_outputs (int): Number of output features (default is 1).
+        type (str): Model type = 'rnn_opt', immutable.
+        outputs (List[Output]): List of output variables.
+        inputs (List[Input | State]): List of input variables.
+        dt (float): Time step for the model.
         rnn_type (Union[Literal['RNN', 'LSTM', 'GRU'], Dict[str, List[str]]): Type of RNN to use (default is {"select": ['RNN', 'LSTM', 'GRU']}).
         sequence_length (Union[int, Dict[str, List[int]]): Length of input sequences (default is {"select": [1, 2, 4, 5, 6, 8, 10, 12, 14, 15]}).
         hidden_layers (Union[int, Dict[str, List[int]]): Number of hidden layers in the RNN (default is {"range": [2, 5, 1]}).

@@ -19,10 +19,10 @@ class TransformerConfig(OnyxModelBaseConfig):
     Configuration class for the Transformer model.
     
     Args:
-        onyx_model_type (str): Model type = 'transformer', immutable.
-        sim_config (ModelSimulatorConfig): Configuration for the model's simulator.
-        num_inputs (int): Number of input features (default is 1).
-        num_outputs (int): Number of output features (default is 1).
+        type (str): Model type = 'transformer', immutable.
+        outputs (List[Output]): List of output variables.
+        inputs (List[Input | State]): List of input variables.
+        dt (float): Time step for the model.
         sequence_length (int): Length of the input sequence (default is 1).
         n_layer (int): Number of transformer layers (default is 1).
         n_head (int): Number of attention heads (default is 4).
@@ -53,10 +53,10 @@ class TransformerOptConfig(OnyxModelOptBaseConfig):
     Optimization config class for the Transformer model.
     
     Args:
-        onyx_model_type (str): Model type = 'transformer_opt', immutable.
-        sim_config (ModelSimulatorConfig): Configuration for the model's simulator.
-        num_inputs (int): Number of input features (default is 1).
-        num_outputs (int): Number of output features (default is 1).
+        type (str): Model type = 'transformer_opt', immutable.
+        outputs (List[Output]): List of output variables.
+        inputs (List[Input | State]): List of input variables.
+        dt (float): Time step for the model.
         sequence_length (Union[int, Dict[str, List[int]]): Length of the input sequence (default is {"select": [1, 2, 4, 5, 6, 8, 10, 12, 14, 15]}).
         n_layer (Union[int, Dict[str, List[int]]): Number of transformer layers (default is {"range": [2, 5, 1]}).
         n_head (Union[int, Dict[str, List[int]]): Number of attention heads (default is {"range": [2, 10, 2]}).

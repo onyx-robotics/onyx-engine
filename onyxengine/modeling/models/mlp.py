@@ -15,10 +15,10 @@ class MLPConfig(OnyxModelBaseConfig):
     Configuration class for the MLP model.
 
     Args:
-        onyx_model_type (str): Model type = 'mlp', immutable.
-        sim_config (ModelSimulatorConfig): Configuration for the model's simulator.
-        num_inputs (int): Number of input features (default is 1).
-        num_outputs (int): Number of output features (default is 1).
+        type (str): Model type = 'mlp', immutable.
+        outputs (List[Output]): List of output variables.
+        inputs (List[Input | State]): List of input variables.
+        dt (float): Time step for the model.
         sequence_length (int): Length of the input sequence (default is 1).
         hidden_layers (int): Number of hidden layers (default is 2).
         hidden_size (int): Size of each hidden layer (default is 32).
@@ -45,10 +45,10 @@ class MLPOptConfig(OnyxModelOptBaseConfig):
     Optimization config class for the MLP model.
     
     Args:
-        onyx_model_type (str): Model type = 'mlp_opt', immutable.
-        sim_config (ModelSimulatorConfig): Configuration for the model's simulator.
-        num_inputs (int): Number of input features (default is 1).
-        num_outputs (int): Number of output features (default is 1).
+        type (str): Model type = 'mlp_opt', immutable.
+        outputs (List[Output]): List of output variables.
+        inputs (List[Input | State]): List of input variables.
+        dt (float): Time step for the model.
         sequence_length (Union[int, Dict[str, List[int]]): Length of the input sequence (default is {"select": [1, 2, 4, 5, 6, 8, 10]}).
         hidden_layers (Union[int, Dict[str, List[int]]): Number of hidden layers (default is {"range": [2, 5, 1]}).
         hidden_size (Union[int, Dict[str, List[int]]): Size of each hidden layer (default is {"select": [12, 24, 32, 64, 128]}).

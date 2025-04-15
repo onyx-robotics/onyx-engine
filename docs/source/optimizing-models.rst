@@ -12,36 +12,36 @@ We will optimize a model using the following code, you can paste this into your 
 
 .. code-block:: python
 
-    from onyxengine.modeling import (
-        ModelSimulatorConfig,
+    from onyxengine.modeling import ( 
+        Output,
+        Input,
         State,
+        OptimizationConfig,
         MLPOptConfig,
         RNNOptConfig,
         TransformerOptConfig,
         AdamWOptConfig,
         SGDOptConfig,
         CosineDecayWithWarmupOptConfig,
-        CosineAnnealingWarmRestartsOptConfig,
-        OptimizationConfig
+        CosineAnnealingWarmRestartsOptConfig
     )
     import onyxengine as onyx
 
-    # Model sim config (used across all trials)
-    sim_config = ModelSimulatorConfig(
-        outputs=['acceleration'],
-        states=[
-            State(name='velocity', relation='derivative', parent='acceleration'),
-            State(name='position', relation='derivative', parent='velocity'),
-        ],
-        controls=['brake_input'],
-        dt=0.0025
-    )
+    # Model inputs/outputs
+    outputs = [
+        Output(name='acceleration_prediction'),
+    ]
+    inputs = [
+        State(name='velocity', relation='derivative', parent='acceleration_prediction'),
+        State(name='position', relation='derivative', parent='velocity'),
+        Input(name='control_input'),
+    ]
 
     # Model optimization configs
     mlp_opt = MLPOptConfig(
-        sim_config=sim_config,
-        num_inputs=sim_config.num_inputs,
-        num_outputs=sim_config.num_outputs,
+        outputs=outputs,
+        inputs=inputs,
+        dt=0.0025,
         sequence_length={"select": [1, 2, 4, 5, 6, 8, 10]},
         hidden_layers={"range": [2, 4, 1]},
         hidden_size={"select": [12, 24, 32, 64, 128]},
@@ -50,9 +50,9 @@ We will optimize a model using the following code, you can paste this into your 
         bias=True
     )
     rnn_opt = RNNOptConfig(
-        sim_config=sim_config,
-        num_inputs=sim_config.num_inputs,
-        num_outputs=sim_config.num_outputs,
+        outputs=outputs,
+        inputs=inputs,
+        dt=0.0025,
         rnn_type={"select": ['RNN', 'LSTM', 'GRU']},
         sequence_length={"select": [1, 2, 4, 5, 6, 8, 10, 12, 14, 15]},
         hidden_layers={"range": [2, 4, 1]},
@@ -61,9 +61,9 @@ We will optimize a model using the following code, you can paste this into your 
         bias=True
     )
     transformer_opt = TransformerOptConfig(
-        sim_config=sim_config,
-        num_inputs=sim_config.num_inputs,
-        num_outputs=sim_config.num_outputs,
+        outputs=outputs,
+        inputs=inputs,
+        dt=0.0025,
         sequence_length={"select": [1, 2, 4, 5, 6, 8, 10, 12, 14, 15]},
         n_layer={"range": [2, 4, 1]},
         n_head={"range": [2, 10, 2]},
@@ -99,7 +99,7 @@ We will optimize a model using the following code, you can paste this into your 
     # Optimization config
     opt_config = OptimizationConfig(
         training_iters=2000,
-        train_batch_size=512,
+        train_batch_size=1024,
         test_dataset_size=500,
         checkpoint_type='single_step',
         opt_models=[mlp_opt, rnn_opt, transformer_opt],
@@ -108,11 +108,10 @@ We will optimize a model using the following code, you can paste this into your 
         num_trials=5
     )
 
-    # Execute training
+    # Execute model optimization
     onyx.optimize_model(
-        model_name='brake_model_optimized',
-        model_sim_config=sim_config,
-        dataset_name='brake_train_data',
+        model_name='example_model',
+        dataset_name='example_train_data',
         optimization_config=opt_config,
     )
 
@@ -178,7 +177,7 @@ Once you've defined your OptConfigs, you can pass them to the complete Optimizat
     # Optimization config
     opt_config = OptimizationConfig(
         training_iters=2000,
-        train_batch_size=512,
+        train_batch_size=1024,
         test_dataset_size=500,
         checkpoint_type='single_step',
         opt_models=[mlp_opt, rnn_opt, transformer_opt],
@@ -202,16 +201,16 @@ We are now ready to optimize our model in the Engine:
 
     # Execute model optimization
     onyx.optimize_model(
-        model_name='brake_model_optimized',
-        model_sim_config=sim_config,
-        dataset_name='brake_train_data',
+        model_name='example_model',
+        dataset_name='example_train_data',
         optimization_config=opt_config,
     )
 
-You can monitor the optimization process via the Engine Platform. The different trials of the model optimization will be stored as separate versions of the model in the Engine. To download a specific model version, you can use the **version** parameter of the :meth:`onyx.load_model` function.
+You can monitor the optimization process via the Engine Platform. The different trials of the model optimization will be stored as separate versions of the model in the Engine. To download a specific model version, you can use the **version_id** parameter of the :meth:`onyx.load_model` function.
 
 .. code-block:: python
 
-    onyx.load_model('brake_model_optimized', version=1)
+    # Replace with one of your model version IDs
+    onyx.load_model('example_model', version_id='dcfec841-1748-47e2-b6c7-3c821cc69b4a') 
 
 Now that we have optimized our model, we can deploy it for simulation in :ref:`simulating-models`.

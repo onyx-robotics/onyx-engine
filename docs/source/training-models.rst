@@ -8,46 +8,13 @@ To train a model in the Engine, we just need to configure the training run.
 Training Script
 ----------------
 
-We will train our first model on the dataset "example_train_data" that is provided for you in the Engine. We can examine the dataset's info via the `Engine Platform <https://engine.onyx-robotics.com>`_ or by running the following code:
-
-.. code-block:: python
-
-    import json
-    import onyxengine as onyx
-
-    metadata = onyx.get_object_metadata('example_train_data')
-    print(json.dumps(metadata, indent=2))
-
-.. code-block:: text
-
-    {
-      "name": "example_train_data",
-      "object_type": "dataset",
-      "object_config": {
-        "features": [
-          "acceleration",
-          "velocity",
-          "position",
-          "control_input"
-        ],
-        "num_outputs": 1,
-        "num_state": 2,
-        "num_control": 1,
-        "dt": 0.0025
-      },
-      "status": "active",
-      "owner": "Ted Lutkus",
-      "last_updated": "2025-01-01T14:22:34.427448+00:00",
-      "date_created": "2025-01-01T14:22:34.427448+00:00",
-      "version": 1
-    }
-
-We will train a model on this dataset using the following training code, you can paste this into your editor and then follow the explanation of each part below:
+We will train our first model on the dataset "example_train_data" that is provided for you in the Engine. We'll use the following training code, you can paste this into your editor and then follow the explanation of each part below:
 
 .. code-block:: python
 
     from onyxengine.modeling import (
-        ModelSimulatorConfig,
+        Output,
+        Input,
         State,
         MLPConfig,
         TrainingConfig,
@@ -57,20 +24,21 @@ We will train a model on this dataset using the following training code, you can
     import onyxengine as onyx
 
     # Model config
-    sim_config = ModelSimulatorConfig(
-        outputs=['acceleration'],
-        states=[
-            State(name='velocity', relation='derivative', parent='acceleration'),
-            State(name='position', relation='derivative', parent='velocity'),
-        ],
-        controls=['control_input'],
-        dt=0.0025
-    )
+    outputs = [
+        Output(name='acceleration_prediction'),
+    ]
+    inputs = [
+        State(name='velocity', relation='derivative', parent='acceleration_prediction'),
+        State(name='position', relation='derivative', parent='velocity'),
+        Input(name='control_input'),
+    ]
+
     model_config = MLPConfig(
-        sim_config=sim_config,
-        num_inputs=sim_config.num_inputs,
-        num_outputs=sim_config.num_outputs,
-        hidden_layers=2,
+        outputs=outputs,
+        inputs=inputs,
+        dt=0.0025,
+        sequence_length=8,
+        hidden_layers=3,
         hidden_size=64,
         activation='relu',
         dropout=0.2,
@@ -80,6 +48,7 @@ We will train a model on this dataset using the following training code, you can
     # Training config
     training_config = TrainingConfig(
         training_iters=2000,
+        train_batch_size=1024,
         test_dataset_size=500,
         checkpoint_type='single_step',
         optimizer=AdamWConfig(lr=3e-4, weight_decay=1e-2),
@@ -98,42 +67,44 @@ We will train a model on this dataset using the following training code, you can
 Model Configuration
 -------------------
 
-The first thing you'll notice is the definition of a `ModelSimulatorConfig`. 
+The first thing you'll notice is the definition of our model's outputs/inputs. 
 
-By default, AI models typically predict one step at a time. But for simulation and controls, we need to predict more than a single step and instead simulate trajectories over multiple steps. Managing state relations, numerical integration, and recursive model calls is tedious, so we provide a `ModelSimulator` to handle this for you efficiently.
+By default, AI models typically predict one step at a time. But for simulation and controls, we need to predict more than a single step and instead simulate trajectories over multiple steps. Managing state relations, numerical integration, and recursive model calls is tedious, so our models provide a built-in `simulate()` function to handle this for you efficiently.
+
+All you need to do is define the model's outputs, inputs, and states:
 
 .. code-block:: python
 
-    sim_config = ModelSimulatorConfig(
-        outputs=['acceleration'],
-        states=[
-            State(name='velocity', relation='derivative', parent='acceleration'),
-            State(name='position', relation='derivative', parent='velocity'),
-        ],
-        controls=['control_input'],
-        dt=0.0025
-    )
+    outputs = [
+        Output(name='acceleration_prediction'),
+    ]
+    inputs = [
+        State(name='velocity', relation='derivative', parent='acceleration_prediction'),
+        State(name='position', relation='derivative', parent='velocity'),
+        Input(name='control_input'),
+    ]
 
-Sim configs are similar to dynamical system state-space models, where :math:`\dot{x} = f(x, u)`. In this example:
+States are similar to dynamical system state-space models, where :math:`\dot{x} = f(x, u)`. In this example:
 
 - Model Outputs
-    - **acceleration** (:math:`\dot{x}`) is the output of the model.
+    - **acceleration_predicted** (:math:`\dot{x}`) is the output of the model.
 - Model Inputs
     - **velocity** (:math:`x_1`) is the first state, whose parent **acceleration** is its derivative.
     - **position** (:math:`x_2`) is the second state, whose parent **velocity** is its derivative.
-    - **control_input** (:math:`u`) is a control input and provided at each time step.
+    - **control_input** (:math:`u`) is a control input, whose value is known at each time step.
 
 We will show how to simulate models in :ref:`simulating-models`, but for training we just need to provide the configuration.
 
-Now, we can pass the simulator config to any Onyx model architecture. We'll use a simple Multi-Layer Perceptron (MLP) model:
+Now, we can pass the outputs and inputs to any Onyx model architecture. We'll use a simple Multi-Layer Perceptron (MLP) model:
 
 .. code-block:: python
 
     model_config = MLPConfig(
-        sim_config=sim_config,
-        num_inputs=sim_config.num_inputs,
-        num_outputs=sim_config.num_outputs,
-        hidden_layers=2,
+        outputs=outputs,
+        inputs=inputs,
+        dt=0.0025,
+        sequence_length=8,
+        hidden_layers=3,
         hidden_size=64,
         activation='relu',
         dropout=0.2,
@@ -151,7 +122,7 @@ The training configuration specifies how the model will be trained:
 
     training_config = TrainingConfig(
         training_iters=2000,
-        train_batch_size=32,
+        train_batch_size=1024,
         test_dataset_size=500,
         checkpoint_type='single_step',
         optimizer=AdamWConfig(lr=3e-4, weight_decay=1e-2),
@@ -197,11 +168,11 @@ Congratulations! You've trained your first model in the Engine. Here are some qu
     .. code-block:: python
 
         model_config = MLPConfig(
-            sim_config=sim_config,
-            num_inputs=sim_config.num_inputs,
-            num_outputs=sim_config.num_outputs,
-            sequence_length=5, # Increased sequence length to 5
-            hidden_layers=2,
+            outputs=outputs,
+            inputs=inputs,
+            dt=0.0025,
+            sequence_length=12, # Increased sequence length to 12
+            hidden_layers=3,
             hidden_size=64,
             activation='relu',
             dropout=0.2,
@@ -215,9 +186,9 @@ Congratulations! You've trained your first model in the Engine. Here are some qu
         from onyxengine.modeling import TransformerConfig
 
         model_config = TransformerConfig(
-            sim_config=sim_config,
-            num_inputs=sim_config.num_inputs,
-            num_outputs=sim_config.num_outputs,
+            outputs=outputs,
+            inputs=inputs,
+            dt=0.0025,
             sequence_length=10,
             n_layer=2,
             n_head=4,
