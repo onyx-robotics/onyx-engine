@@ -8,6 +8,7 @@ from onyxengine.modeling import (
     validate_param,
     validate_opt_param,
     ModelSimulator,
+    FeatureScaler
 )
 
 class MLPConfig(OnyxModelBaseConfig):
@@ -83,6 +84,7 @@ class MLP(nn.Module, ModelSimulator):
             sequence_length=config.sequence_length,
             dt=config.dt,
         )
+        self.feature_scaler = FeatureScaler(outputs=config.outputs, inputs=config.inputs)
         self.config = config
         num_inputs = len(config.inputs) * config.sequence_length
         num_outputs = len(config.outputs)
@@ -124,4 +126,6 @@ class MLP(nn.Module, ModelSimulator):
     def forward(self, x):
         # Sequence input shape (batch_size, sequence_length, num_inputs)
         # Flatten to (batch_size, sequence_length * num_inputs)
-        return self.model(x.view(x.size(0), -1))
+        x = self.feature_scaler.scale_inputs(x)
+        x = x.view(x.size(0), -1)
+        return self.feature_scaler.descale_outputs(self.model(x))

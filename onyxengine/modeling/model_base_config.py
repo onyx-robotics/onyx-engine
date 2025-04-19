@@ -18,7 +18,7 @@ def validate_inputs_and_outputs(inputs: List[Union[Input, State]], outputs: List
     # Check that all inputs are of type Input or State
     for input in inputs:
         if not isinstance(input, (Input, State)):
-            raise ValueError(f"Input {input.name} is not of type Input or State.")
+            raise ValueError(f"Input {input} is not of type Input or State.")
     
     # Check that all input and output names are unique
     all_names = [input.name for input in inputs] + [output.name for output in outputs]
@@ -38,6 +38,16 @@ class OnyxModelBaseConfig(BaseModel):
         validate_param(self.dt, 'dt', min_val=0.0)
         validate_param(self.sequence_length, 'sequence_length', min_val=1, max_val=50)
         return self
+    
+    @property
+    def num_outputs(self) -> int:
+        return len(self.outputs)
+    @property
+    def num_states(self) -> int:
+        return len([x for x in self.inputs if isinstance(x, State)])
+    @property
+    def num_inputs(self) -> int:
+        return len([x for x in self.inputs if isinstance(x, Input)])
     
 class OnyxModelOptBaseConfig(BaseModel):
     type: Literal['onyx_model_opt'] = Field(default='onyx_model_opt', frozen=True, init=False) # Override in child classes

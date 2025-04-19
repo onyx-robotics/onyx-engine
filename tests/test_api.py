@@ -93,12 +93,12 @@ def test_model_download():
 def test_train_model():
     # Model config
     outputs = [
-        Output(name='acceleration_prediction'),
+        Output(name='acceleration_predicted', scale='mean'),
     ]
     inputs = [
-        State(name='velocity', relation='derivative', parent='acceleration_prediction'),
-        State(name='position', relation='derivative', parent='velocity'),
-        Input(name='brake_input'),
+        State(name='velocity', relation='derivative', parent='acceleration_predicted', scale='mean'),
+        State(name='position', relation='derivative', parent='velocity', scale='mean'),
+        Input(name='brake_input', scale='mean'),
     ]
 
     model_config = MLPConfig(
@@ -115,12 +115,12 @@ def test_train_model():
     
     # Training config
     training_config = TrainingConfig(
-        training_iters=2000,
-        train_batch_size=64,
+        training_iters=3000,
+        train_batch_size=1024,
         test_dataset_size=500,
         checkpoint_type='multi_step',
-        optimizer=AdamWConfig(lr=3e-5, weight_decay=1e-2),
-        lr_scheduler=CosineDecayWithWarmupConfig(max_lr=3e-4, min_lr=3e-5, warmup_iters=200, decay_iters=1000)
+        optimizer=AdamWConfig(lr=3e-4, weight_decay=1e-2),
+        # lr_scheduler=CosineDecayWithWarmupConfig(max_lr=1e-3, min_lr=3e-5, warmup_iters=200, decay_iters=1000)
     )
 
     # Execute training
@@ -135,12 +135,12 @@ def test_train_model():
 def test_optimize_model():
     # Model inputs/outputs
     outputs = [
-        Output(name='acceleration_prediction'),
+        Output(name='acceleration_predicted', scale='mean'),
     ]
     inputs = [
-        State(name='velocity', relation='derivative', parent='acceleration_prediction'),
-        State(name='position', relation='derivative', parent='velocity'),
-        Input(name='brake_input'),
+        State(name='velocity', relation='derivative', parent='acceleration_predicted', scale='mean'),
+        State(name='position', relation='derivative', parent='velocity', scale='mean'),
+        Input(name='brake_input', scale='mean'),
     ]
     
     # Model optimization configs
@@ -149,7 +149,7 @@ def test_optimize_model():
         inputs=inputs,
         dt=0.0025,
         sequence_length={"select": [1, 2, 4, 5, 6, 8, 10]},
-        hidden_layers={"range": [2, 4, 1]},
+        hidden_layers={"range": [2, 5, 1]},
         hidden_size={"select": [12, 24, 32, 64, 128]},
         activation={"select": ['relu', 'tanh']},
         dropout={"range": [0.0, 0.4, 0.1]},
@@ -204,14 +204,14 @@ def test_optimize_model():
     
     # Optimization config
     opt_config = OptimizationConfig(
-        training_iters=1000,
-        train_batch_size=512,
+        training_iters=3000,
+        train_batch_size=1024,
         test_dataset_size=500,
-        checkpoint_type='single_step',
-        opt_models=[mlp_opt, rnn_opt, transformer_opt],
-        opt_optimizers=[adamw_opt, sgd_opt],
-        opt_lr_schedulers=[None, cos_decay_opt, cos_anneal_opt],
-        num_trials=3
+        checkpoint_type='multi_step',
+        opt_models=[mlp_opt],
+        opt_optimizers=[adamw_opt],
+        opt_lr_schedulers=[None],
+        num_trials=20
     )
     
     # Execute model optimization
@@ -223,7 +223,8 @@ def test_optimize_model():
 
 def test_use_model():    
     # Load our model
-    model = onyx.load_model('example_model')
+    model = onyx.load_model('small_embedded_model')
+    model.eval()
     total_inputs = len(model.config.inputs)
     num_states = len([s for s in model.config.inputs if isinstance(s, State)])
     num_inputs = total_inputs - num_states
@@ -246,11 +247,11 @@ def test_use_model():
     print(state_traj)
 
 if __name__ == '__main__':
-    test_metadata_get()
-    test_data_download()
-    test_data_upload()
-    test_model_upload()
-    test_model_download()
-    # test_train_model()
+    # test_metadata_get()
+    # test_data_download()
+    # test_data_upload()
+    # test_model_upload()
+    # test_model_download()
+    test_train_model()
     # test_optimize_model()
-    test_use_model()
+    # test_use_model()

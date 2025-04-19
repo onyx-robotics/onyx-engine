@@ -9,6 +9,7 @@ from onyxengine.modeling import (
     validate_param,
     validate_opt_param,
     ModelSimulator,
+    FeatureScaler,
 )    
 
 class RNNConfig(OnyxModelBaseConfig):
@@ -83,6 +84,7 @@ class RNN(nn.Module, ModelSimulator):
             sequence_length=config.sequence_length,
             dt=config.dt,
         )        
+        self.feature_scaler = FeatureScaler(outputs=config.outputs, inputs=config.inputs)
         self.config = config
         self.rnn_type = config.rnn_type
         num_inputs = len(config.inputs)
@@ -112,7 +114,8 @@ class RNN(nn.Module, ModelSimulator):
         else:
             hidden_state = torch.zeros(self.hidden_layers, batch_size, self.hidden_size, device=x.device)
                 
+        x = self.feature_scaler.scale_inputs(x)
         rnn_output, _ = self.rnn(x, hidden_state)
         normalized_output = self.layer_norm(rnn_output[:, -1, :])
         network_output = self.output_layer(normalized_output)
-        return network_output
+        return self.feature_scaler.descale_outputs(network_output)

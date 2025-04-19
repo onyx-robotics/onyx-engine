@@ -12,6 +12,7 @@ from onyxengine.modeling import (
     validate_param,
     validate_opt_param,
     ModelSimulator,
+    FeatureScaler,
 )
 
 class TransformerConfig(OnyxModelBaseConfig):
@@ -166,6 +167,7 @@ class Transformer(nn.Module, ModelSimulator):
             sequence_length=config.sequence_length,
             dt=config.dt,
         )        
+        self.feature_scaler = FeatureScaler(outputs=config.outputs, inputs=config.inputs)
         self.config = config
         num_inputs = len(config.inputs)
         num_outputs = len(config.outputs)
@@ -201,6 +203,9 @@ class Transformer(nn.Module, ModelSimulator):
         batch_size, seq_len, num_input_dim = x.size()
         assert seq_len <= self.config.sequence_length, f"Cannot forward sequence of length {seq_len}, block size is only {self.config.sequence_length}"
         
+        # Scale inputs
+        x = self.feature_scaler.scale_inputs(x)
+        
         # Positional embedding
         pos = torch.arange(0, seq_len, dtype=torch.long, device=device)
         pos_embd = self.transformer.pos_embedding(pos) # Shape (seq_len, num_embd)
@@ -214,4 +219,4 @@ class Transformer(nn.Module, ModelSimulator):
         
         # Project back out to embedded outputs
         output = self.lm_head(x[:, [-1], :]).squeeze(1)
-        return output
+        return self.feature_scaler.descale_outputs(output)

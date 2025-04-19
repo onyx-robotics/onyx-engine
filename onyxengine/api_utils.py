@@ -80,7 +80,7 @@ def download_object(filename, object_type, object_id: Optional[str] = None):
         raise SystemExit("Onyx Engine API error: An unexpected error occurred.", e)
 
     # Write the object to local storage
-    block_size = 1024
+    block_size = 1024 * 64
     total_size = int(response.headers.get("content-length", 0))
     local_copy_path = os.path.join(ONYX_PATH, object_type + 's', filename)
     with tqdm(total=total_size, desc=f'{filename}', unit="B", bar_format="{percentage:.1f}% |{bar}| {desc} | {rate_fmt}", unit_scale=True) as progress_bar:
