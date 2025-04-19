@@ -1,0 +1,467 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>onyxengine &mdash; Engine 0.1.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
+      <link rel="stylesheet" type="text/css" href="_static/css/custom.css" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=01f34227"></script>
+      <script src="_static/doctools.js?v=9bcbadda"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="_static/clipboard.min.js?v=a7894cd8"></script>
+      <script src="_static/copybutton.js?v=f281be69"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="onyxengine.data" href="onyxengine.data.html" />
+    <link rel="prev" title="Simulating Models" href="simulating-models.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html">
+            
+              <img src="_static/engine_logo.svg" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="training-models.html">Training Models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="optimizing-models.html">Optimizing Models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="simulating-models.html">Simulating Models</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Reference:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">onyxengine</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#onyxengine.api.get_object_metadata"><code class="docutils literal notranslate"><span class="pre">get_object_metadata()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#onyxengine.api.load_dataset"><code class="docutils literal notranslate"><span class="pre">load_dataset()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#onyxengine.api.load_model"><code class="docutils literal notranslate"><span class="pre">load_model()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#onyxengine.api.optimize_model"><code class="docutils literal notranslate"><span class="pre">optimize_model()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#onyxengine.api.save_dataset"><code class="docutils literal notranslate"><span class="pre">save_dataset()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#onyxengine.api.save_model"><code class="docutils literal notranslate"><span class="pre">save_model()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#onyxengine.api.train_model"><code class="docutils literal notranslate"><span class="pre">train_model()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="onyxengine.data.html">onyxengine.data</a></li>
+<li class="toctree-l1"><a class="reference internal" href="onyxengine.modeling.html">onyxengine.modeling</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Engine</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">onyxengine</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/onyxengine.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="onyxengine">
+<span id="id1"></span><h1>onyxengine<a class="headerlink" href="#onyxengine" title="Link to this heading"></a></h1>
+<p>The primary api functions for interacting with the Engine.</p>
+<dl class="py function" id="module-onyxengine.api">
+<dt class="sig sig-object py" id="onyxengine.api.get_object_metadata">
+<span class="sig-prename descclassname"><span class="pre">onyxengine.api.</span></span><span class="sig-name descname"><span class="pre">get_object_metadata</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">version_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span></span></span><a class="reference internal" href="_modules/onyxengine/api.html#get_object_metadata"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#onyxengine.api.get_object_metadata" title="Link to this definition"></a></dt>
+<dd><p>Get the metadata for an object in the Engine.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>name</strong> (<em>str</em>) – The name of the object to get metadata for</p></li>
+<li><p><strong>version_id</strong> (<em>str</em><em>, </em><em>optional</em>) – The version id of the object to get metadata for, None = latest_version. (Default is None)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The metadata for the object, or None if the object does not exist.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+<p>Example:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Get metadata for an Onyx object (dataset, model)</span>
+<span class="n">metadata</span> <span class="o">=</span> <span class="n">onyx</span><span class="o">.</span><span class="n">get_object_metadata</span><span class="p">(</span><span class="s1">&#39;example_data&#39;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">metadata</span><span class="p">)</span>
+
+<span class="c1"># Get metadata for a specific version</span>
+<span class="n">metadata</span> <span class="o">=</span> <span class="n">onyx</span><span class="o">.</span><span class="n">get_object_metadata</span><span class="p">(</span><span class="s1">&#39;example_data&#39;</span><span class="p">,</span> <span class="n">version_id</span><span class="o">=</span><span class="s1">&#39;a05fb872-0a7d-4a68-b189-aeece143c7e4&#39;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">metadata</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="onyxengine.api.load_dataset">
+<span class="sig-prename descclassname"><span class="pre">onyxengine.api.</span></span><span class="sig-name descname"><span class="pre">load_dataset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">version_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="onyxengine.data.html#onyxengine.data.OnyxDataset" title="onyxengine.data.dataset.OnyxDataset"><span class="pre">OnyxDataset</span></a></span></span><a class="reference internal" href="_modules/onyxengine/api.html#load_dataset"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#onyxengine.api.load_dataset" title="Link to this definition"></a></dt>
+<dd><p>Load a dataset from the Engine, either from a local cached copy or by downloading from the Engine.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>name</strong> (<em>str</em>) – The name of the dataset to load.</p></li>
+<li><p><strong>version_id</strong> (<em>str</em><em>, </em><em>optional</em>) – The version id of the dataset to load, None = latest_version. (Default is None)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The loaded dataset.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="onyxengine.data.html#onyxengine.data.OnyxDataset" title="onyxengine.data.OnyxDataset">OnyxDataset</a></p>
+</dd>
+</dl>
+<p>Example:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Load the training dataset</span>
+<span class="n">train_dataset</span> <span class="o">=</span> <span class="n">onyx</span><span class="o">.</span><span class="n">load_dataset</span><span class="p">(</span><span class="s1">&#39;example_train_data&#39;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">train_dataset</span><span class="o">.</span><span class="n">dataframe</span><span class="o">.</span><span class="n">head</span><span class="p">())</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="onyxengine.api.load_model">
+<span class="sig-prename descclassname"><span class="pre">onyxengine.api.</span></span><span class="sig-name descname"><span class="pre">load_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">version_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">MLP</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">RNN</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Transformer</span></span></span><a class="reference internal" href="_modules/onyxengine/api.html#load_model"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#onyxengine.api.load_model" title="Link to this definition"></a></dt>
+<dd><p>Load a model from the Engine, either from a local cached copy or by downloading from the Engine.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>name</strong> (<em>str</em>) – The name of the model to load.</p></li>
+<li><p><strong>version_id</strong> (<em>str</em><em>, </em><em>optional</em>) – The version of the model to load, None = latest_version. (Default is None)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The loaded Onyx model.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>MLP | RNN | Transformer</p>
+</dd>
+</dl>
+<p>Example:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Load our model</span>
+<span class="n">model</span> <span class="o">=</span> <span class="n">onyx</span><span class="o">.</span><span class="n">load_model</span><span class="p">(</span><span class="s1">&#39;example_model&#39;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">config</span><span class="p">)</span>
+
+<span class="c1"># Load a specific version of the model</span>
+<span class="n">model</span> <span class="o">=</span> <span class="n">onyx</span><span class="o">.</span><span class="n">load_model</span><span class="p">(</span><span class="s1">&#39;example_model&#39;</span><span class="p">,</span> <span class="n">version_id</span><span class="o">=</span><span class="s1">&#39;a05fb872-0a7d-4a68-b189-aeece143c7e4&#39;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">config</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="onyxengine.api.optimize_model">
+<span class="sig-prename descclassname"><span class="pre">onyxengine.api.</span></span><span class="sig-name descname"><span class="pre">optimize_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dataset_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dataset_version_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">optimization_config</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="onyxengine.modeling.html#onyxengine.modeling.OptimizationConfig" title="onyxengine.modeling.model_training.OptimizationConfig"><span class="pre">OptimizationConfig</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/onyxengine/api.html#optimize_model"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#onyxengine.api.optimize_model" title="Link to this definition"></a></dt>
+<dd><p>Optimize a model on the Engine using a specified dataset, model simulator config, and optimization configs. Optimization configs define the search space for hyperparameters.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>model_name</strong> (<em>str</em>) – The name of the model to optimize. (Required)</p></li>
+<li><p><strong>model_sim_config</strong> (<em>ModelSimulatorConfig</em>) – The configuration for the model simulator. (Required)</p></li>
+<li><p><strong>dataset_name</strong> (<em>str</em>) – The name of the dataset to optimize on. (Required)</p></li>
+<li><p><strong>dataset_version_id</strong> (<em>str</em><em>, </em><em>optional</em>) – The version of the dataset to optimize on, None = latest_version. (Default is None)</p></li>
+<li><p><strong>optimization_config</strong> (<a class="reference internal" href="onyxengine.modeling.html#onyxengine.modeling.OptimizationConfig" title="onyxengine.modeling.OptimizationConfig"><em>OptimizationConfig</em></a>) – The configuration for the optimization process. (Required)</p></li>
+</ul>
+</dd>
+</dl>
+<p>Example:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Model inputs/outputs</span>
+<span class="n">outputs</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="n">Output</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;acceleration_prediction&#39;</span><span class="p">),</span>
+<span class="p">]</span>
+<span class="n">inputs</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="n">State</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;velocity&#39;</span><span class="p">,</span> <span class="n">relation</span><span class="o">=</span><span class="s1">&#39;derivative&#39;</span><span class="p">,</span> <span class="n">parent</span><span class="o">=</span><span class="s1">&#39;acceleration_prediction&#39;</span><span class="p">),</span>
+    <span class="n">State</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;position&#39;</span><span class="p">,</span> <span class="n">relation</span><span class="o">=</span><span class="s1">&#39;derivative&#39;</span><span class="p">,</span> <span class="n">parent</span><span class="o">=</span><span class="s1">&#39;velocity&#39;</span><span class="p">),</span>
+    <span class="n">Input</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;control_input&#39;</span><span class="p">),</span>
+<span class="p">]</span>
+
+<span class="c1"># Model optimization configs</span>
+<span class="n">mlp_opt</span> <span class="o">=</span> <span class="n">MLPOptConfig</span><span class="p">(</span>
+    <span class="n">outputs</span><span class="o">=</span><span class="n">outputs</span><span class="p">,</span>
+    <span class="n">inputs</span><span class="o">=</span><span class="n">inputs</span><span class="p">,</span>
+    <span class="n">dt</span><span class="o">=</span><span class="mf">0.0025</span><span class="p">,</span>
+    <span class="n">sequence_length</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;select&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">10</span><span class="p">]},</span>
+    <span class="n">hidden_layers</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;range&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">1</span><span class="p">]},</span>
+    <span class="n">hidden_size</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;select&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">12</span><span class="p">,</span> <span class="mi">24</span><span class="p">,</span> <span class="mi">32</span><span class="p">,</span> <span class="mi">64</span><span class="p">,</span> <span class="mi">128</span><span class="p">]},</span>
+    <span class="n">activation</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;select&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;relu&#39;</span><span class="p">,</span> <span class="s1">&#39;tanh&#39;</span><span class="p">]},</span>
+    <span class="n">dropout</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;range&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.4</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">]},</span>
+    <span class="n">bias</span><span class="o">=</span><span class="kc">True</span>
+<span class="p">)</span>
+<span class="n">rnn_opt</span> <span class="o">=</span> <span class="n">RNNOptConfig</span><span class="p">(</span>
+    <span class="n">outputs</span><span class="o">=</span><span class="n">outputs</span><span class="p">,</span>
+    <span class="n">inputs</span><span class="o">=</span><span class="n">inputs</span><span class="p">,</span>
+    <span class="n">dt</span><span class="o">=</span><span class="mf">0.0025</span><span class="p">,</span>
+    <span class="n">rnn_type</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;select&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;RNN&#39;</span><span class="p">,</span> <span class="s1">&#39;LSTM&#39;</span><span class="p">,</span> <span class="s1">&#39;GRU&#39;</span><span class="p">]},</span>
+    <span class="n">sequence_length</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;select&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">12</span><span class="p">,</span> <span class="mi">14</span><span class="p">,</span> <span class="mi">15</span><span class="p">]},</span>
+    <span class="n">hidden_layers</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;range&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">1</span><span class="p">]},</span>
+    <span class="n">hidden_size</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;select&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">12</span><span class="p">,</span> <span class="mi">24</span><span class="p">,</span> <span class="mi">32</span><span class="p">,</span> <span class="mi">64</span><span class="p">,</span> <span class="mi">128</span><span class="p">]},</span>
+    <span class="n">dropout</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;range&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.4</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">]},</span>
+    <span class="n">bias</span><span class="o">=</span><span class="kc">True</span>
+<span class="p">)</span>
+<span class="n">transformer_opt</span> <span class="o">=</span> <span class="n">TransformerOptConfig</span><span class="p">(</span>
+    <span class="n">outputs</span><span class="o">=</span><span class="n">outputs</span><span class="p">,</span>
+    <span class="n">inputs</span><span class="o">=</span><span class="n">inputs</span><span class="p">,</span>
+    <span class="n">dt</span><span class="o">=</span><span class="mf">0.0025</span><span class="p">,</span>
+    <span class="n">sequence_length</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;select&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">12</span><span class="p">,</span> <span class="mi">14</span><span class="p">,</span> <span class="mi">15</span><span class="p">]},</span>
+    <span class="n">n_layer</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;range&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">1</span><span class="p">]},</span>
+    <span class="n">n_head</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;range&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">2</span><span class="p">]},</span>
+    <span class="n">n_embd</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;select&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">12</span><span class="p">,</span> <span class="mi">24</span><span class="p">,</span> <span class="mi">32</span><span class="p">,</span> <span class="mi">64</span><span class="p">,</span> <span class="mi">128</span><span class="p">]},</span>
+    <span class="n">dropout</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;range&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.4</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">]},</span>
+    <span class="n">bias</span><span class="o">=</span><span class="kc">True</span>
+<span class="p">)</span>
+
+<span class="c1"># Optimizer configs</span>
+<span class="n">adamw_opt</span> <span class="o">=</span> <span class="n">AdamWOptConfig</span><span class="p">(</span>
+    <span class="n">lr</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;select&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mf">1e-5</span><span class="p">,</span> <span class="mf">5e-5</span><span class="p">,</span> <span class="mf">1e-4</span><span class="p">,</span> <span class="mf">3e-4</span><span class="p">,</span> <span class="mf">5e-4</span><span class="p">,</span> <span class="mf">8e-4</span><span class="p">,</span> <span class="mf">1e-3</span><span class="p">,</span> <span class="mf">5e-3</span><span class="p">,</span> <span class="mf">1e-2</span><span class="p">]},</span>
+    <span class="n">weight_decay</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;select&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mf">1e-4</span><span class="p">,</span> <span class="mf">1e-3</span><span class="p">,</span> <span class="mf">1e-2</span><span class="p">,</span> <span class="mf">1e-1</span><span class="p">]}</span>
+<span class="p">)</span>
+<span class="n">sgd_opt</span> <span class="o">=</span> <span class="n">SGDOptConfig</span><span class="p">(</span>
+    <span class="n">lr</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;select&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mf">1e-5</span><span class="p">,</span> <span class="mf">5e-5</span><span class="p">,</span> <span class="mf">1e-4</span><span class="p">,</span> <span class="mf">3e-4</span><span class="p">,</span> <span class="mf">5e-4</span><span class="p">,</span> <span class="mf">8e-4</span><span class="p">,</span> <span class="mf">1e-3</span><span class="p">,</span> <span class="mf">5e-3</span><span class="p">,</span> <span class="mf">1e-2</span><span class="p">]},</span>
+    <span class="n">weight_decay</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;select&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mf">1e-4</span><span class="p">,</span> <span class="mf">1e-3</span><span class="p">,</span> <span class="mf">1e-2</span><span class="p">,</span> <span class="mf">1e-1</span><span class="p">]},</span>
+    <span class="n">momentum</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;select&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mf">0.8</span><span class="p">,</span> <span class="mf">0.9</span><span class="p">,</span> <span class="mf">0.95</span><span class="p">,</span> <span class="mf">0.99</span><span class="p">]}</span>
+<span class="p">)</span>
+
+<span class="c1"># Learning rate scheduler configs</span>
+<span class="n">cos_decay_opt</span> <span class="o">=</span> <span class="n">CosineDecayWithWarmupOptConfig</span><span class="p">(</span>
+    <span class="n">max_lr</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;select&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mf">1e-4</span><span class="p">,</span> <span class="mf">3e-4</span><span class="p">,</span> <span class="mf">5e-4</span><span class="p">,</span> <span class="mf">8e-4</span><span class="p">,</span> <span class="mf">1e-3</span><span class="p">,</span> <span class="mf">3e-3</span><span class="p">,</span> <span class="mf">5e-3</span><span class="p">]},</span>
+    <span class="n">min_lr</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;select&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mf">1e-6</span><span class="p">,</span> <span class="mf">5e-6</span><span class="p">,</span> <span class="mf">1e-5</span><span class="p">,</span> <span class="mf">3e-5</span><span class="p">,</span> <span class="mf">5e-5</span><span class="p">,</span> <span class="mf">8e-5</span><span class="p">,</span> <span class="mf">1e-4</span><span class="p">]},</span>
+    <span class="n">warmup_iters</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;select&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">50</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="mi">200</span><span class="p">,</span> <span class="mi">400</span><span class="p">,</span> <span class="mi">800</span><span class="p">]},</span>
+    <span class="n">decay_iters</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;select&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">500</span><span class="p">,</span> <span class="mi">1000</span><span class="p">,</span> <span class="mi">2000</span><span class="p">,</span> <span class="mi">4000</span><span class="p">,</span> <span class="mi">8000</span><span class="p">]}</span>
+<span class="p">)</span>
+<span class="n">cos_anneal_opt</span> <span class="o">=</span> <span class="n">CosineAnnealingWarmRestartsOptConfig</span><span class="p">(</span>
+    <span class="n">T_0</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;select&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">200</span><span class="p">,</span> <span class="mi">500</span><span class="p">,</span> <span class="mi">1000</span><span class="p">,</span> <span class="mi">2000</span><span class="p">,</span> <span class="mi">5000</span><span class="p">,</span> <span class="mi">10000</span><span class="p">]},</span>
+    <span class="n">T_mult</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;select&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">]},</span>
+    <span class="n">eta_min</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;select&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mf">1e-6</span><span class="p">,</span> <span class="mf">5e-6</span><span class="p">,</span> <span class="mf">1e-5</span><span class="p">,</span> <span class="mf">3e-5</span><span class="p">,</span> <span class="mf">5e-5</span><span class="p">,</span> <span class="mf">8e-5</span><span class="p">,</span> <span class="mf">1e-4</span><span class="p">,</span> <span class="mf">3e-4</span><span class="p">]}</span>
+<span class="p">)</span>
+
+<span class="c1"># Optimization config</span>
+<span class="n">opt_config</span> <span class="o">=</span> <span class="n">OptimizationConfig</span><span class="p">(</span>
+    <span class="n">training_iters</span><span class="o">=</span><span class="mi">2000</span><span class="p">,</span>
+    <span class="n">train_batch_size</span><span class="o">=</span><span class="mi">512</span><span class="p">,</span>
+    <span class="n">test_dataset_size</span><span class="o">=</span><span class="mi">500</span><span class="p">,</span>
+    <span class="n">checkpoint_type</span><span class="o">=</span><span class="s1">&#39;single_step&#39;</span><span class="p">,</span>
+    <span class="n">opt_models</span><span class="o">=</span><span class="p">[</span><span class="n">mlp_opt</span><span class="p">,</span> <span class="n">rnn_opt</span><span class="p">,</span> <span class="n">transformer_opt</span><span class="p">],</span>
+    <span class="n">opt_optimizers</span><span class="o">=</span><span class="p">[</span><span class="n">adamw_opt</span><span class="p">,</span> <span class="n">sgd_opt</span><span class="p">],</span>
+    <span class="n">opt_lr_schedulers</span><span class="o">=</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="n">cos_decay_opt</span><span class="p">,</span> <span class="n">cos_anneal_opt</span><span class="p">],</span>
+    <span class="n">num_trials</span><span class="o">=</span><span class="mi">5</span>
+<span class="p">)</span>
+
+<span class="c1"># Execute model optimization</span>
+<span class="n">onyx</span><span class="o">.</span><span class="n">optimize_model</span><span class="p">(</span>
+    <span class="n">model_name</span><span class="o">=</span><span class="s1">&#39;example_model_optimized&#39;</span><span class="p">,</span>
+    <span class="n">model_sim_config</span><span class="o">=</span><span class="n">sim_config</span><span class="p">,</span>
+    <span class="n">dataset_name</span><span class="o">=</span><span class="s1">&#39;example_train_data&#39;</span><span class="p">,</span>
+    <span class="n">optimization_config</span><span class="o">=</span><span class="n">opt_config</span><span class="p">,</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="onyxengine.api.save_dataset">
+<span class="sig-prename descclassname"><span class="pre">onyxengine.api.</span></span><span class="sig-name descname"><span class="pre">save_dataset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dataset</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="onyxengine.data.html#onyxengine.data.OnyxDataset" title="onyxengine.data.dataset.OnyxDataset"><span class="pre">OnyxDataset</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">source_datasets</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">[]</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/onyxengine/api.html#save_dataset"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#onyxengine.api.save_dataset" title="Link to this definition"></a></dt>
+<dd><p>Save a dataset to the Engine.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>name</strong> (<em>str</em>) – The name for the new dataset</p></li>
+<li><p><strong>dataset</strong> (<a class="reference internal" href="onyxengine.data.html#onyxengine.data.OnyxDataset" title="onyxengine.data.OnyxDataset"><em>OnyxDataset</em></a>) – The OnyxDataset object to save</p></li>
+<li><p><strong>source_datasets</strong> (<em>List</em><em>[</em><em>Dict</em><em>[</em><em>str</em><em>, </em><em>Optional</em><em>[</em><em>str</em><em>]</em><em>]</em><em>]</em>) – The source datasets used as a list of dictionaries, eg. [{‘name’: ‘dataset_name’, ‘version_id’: ‘dataset_version’}]. If no version is provided, the latest version will be used.</p></li>
+</ul>
+</dd>
+</dl>
+<p>Example:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Load data</span>
+<span class="n">raw_data</span> <span class="o">=</span> <span class="n">onyx</span><span class="o">.</span><span class="n">load_dataset</span><span class="p">(</span><span class="s1">&#39;example_data&#39;</span><span class="p">)</span>
+
+<span class="c1"># Pull out features for model training</span>
+<span class="n">train_data</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">()</span>
+<span class="n">train_data</span><span class="p">[</span><span class="s1">&#39;acceleration_predicted&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">raw_data</span><span class="o">.</span><span class="n">dataframe</span><span class="p">[</span><span class="s1">&#39;acceleration&#39;</span><span class="p">]</span>
+<span class="n">train_data</span><span class="p">[</span><span class="s1">&#39;velocity&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">raw_data</span><span class="o">.</span><span class="n">dataframe</span><span class="p">[</span><span class="s1">&#39;velocity&#39;</span><span class="p">]</span>
+<span class="n">train_data</span><span class="p">[</span><span class="s1">&#39;position&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">raw_data</span><span class="o">.</span><span class="n">dataframe</span><span class="p">[</span><span class="s1">&#39;position&#39;</span><span class="p">]</span>
+<span class="n">train_data</span><span class="p">[</span><span class="s1">&#39;control_input&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">raw_data</span><span class="o">.</span><span class="n">dataframe</span><span class="p">[</span><span class="s1">&#39;control_input&#39;</span><span class="p">]</span>
+<span class="n">train_data</span> <span class="o">=</span> <span class="n">train_data</span><span class="o">.</span><span class="n">dropna</span><span class="p">()</span>
+
+<span class="c1"># Save training dataset</span>
+<span class="n">train_dataset</span> <span class="o">=</span> <span class="n">OnyxDataset</span><span class="p">(</span>
+    <span class="n">dataframe</span><span class="o">=</span><span class="n">train_data</span><span class="p">,</span>
+    <span class="n">outputs</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;acceleration_predicted&#39;</span><span class="p">],</span>
+    <span class="n">inputs</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;velocity&#39;</span><span class="p">,</span> <span class="s1">&#39;position&#39;</span><span class="p">,</span> <span class="s1">&#39;control_input&#39;</span><span class="p">],</span>
+    <span class="n">dt</span><span class="o">=</span><span class="mf">0.0025</span>
+<span class="p">)</span>
+<span class="n">onyx</span><span class="o">.</span><span class="n">save_dataset</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;example_train_data&#39;</span><span class="p">,</span> <span class="n">dataset</span><span class="o">=</span><span class="n">train_dataset</span><span class="p">,</span> <span class="n">source_datasets</span><span class="o">=</span><span class="p">[{</span><span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="s1">&#39;example_data&#39;</span><span class="p">}])</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="onyxengine.api.save_model">
+<span class="sig-prename descclassname"><span class="pre">onyxengine.api.</span></span><span class="sig-name descname"><span class="pre">save_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">MLP</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">RNN</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Transformer</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">source_datasets</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">[]</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/onyxengine/api.html#save_model"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#onyxengine.api.save_model" title="Link to this definition"></a></dt>
+<dd><p>Save a model to the Engine. Generally you won’t need to use this function as the Engine will save models it trains automatically.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>name</strong> (<em>str</em>) – The name for the new model.</p></li>
+<li><p><strong>model</strong> (<em>MLP</em><em> | </em><em>RNN</em><em> | </em><em>Transformer</em>) – The Onyx model to save.</p></li>
+<li><p><strong>source_datasets</strong> (<em>List</em><em>[</em><em>Dict</em><em>[</em><em>str</em><em>, </em><em>Optional</em><em>[</em><em>str</em><em>]</em><em>]</em><em>]</em>) – The source datasets used as a list of dictionaries, eg. [{‘name’: ‘dataset_name’, ‘version_id’: ‘dataset_version’}]. If no version is provided, the latest version will be used.</p></li>
+</ul>
+</dd>
+</dl>
+<p>Example:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Create model configuration</span>
+<span class="n">outputs</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="n">Output</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;acceleration_prediction&#39;</span><span class="p">),</span>
+<span class="p">]</span>
+<span class="n">inputs</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="n">State</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;velocity&#39;</span><span class="p">,</span> <span class="n">relation</span><span class="o">=</span><span class="s1">&#39;derivative&#39;</span><span class="p">,</span> <span class="n">parent</span><span class="o">=</span><span class="s1">&#39;acceleration_prediction&#39;</span><span class="p">),</span>
+    <span class="n">State</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;position&#39;</span><span class="p">,</span> <span class="n">relation</span><span class="o">=</span><span class="s1">&#39;derivative&#39;</span><span class="p">,</span> <span class="n">parent</span><span class="o">=</span><span class="s1">&#39;velocity&#39;</span><span class="p">),</span>
+    <span class="n">Input</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;control_input&#39;</span><span class="p">),</span>
+<span class="p">]</span>
+<span class="n">mlp_config</span> <span class="o">=</span> <span class="n">MLPConfig</span><span class="p">(</span>
+    <span class="n">outputs</span><span class="o">=</span><span class="n">outputs</span><span class="p">,</span>
+    <span class="n">inputs</span><span class="o">=</span><span class="n">inputs</span><span class="p">,</span>
+    <span class="n">dt</span><span class="o">=</span><span class="mf">0.0025</span><span class="p">,</span>
+    <span class="n">sequence_length</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span>
+    <span class="n">hidden_layers</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
+    <span class="n">hidden_size</span><span class="o">=</span><span class="mi">64</span><span class="p">,</span>
+    <span class="n">activation</span><span class="o">=</span><span class="s1">&#39;relu&#39;</span><span class="p">,</span>
+    <span class="n">dropout</span><span class="o">=</span><span class="mf">0.2</span><span class="p">,</span>
+    <span class="n">bias</span><span class="o">=</span><span class="kc">True</span>
+<span class="p">)</span>
+
+<span class="c1"># Create and save model</span>
+<span class="n">model</span> <span class="o">=</span> <span class="n">MLP</span><span class="p">(</span><span class="n">mlp_config</span><span class="p">)</span>
+<span class="n">onyx</span><span class="o">.</span><span class="n">save_model</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;example_model&#39;</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="n">model</span><span class="p">,</span> <span class="n">source_datasets</span><span class="o">=</span><span class="p">[{</span><span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="s1">&#39;example_train_data&#39;</span><span class="p">}])</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="onyxengine.api.train_model">
+<span class="sig-prename descclassname"><span class="pre">onyxengine.api.</span></span><span class="sig-name descname"><span class="pre">train_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_config</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="onyxengine.modeling.html#onyxengine.modeling.MLPConfig" title="onyxengine.modeling.models.mlp.MLPConfig"><span class="pre">MLPConfig</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="onyxengine.modeling.html#onyxengine.modeling.RNNConfig" title="onyxengine.modeling.models.rnn.RNNConfig"><span class="pre">RNNConfig</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="onyxengine.modeling.html#onyxengine.modeling.TransformerConfig" title="onyxengine.modeling.models.transformer.TransformerConfig"><span class="pre">TransformerConfig</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dataset_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dataset_version_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">training_config</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="onyxengine.modeling.html#onyxengine.modeling.TrainingConfig" title="onyxengine.modeling.model_training.TrainingConfig"><span class="pre">TrainingConfig</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">TrainingConfig(type='training_config',</span> <span class="pre">training_iters=3000,</span> <span class="pre">train_batch_size=32,</span> <span class="pre">train_val_split_ratio=0.9,</span> <span class="pre">test_dataset_size=500,</span> <span class="pre">checkpoint_type='single_step',</span> <span class="pre">optimizer=AdamWConfig(type='adamw',</span> <span class="pre">lr=0.0003,</span> <span class="pre">weight_decay=0.01),</span> <span class="pre">lr_scheduler=None)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">monitor_training</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/onyxengine/api.html#train_model"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#onyxengine.api.train_model" title="Link to this definition"></a></dt>
+<dd><p>Train a model on the Engine using a specified dataset, model config, and training config.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>model_name</strong> (<em>str</em>) – The name of the model to train. (Required)</p></li>
+<li><p><strong>model_config</strong> (<em>Union</em><em>[</em><a class="reference internal" href="onyxengine.modeling.html#onyxengine.modeling.MLPConfig" title="onyxengine.modeling.MLPConfig"><em>MLPConfig</em></a><em>, </em><a class="reference internal" href="onyxengine.modeling.html#onyxengine.modeling.RNNConfig" title="onyxengine.modeling.RNNConfig"><em>RNNConfig</em></a><em>, </em><a class="reference internal" href="onyxengine.modeling.html#onyxengine.modeling.TransformerConfig" title="onyxengine.modeling.TransformerConfig"><em>TransformerConfig</em></a><em>]</em>) – The configuration for the model to train. (Required)</p></li>
+<li><p><strong>dataset_name</strong> (<em>str</em>) – The name of the dataset to train on. (Required)</p></li>
+<li><p><strong>dataset_version_id</strong> (<em>str</em><em>, </em><em>optional</em>) – The version of the dataset to train on, None = latest_version. (Default is None)</p></li>
+<li><p><strong>training_config</strong> (<a class="reference internal" href="onyxengine.modeling.html#onyxengine.modeling.TrainingConfig" title="onyxengine.modeling.TrainingConfig"><em>TrainingConfig</em></a>) – The configuration for the training process. (Default is TrainingConfig())</p></li>
+<li><p><strong>monitor_training</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether to monitor the training job. (Default is True)</p></li>
+</ul>
+</dd>
+</dl>
+<p>Example:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Model config</span>
+<span class="n">outputs</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="n">Output</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;acceleration_prediction&#39;</span><span class="p">),</span>
+<span class="p">]</span>
+<span class="n">inputs</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="n">State</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;velocity&#39;</span><span class="p">,</span> <span class="n">relation</span><span class="o">=</span><span class="s1">&#39;derivative&#39;</span><span class="p">,</span> <span class="n">parent</span><span class="o">=</span><span class="s1">&#39;acceleration_prediction&#39;</span><span class="p">),</span>
+    <span class="n">State</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;position&#39;</span><span class="p">,</span> <span class="n">relation</span><span class="o">=</span><span class="s1">&#39;derivative&#39;</span><span class="p">,</span> <span class="n">parent</span><span class="o">=</span><span class="s1">&#39;velocity&#39;</span><span class="p">),</span>
+    <span class="n">Input</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;control_input&#39;</span><span class="p">),</span>
+<span class="p">]</span>
+
+<span class="n">model_config</span> <span class="o">=</span> <span class="n">MLPConfig</span><span class="p">(</span>
+    <span class="n">outputs</span><span class="o">=</span><span class="n">outputs</span><span class="p">,</span>
+    <span class="n">inputs</span><span class="o">=</span><span class="n">inputs</span><span class="p">,</span>
+    <span class="n">dt</span><span class="o">=</span><span class="mf">0.0025</span><span class="p">,</span>
+    <span class="n">sequence_length</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span>
+    <span class="n">hidden_layers</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
+    <span class="n">hidden_size</span><span class="o">=</span><span class="mi">64</span><span class="p">,</span>
+    <span class="n">activation</span><span class="o">=</span><span class="s1">&#39;relu&#39;</span><span class="p">,</span>
+    <span class="n">dropout</span><span class="o">=</span><span class="mf">0.2</span><span class="p">,</span>
+    <span class="n">bias</span><span class="o">=</span><span class="kc">True</span>
+<span class="p">)</span>
+
+<span class="c1"># Training config</span>
+<span class="n">training_config</span> <span class="o">=</span> <span class="n">TrainingConfig</span><span class="p">(</span>
+    <span class="n">training_iters</span><span class="o">=</span><span class="mi">2000</span><span class="p">,</span>
+    <span class="n">train_batch_size</span><span class="o">=</span><span class="mi">32</span><span class="p">,</span>
+    <span class="n">test_dataset_size</span><span class="o">=</span><span class="mi">500</span><span class="p">,</span>
+    <span class="n">checkpoint_type</span><span class="o">=</span><span class="s1">&#39;single_step&#39;</span><span class="p">,</span>
+    <span class="n">optimizer</span><span class="o">=</span><span class="n">AdamWConfig</span><span class="p">(</span><span class="n">lr</span><span class="o">=</span><span class="mf">3e-4</span><span class="p">,</span> <span class="n">weight_decay</span><span class="o">=</span><span class="mf">1e-2</span><span class="p">),</span>
+    <span class="n">lr_scheduler</span><span class="o">=</span><span class="n">CosineDecayWithWarmupConfig</span><span class="p">(</span><span class="n">max_lr</span><span class="o">=</span><span class="mf">3e-4</span><span class="p">,</span> <span class="n">min_lr</span><span class="o">=</span><span class="mf">3e-5</span><span class="p">,</span> <span class="n">warmup_iters</span><span class="o">=</span><span class="mi">200</span><span class="p">,</span> <span class="n">decay_iters</span><span class="o">=</span><span class="mi">1000</span><span class="p">)</span>
+<span class="p">)</span>
+
+<span class="c1"># Execute training</span>
+<span class="n">onyx</span><span class="o">.</span><span class="n">train_model</span><span class="p">(</span>
+    <span class="n">model_name</span><span class="o">=</span><span class="s1">&#39;example_model&#39;</span><span class="p">,</span>
+    <span class="n">model_config</span><span class="o">=</span><span class="n">model_config</span><span class="p">,</span>
+    <span class="n">dataset_name</span><span class="o">=</span><span class="s1">&#39;example_train_data&#39;</span><span class="p">,</span>
+    <span class="n">training_config</span><span class="o">=</span><span class="n">training_config</span><span class="p">,</span>
+    <span class="n">monitor_training</span><span class="o">=</span><span class="kc">True</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="simulating-models.html" class="btn btn-neutral float-left" title="Simulating Models" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="onyxengine.data.html" class="btn btn-neutral float-right" title="onyxengine.data" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Onyx Robotics Inc.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
