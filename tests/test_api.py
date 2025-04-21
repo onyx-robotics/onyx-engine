@@ -248,10 +248,10 @@ def test_use_model():
 
 if __name__ == '__main__':
     # test_metadata_get()
-    # test_data_download()
+    test_data_download()
     # test_data_upload()
     # test_model_upload()
     # test_model_download()
-    test_train_model()
+    # test_train_model()
     # test_optimize_model()
     # test_use_model()

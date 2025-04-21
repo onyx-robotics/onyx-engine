@@ -1,6 +1,6 @@
 import os
 import json
-from typing import List, Optional, Dict, Union
+from typing import List, Optional, Dict, Union, Literal
 import torch
 import pandas as pd
 from onyxengine import DATASETS_PATH, MODELS_PATH
@@ -238,13 +238,14 @@ def save_model(name: str, model: MLP | RNN | Transformer, source_datasets: List[
     
     print(f'Model [{name}] saved to the Engine.')
 
-def load_model(name: str, version_id: str=None) -> MLP | RNN | Transformer:
+def load_model(name: str, version_id: str=None, mode: Literal["online", "offline"]="online") -> MLP | RNN | Transformer:
     """
     Load a model from the Engine, either from a local cached copy or by downloading from the Engine.
     
     Args:
         name (str): The name of the model to load.
         version_id (str, optional): The version of the model to load, None = latest_version. (Default is None)
+        mode (Literal["online", "offline"]): Whether to use the Engine or restrict model loading to offline storage (Default is "online")
     
     Returns:
         MLP | RNN | Transformer: The loaded Onyx model.
@@ -264,12 +265,26 @@ def load_model(name: str, version_id: str=None) -> MLP | RNN | Transformer:
     """
     assert isinstance(name, str), "name must be a string."
     assert version_id is None or isinstance(version_id, str), "version_id must be an string."
+    assert mode in ["online", "offline"], "mode must be either 'online' or 'offline'"
+    
     model_filename = name + '.pt'
     config_filename = name + '.json'
     model_path = os.path.join(MODELS_PATH, model_filename)
     config_path = os.path.join(MODELS_PATH, config_filename)
 
-    # Get model metadata
+    if mode == "offline":
+        # In offline mode, try to directly load from local storage
+        if not os.path.exists(model_path) or not os.path.exists(config_path):
+            raise SystemExit(f"Onyx Engine API error: Model [{name}] not found in local storage")
+        
+        with open(config_path, 'r') as f:
+            config_json = json.load(f)
+        model = model_from_config(config_json['config'])
+        model.load_state_dict(torch.load(model_path, weights_only=True))
+        model.eval()
+        return model
+
+    # Online mode - check remote metadata
     metadata = get_object_metadata(name, version_id)
     if metadata is None:
         raise SystemExit(f"Onyx Engine API error: Model [{name}: {version_id}] not found in the Engine.")
