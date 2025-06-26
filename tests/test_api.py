@@ -84,7 +84,7 @@ def test_model_upload():
     )
     
     model = MLP(mlp_config)
-    onyx.save_model(name='small_embedded_model', model=model, source_datasets=[{'name': 'train_data'}])
+    onyx.save_model(name='small_embedded_model5', model=model, source_datasets=[{'name': 'training_data'}])
 
 def test_model_download():
     model = onyx.load_model('small_embedded_model')
@@ -247,8 +247,8 @@ def test_use_model():
     print(state_traj)
 
 if __name__ == '__main__':
-    # test_metadata_get()
-    test_data_download()
+    test_metadata_get()
+    # test_data_download()
     # test_data_upload()
     # test_model_upload()
     # test_model_download()

@@ -219,4 +219,4 @@ class Transformer(nn.Module, ModelSimulator):
         
         # Project back out to embedded outputs
         output = self.lm_head(x[:, [-1], :]).squeeze(1)
-        return self.feature_scaler.descale_outputs(output)
+        return self.feature_scaler.unscale_outputs(output)

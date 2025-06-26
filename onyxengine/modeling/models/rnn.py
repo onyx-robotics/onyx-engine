@@ -118,4 +118,4 @@ class RNN(nn.Module, ModelSimulator):
         rnn_output, _ = self.rnn(x, hidden_state)
         normalized_output = self.layer_norm(rnn_output[:, -1, :])
         network_output = self.output_layer(normalized_output)
-        return self.feature_scaler.descale_outputs(network_output)
+        return self.feature_scaler.unscale_outputs(network_output)
