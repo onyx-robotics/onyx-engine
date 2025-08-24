@@ -1,6 +1,5 @@
 import pandas as pd
-from pydantic import BaseModel, model_validator, Field
-from typing_extensions import Self
+from pydantic import BaseModel, Field
 from typing import List, Optional, Literal
 
 class OnyxDatasetConfig(BaseModel):
@@ -8,17 +7,6 @@ class OnyxDatasetConfig(BaseModel):
     outputs: List[str] = []
     inputs: List[str] = []
     dt: float = 0
-
-    @model_validator(mode='after')
-    def validate_hyperparameters(self) -> Self:
-        # Check that there's at least one output
-        assert len(self.outputs) > 0, "At least one output feature must be defined."
-        # Check that there's at least one input
-        assert len(self.inputs) > 0, "At least one input feature must be defined."
-        # Check that dt is greater than 0
-        assert self.dt > 0, "dt must be greater than 0."
-        # Check that the number of features matches the sum of num_outputs, num_state, and num_control
-        return self
 
 class OnyxDataset:
     """
