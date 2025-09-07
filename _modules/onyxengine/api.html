@@ -1,0 +1,706 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>onyxengine.api &mdash; Engine 0.1.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/custom.css" />
+
+  
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=01f34227"></script>
+      <script src="../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
+      <script src="../../_static/copybutton.js?v=f281be69"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html">
+            
+              <img src="../../_static/engine_logo.svg" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../training-models.html">Training Models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../optimizing-models.html">Optimizing Models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../simulating-models.html">Simulating Models</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Reference:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../onyxengine.html">onyxengine</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../onyxengine.data.html">onyxengine.data</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../onyxengine.modeling.html">onyxengine.modeling</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">Engine</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">onyxengine.api</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for onyxengine.api</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Union</span><span class="p">,</span> <span class="n">Literal</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">torch</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">onyxengine</span><span class="w"> </span><span class="kn">import</span> <span class="n">DATASETS_PATH</span><span class="p">,</span> <span class="n">MODELS_PATH</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">onyxengine.data</span><span class="w"> </span><span class="kn">import</span> <span class="n">OnyxDataset</span><span class="p">,</span> <span class="n">OnyxDatasetConfig</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">onyxengine.modeling.models</span><span class="w"> </span><span class="kn">import</span> <span class="o">*</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">onyxengine.modeling</span><span class="w"> </span><span class="kn">import</span> <span class="n">model_from_config</span><span class="p">,</span> <span class="n">TrainingConfig</span><span class="p">,</span> <span class="n">OptimizationConfig</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.api_utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">handle_post_request</span><span class="p">,</span> <span class="n">upload_object</span><span class="p">,</span> <span class="n">download_object</span><span class="p">,</span> <span class="n">set_object_metadata</span><span class="p">,</span> <span class="n">monitor_training_job</span><span class="p">,</span> <span class="n">SourceObject</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">asyncio</span>
+
+<div class="viewcode-block" id="get_object_metadata">
+<a class="viewcode-back" href="../../onyxengine.html#onyxengine.api.get_object_metadata">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_object_metadata</span><span class="p">(</span><span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">version_id</span><span class="p">:</span> <span class="nb">str</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Get the metadata for an object in the Engine.</span>
+<span class="sd">    </span>
+<span class="sd">    Args:</span>
+<span class="sd">        name (str): The name of the object to get metadata for</span>
+<span class="sd">        version_id (str, optional): The version id of the object to get metadata for, None = latest_version. (Default is None)</span>
+<span class="sd">    </span>
+<span class="sd">    Returns:</span>
+<span class="sd">        dict: The metadata for the object, or None if the object does not exist.</span>
+<span class="sd">        </span>
+<span class="sd">    Example:</span>
+<span class="sd">    </span>
+<span class="sd">    .. code-block:: python</span>
+<span class="sd">    </span>
+<span class="sd">        # Get metadata for an Onyx object (dataset, model)</span>
+<span class="sd">        metadata = onyx.get_object_metadata(&#39;example_data&#39;)</span>
+<span class="sd">        print(metadata)</span>
+<span class="sd">        </span>
+<span class="sd">        # Get metadata for a specific version</span>
+<span class="sd">        metadata = onyx.get_object_metadata(&#39;example_data&#39;, version_id=&#39;a05fb872-0a7d-4a68-b189-aeece143c7e4&#39;)</span>
+<span class="sd">        print(metadata)</span>
+<span class="sd">        </span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="nb">str</span><span class="p">),</span> <span class="s2">&quot;name must be a string.&quot;</span>
+    <span class="k">assert</span> <span class="n">version_id</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">version_id</span><span class="p">,</span> <span class="nb">str</span><span class="p">),</span> <span class="s2">&quot;version must be an string.&quot;</span>
+    
+    <span class="c1"># Get metadata for the object in onyx engine</span>
+    <span class="n">metadata</span> <span class="o">=</span> <span class="n">handle_post_request</span><span class="p">(</span><span class="s2">&quot;/get_object_metadata&quot;</span><span class="p">,</span> <span class="p">{</span><span class="s2">&quot;object_name&quot;</span><span class="p">:</span> <span class="n">name</span><span class="p">,</span> <span class="s2">&quot;object_id&quot;</span><span class="p">:</span> <span class="n">version_id</span><span class="p">})</span>
+    <span class="k">if</span> <span class="n">metadata</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">None</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">metadata</span><span class="p">[</span><span class="s1">&#39;config&#39;</span><span class="p">],</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="n">metadata</span><span class="p">[</span><span class="s1">&#39;config&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">metadata</span><span class="p">[</span><span class="s1">&#39;config&#39;</span><span class="p">])</span>
+            
+    <span class="k">return</span> <span class="n">metadata</span></div>
+
+
+<div class="viewcode-block" id="save_dataset">
+<a class="viewcode-back" href="../../onyxengine.html#onyxengine.api.save_dataset">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">save_dataset</span><span class="p">(</span><span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">dataset</span><span class="p">:</span> <span class="n">OnyxDataset</span><span class="p">,</span> <span class="n">source_datasets</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]]]</span><span class="o">=</span><span class="p">[]):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Save a dataset to the Engine.</span>
+<span class="sd">    </span>
+<span class="sd">    Args:</span>
+<span class="sd">        name (str): The name for the new dataset</span>
+<span class="sd">        dataset (OnyxDataset): The OnyxDataset object to save</span>
+<span class="sd">        source_datasets (List[Dict[str, Optional[str]]]): The source datasets used as a list of dictionaries, eg. [{&#39;name&#39;: &#39;dataset_name&#39;, &#39;version_id&#39;: &#39;dataset_version&#39;}]. If no version is provided, the latest version will be used.</span>
+<span class="sd">        </span>
+<span class="sd">    Example:</span>
+<span class="sd">    </span>
+<span class="sd">    .. code-block:: python</span>
+
+<span class="sd">        # Load data</span>
+<span class="sd">        raw_data = onyx.load_dataset(&#39;example_data&#39;)</span>
+
+<span class="sd">        # Pull out features for model training</span>
+<span class="sd">        train_data = pd.DataFrame()</span>
+<span class="sd">        train_data[&#39;acceleration_predicted&#39;] = raw_data.dataframe[&#39;acceleration&#39;]</span>
+<span class="sd">        train_data[&#39;velocity&#39;] = raw_data.dataframe[&#39;velocity&#39;]</span>
+<span class="sd">        train_data[&#39;position&#39;] = raw_data.dataframe[&#39;position&#39;]</span>
+<span class="sd">        train_data[&#39;control_input&#39;] = raw_data.dataframe[&#39;control_input&#39;]</span>
+<span class="sd">        train_data = train_data.dropna()</span>
+
+<span class="sd">        # Save training dataset</span>
+<span class="sd">        train_dataset = OnyxDataset(</span>
+<span class="sd">            dataframe=train_data,</span>
+<span class="sd">            outputs=[&#39;acceleration_predicted&#39;],</span>
+<span class="sd">            inputs=[&#39;velocity&#39;, &#39;position&#39;, &#39;control_input&#39;],</span>
+<span class="sd">            dt=0.0025</span>
+<span class="sd">        )</span>
+<span class="sd">        onyx.save_dataset(name=&#39;example_train_data&#39;, dataset=train_dataset, source_datasets=[{&#39;name&#39;: &#39;example_data&#39;}])</span>
+<span class="sd">    </span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="nb">str</span><span class="p">),</span> <span class="s2">&quot;name must be a string.&quot;</span>
+    <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">dataset</span><span class="p">,</span> <span class="n">OnyxDataset</span><span class="p">),</span> <span class="s2">&quot;dataset must be an OnyxDataset.&quot;</span>
+    <span class="n">sources</span> <span class="o">=</span> <span class="p">[</span><span class="n">SourceObject</span><span class="o">.</span><span class="n">model_validate</span><span class="p">({</span><span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="n">source</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">],</span> <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="n">source</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;version_id&quot;</span><span class="p">)})</span> <span class="k">for</span> <span class="n">source</span> <span class="ow">in</span> <span class="n">source_datasets</span><span class="p">]</span>
+    
+    <span class="c1"># Validate the dataset dataframe, name, and source datasets</span>
+    <span class="k">if</span> <span class="n">dataset</span><span class="o">.</span><span class="n">dataframe</span><span class="o">.</span><span class="n">empty</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">SystemExit</span><span class="p">(</span><span class="s2">&quot;Onyx Engine API error: Dataset dataframe is empty.&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">name</span> <span class="o">==</span> <span class="s1">&#39;&#39;</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">SystemExit</span><span class="p">(</span><span class="s2">&quot;Onyx Engine API error: Dataset name must be a non-empty string.&quot;</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">source</span> <span class="ow">in</span> <span class="n">sources</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">get_object_metadata</span><span class="p">(</span><span class="n">source</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">source</span><span class="o">.</span><span class="n">id</span><span class="p">)</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">SystemExit</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Onyx Engine API error: Source dataset [</span><span class="si">{</span><span class="n">source</span><span class="si">}</span><span class="s2">] not found in the Engine.&quot;</span><span class="p">)</span>
+    
+    <span class="c1"># Save a local copy of the dataset</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">DATASETS_PATH</span><span class="p">):</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">DATASETS_PATH</span><span class="p">)</span>
+    <span class="n">dataset_filename</span> <span class="o">=</span> <span class="n">name</span> <span class="o">+</span> <span class="s1">&#39;.csv&#39;</span>
+    <span class="n">dataset</span><span class="o">.</span><span class="n">dataframe</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">DATASETS_PATH</span><span class="p">,</span> <span class="n">dataset_filename</span><span class="p">),</span> <span class="n">index</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    
+    <span class="c1"># Upload the dataset and config to the cloud</span>
+    <span class="n">metadata</span> <span class="o">=</span> <span class="n">set_object_metadata</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="s1">&#39;dataset&#39;</span><span class="p">,</span> <span class="n">dataset</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">model_dump_json</span><span class="p">(),</span> <span class="n">sources</span><span class="p">)</span>
+    <span class="n">upload_object</span><span class="p">(</span><span class="n">dataset_filename</span><span class="p">,</span> <span class="s1">&#39;dataset&#39;</span><span class="p">,</span> <span class="n">metadata</span><span class="p">[</span><span class="s1">&#39;id&#39;</span><span class="p">])</span>
+    <span class="n">handle_post_request</span><span class="p">(</span><span class="s2">&quot;/notify_dataset_uploaded&quot;</span><span class="p">,</span> <span class="p">{</span><span class="s2">&quot;dataset_name&quot;</span><span class="p">:</span> <span class="n">name</span><span class="p">,</span> <span class="s2">&quot;dataset_id&quot;</span><span class="p">:</span> <span class="n">metadata</span><span class="p">[</span><span class="s1">&#39;id&#39;</span><span class="p">]})</span>
+    
+    <span class="c1"># Save local copy of metadata</span>
+    <span class="n">full_metadata</span> <span class="o">=</span> <span class="n">get_object_metadata</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">metadata</span><span class="p">[</span><span class="s1">&#39;id&#39;</span><span class="p">])</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">DATASETS_PATH</span><span class="p">,</span> <span class="n">name</span> <span class="o">+</span> <span class="s1">&#39;.json&#39;</span><span class="p">),</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+        <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">full_metadata</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">2</span><span class="p">))</span>
+        
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Dataset [</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s1">] saved to the Engine.&#39;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="load_dataset">
+<a class="viewcode-back" href="../../onyxengine.html#onyxengine.api.load_dataset">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">load_dataset</span><span class="p">(</span><span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">version_id</span><span class="p">:</span> <span class="nb">str</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OnyxDataset</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Load a dataset from the Engine, either from a local cached copy or by downloading from the Engine.</span>
+<span class="sd">    </span>
+<span class="sd">    Args:</span>
+<span class="sd">        name (str): The name of the dataset to load.</span>
+<span class="sd">        version_id (str, optional): The version id of the dataset to load, None = latest_version. (Default is None)</span>
+<span class="sd">    </span>
+<span class="sd">    Returns:</span>
+<span class="sd">        OnyxDataset: The loaded dataset.</span>
+<span class="sd">        </span>
+<span class="sd">    Example:</span>
+<span class="sd">    </span>
+<span class="sd">    .. code-block:: python</span>
+
+<span class="sd">        # Load the training dataset</span>
+<span class="sd">        train_dataset = onyx.load_dataset(&#39;example_train_data&#39;)</span>
+<span class="sd">        print(train_dataset.dataframe.head())</span>
+<span class="sd">        </span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="nb">str</span><span class="p">),</span> <span class="s2">&quot;name must be a string.&quot;</span>
+    <span class="k">assert</span> <span class="n">version_id</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">version_id</span><span class="p">,</span> <span class="nb">str</span><span class="p">),</span> <span class="s2">&quot;version_id must be an string.&quot;</span>
+    <span class="n">config_filename</span> <span class="o">=</span> <span class="n">name</span> <span class="o">+</span> <span class="s1">&#39;.json&#39;</span>
+    <span class="n">dataset_filename</span> <span class="o">=</span> <span class="n">name</span> <span class="o">+</span> <span class="s1">&#39;.csv&#39;</span>
+    <span class="n">dataset_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">DATASETS_PATH</span><span class="p">,</span> <span class="n">dataset_filename</span><span class="p">)</span>
+    <span class="n">config_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">DATASETS_PATH</span><span class="p">,</span> <span class="n">config_filename</span><span class="p">)</span>
+
+    <span class="c1"># Get dataset metadata</span>
+    <span class="n">metadata</span> <span class="o">=</span> <span class="n">get_object_metadata</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">version_id</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">metadata</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">SystemExit</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Onyx Engine API error: Dataset [</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">version_id</span><span class="si">}</span><span class="s2">] not found in the Engine.&quot;</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">download_dataset</span><span class="p">():</span>
+        <span class="n">download_object</span><span class="p">(</span><span class="n">dataset_filename</span><span class="p">,</span> <span class="s1">&#39;dataset&#39;</span><span class="p">,</span> <span class="n">version_id</span><span class="p">)</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">config_path</span><span class="p">),</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">metadata</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">2</span><span class="p">))</span>
+
+    <span class="c1"># If the dataset doesn&#39;t exist locally, download it</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">dataset_path</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">DATASETS_PATH</span><span class="p">):</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">DATASETS_PATH</span><span class="p">)</span>
+        <span class="n">download_dataset</span><span class="p">()</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="c1"># Else check if local version is outdated or does not match requested version</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">config_path</span><span class="p">),</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="n">local_metadata</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">version_id</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">metadata</span><span class="p">[</span><span class="s1">&#39;id&#39;</span><span class="p">]</span> <span class="o">!=</span> <span class="n">local_metadata</span><span class="p">[</span><span class="s1">&#39;id&#39;</span><span class="p">]:</span>
+            <span class="n">download_dataset</span><span class="p">()</span>
+        <span class="k">elif</span> <span class="n">version_id</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">version_id</span> <span class="o">!=</span> <span class="n">local_metadata</span><span class="p">[</span><span class="s1">&#39;id&#39;</span><span class="p">]:</span>
+            <span class="n">download_dataset</span><span class="p">()</span>
+
+    <span class="c1"># Load the dataset from local storage</span>
+    <span class="n">dataset_dataframe</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">dataset_path</span><span class="p">)</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">config_path</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+        <span class="n">config_json</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">())</span>
+    <span class="n">dataset_config</span> <span class="o">=</span> <span class="n">OnyxDatasetConfig</span><span class="o">.</span><span class="n">model_validate</span><span class="p">(</span><span class="n">config_json</span><span class="p">[</span><span class="s2">&quot;config&quot;</span><span class="p">])</span>
+    <span class="n">dataset</span> <span class="o">=</span> <span class="n">OnyxDataset</span><span class="p">(</span><span class="n">config</span><span class="o">=</span><span class="n">dataset_config</span><span class="p">,</span> <span class="n">dataframe</span><span class="o">=</span><span class="n">dataset_dataframe</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">dataset</span></div>
+
+
+<div class="viewcode-block" id="save_model">
+<a class="viewcode-back" href="../../onyxengine.html#onyxengine.api.save_model">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">save_model</span><span class="p">(</span><span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">model</span><span class="p">:</span> <span class="n">MLP</span> <span class="o">|</span> <span class="n">RNN</span> <span class="o">|</span> <span class="n">Transformer</span><span class="p">,</span> <span class="n">source_datasets</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]]]</span><span class="o">=</span><span class="p">[]):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Save a model to the Engine. Generally you won&#39;t need to use this function as the Engine will save models it trains automatically.</span>
+<span class="sd">    </span>
+<span class="sd">    Args:</span>
+<span class="sd">        name (str): The name for the new model.</span>
+<span class="sd">        model (MLP | RNN | Transformer): The Onyx model to save.</span>
+<span class="sd">        source_datasets (List[Dict[str, Optional[str]]]): The source datasets used as a list of dictionaries, eg. [{&#39;name&#39;: &#39;dataset_name&#39;, &#39;version_id&#39;: &#39;dataset_version&#39;}]. If no version is provided, the latest version will be used.</span>
+<span class="sd">        </span>
+<span class="sd">    Example:</span>
+<span class="sd">    </span>
+<span class="sd">    .. code-block:: python</span>
+<span class="sd">    </span>
+<span class="sd">        # Create model configuration</span>
+<span class="sd">        outputs = [</span>
+<span class="sd">            Output(name=&#39;acceleration_prediction&#39;),</span>
+<span class="sd">        ]</span>
+<span class="sd">        inputs = [</span>
+<span class="sd">            State(name=&#39;velocity&#39;, relation=&#39;derivative&#39;, parent=&#39;acceleration_prediction&#39;),</span>
+<span class="sd">            State(name=&#39;position&#39;, relation=&#39;derivative&#39;, parent=&#39;velocity&#39;),</span>
+<span class="sd">            Input(name=&#39;control_input&#39;),</span>
+<span class="sd">        ]</span>
+<span class="sd">        mlp_config = MLPConfig(</span>
+<span class="sd">            outputs=outputs,</span>
+<span class="sd">            inputs=inputs,</span>
+<span class="sd">            dt=0.0025,</span>
+<span class="sd">            sequence_length=8,</span>
+<span class="sd">            hidden_layers=3,</span>
+<span class="sd">            hidden_size=64,</span>
+<span class="sd">            activation=&#39;relu&#39;,</span>
+<span class="sd">            dropout=0.2,</span>
+<span class="sd">            bias=True</span>
+<span class="sd">        )</span>
+<span class="sd">         </span>
+<span class="sd">        # Create and save model</span>
+<span class="sd">        model = MLP(mlp_config)</span>
+<span class="sd">        onyx.save_model(name=&#39;example_model&#39;, model=model, source_datasets=[{&#39;name&#39;: &#39;example_train_data&#39;}])</span>
+<span class="sd">                   </span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="nb">str</span><span class="p">),</span> <span class="s2">&quot;name must be a string.&quot;</span>
+    <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="p">(</span><span class="n">MLP</span><span class="p">,</span> <span class="n">RNN</span><span class="p">,</span> <span class="n">Transformer</span><span class="p">)),</span> <span class="s2">&quot;model must be an MLP, RNN, or Transformer model.&quot;</span>
+    <span class="n">sources</span> <span class="o">=</span> <span class="p">[</span><span class="n">SourceObject</span><span class="o">.</span><span class="n">model_validate</span><span class="p">({</span><span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="n">source</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">],</span> <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="n">source</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;version_id&quot;</span><span class="p">)})</span> <span class="k">for</span> <span class="n">source</span> <span class="ow">in</span> <span class="n">source_datasets</span><span class="p">]</span>
+    
+    <span class="c1"># Validate the model name and source datasets</span>
+    <span class="k">if</span> <span class="n">name</span> <span class="o">==</span> <span class="s1">&#39;&#39;</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">SystemExit</span><span class="p">(</span><span class="s2">&quot;Onyx Engine API error: Model name must be a non-empty string.&quot;</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">source</span> <span class="ow">in</span> <span class="n">sources</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">get_object_metadata</span><span class="p">(</span><span class="n">source</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">source</span><span class="o">.</span><span class="n">id</span><span class="p">)</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">SystemExit</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Onyx Engine API error: Source dataset [</span><span class="si">{</span><span class="n">source</span><span class="si">}</span><span class="s2">] not found in the Engine.&quot;</span><span class="p">)</span>
+    
+    <span class="c1"># Save model to local storage</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">MODELS_PATH</span><span class="p">):</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">MODELS_PATH</span><span class="p">)</span>
+    <span class="n">model_filename</span> <span class="o">=</span> <span class="n">name</span> <span class="o">+</span> <span class="s1">&#39;.pt&#39;</span>
+    <span class="n">torch</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">state_dict</span><span class="p">(),</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">MODELS_PATH</span><span class="p">,</span> <span class="n">model_filename</span><span class="p">))</span>
+    
+    <span class="c1"># Upload the model and config to the cloud</span>
+    <span class="n">metadata</span> <span class="o">=</span> <span class="n">set_object_metadata</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="s1">&#39;model&#39;</span><span class="p">,</span> <span class="n">model</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">model_dump_json</span><span class="p">(),</span> <span class="n">sources</span><span class="p">)</span>
+    <span class="n">upload_object</span><span class="p">(</span><span class="n">model_filename</span><span class="p">,</span> <span class="s1">&#39;model&#39;</span><span class="p">,</span> <span class="n">metadata</span><span class="p">[</span><span class="s1">&#39;id&#39;</span><span class="p">])</span>
+    
+    <span class="c1"># Save local copy of metadata</span>
+    <span class="n">full_metadata</span> <span class="o">=</span> <span class="n">get_object_metadata</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">metadata</span><span class="p">[</span><span class="s1">&#39;id&#39;</span><span class="p">])</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">MODELS_PATH</span><span class="p">,</span> <span class="n">name</span> <span class="o">+</span> <span class="s1">&#39;.json&#39;</span><span class="p">),</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+        <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">full_metadata</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">2</span><span class="p">))</span>
+    
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Model [</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s1">] saved to the Engine.&#39;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="load_model">
+<a class="viewcode-back" href="../../onyxengine.html#onyxengine.api.load_model">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">load_model</span><span class="p">(</span><span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">version_id</span><span class="p">:</span> <span class="nb">str</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">mode</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;online&quot;</span><span class="p">,</span> <span class="s2">&quot;offline&quot;</span><span class="p">]</span><span class="o">=</span><span class="s2">&quot;online&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">MLP</span> <span class="o">|</span> <span class="n">RNN</span> <span class="o">|</span> <span class="n">Transformer</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Load a model from the Engine, either from a local cached copy or by downloading from the Engine.</span>
+<span class="sd">    </span>
+<span class="sd">    Args:</span>
+<span class="sd">        name (str): The name of the model to load.</span>
+<span class="sd">        version_id (str, optional): The version of the model to load, None = latest_version. (Default is None)</span>
+<span class="sd">        mode (Literal[&quot;online&quot;, &quot;offline&quot;]): Whether to use the Engine or restrict model loading to offline storage (Default is &quot;online&quot;)</span>
+<span class="sd">    </span>
+<span class="sd">    Returns:</span>
+<span class="sd">        MLP | RNN | Transformer: The loaded Onyx model.</span>
+<span class="sd">        </span>
+<span class="sd">    Example:</span>
+<span class="sd">    </span>
+<span class="sd">    .. code-block:: python</span>
+<span class="sd">    </span>
+<span class="sd">        # Load our model</span>
+<span class="sd">        model = onyx.load_model(&#39;example_model&#39;)</span>
+<span class="sd">        print(model.config)</span>
+<span class="sd">        </span>
+<span class="sd">        # Load a specific version of the model</span>
+<span class="sd">        model = onyx.load_model(&#39;example_model&#39;, version_id=&#39;a05fb872-0a7d-4a68-b189-aeece143c7e4&#39;)</span>
+<span class="sd">        print(model.config)</span>
+<span class="sd">        </span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="nb">str</span><span class="p">),</span> <span class="s2">&quot;name must be a string.&quot;</span>
+    <span class="k">assert</span> <span class="n">version_id</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">version_id</span><span class="p">,</span> <span class="nb">str</span><span class="p">),</span> <span class="s2">&quot;version_id must be an string.&quot;</span>
+    <span class="k">assert</span> <span class="n">mode</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;online&quot;</span><span class="p">,</span> <span class="s2">&quot;offline&quot;</span><span class="p">],</span> <span class="s2">&quot;mode must be either &#39;online&#39; or &#39;offline&#39;&quot;</span>
+    
+    <span class="n">model_filename</span> <span class="o">=</span> <span class="n">name</span> <span class="o">+</span> <span class="s1">&#39;.pt&#39;</span>
+    <span class="n">config_filename</span> <span class="o">=</span> <span class="n">name</span> <span class="o">+</span> <span class="s1">&#39;.json&#39;</span>
+    <span class="n">model_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">MODELS_PATH</span><span class="p">,</span> <span class="n">model_filename</span><span class="p">)</span>
+    <span class="n">config_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">MODELS_PATH</span><span class="p">,</span> <span class="n">config_filename</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">mode</span> <span class="o">==</span> <span class="s2">&quot;offline&quot;</span><span class="p">:</span>
+        <span class="c1"># In offline mode, try to directly load from local storage</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">model_path</span><span class="p">)</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">config_path</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">SystemExit</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Onyx Engine API error: Model [</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">] not found in local storage&quot;</span><span class="p">)</span>
+        
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">config_path</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="n">config_json</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+        <span class="n">model</span> <span class="o">=</span> <span class="n">model_from_config</span><span class="p">(</span><span class="n">config_json</span><span class="p">[</span><span class="s1">&#39;config&#39;</span><span class="p">])</span>
+        <span class="n">model</span><span class="o">.</span><span class="n">load_state_dict</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">model_path</span><span class="p">,</span> <span class="n">weights_only</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
+        <span class="n">model</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">model</span>
+
+    <span class="c1"># Online mode - check remote metadata</span>
+    <span class="n">metadata</span> <span class="o">=</span> <span class="n">get_object_metadata</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">version_id</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">metadata</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">SystemExit</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Onyx Engine API error: Model [</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">version_id</span><span class="si">}</span><span class="s2">] not found in the Engine.&quot;</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">download_model</span><span class="p">():</span>
+        <span class="n">download_object</span><span class="p">(</span><span class="n">model_filename</span><span class="p">,</span> <span class="s1">&#39;model&#39;</span><span class="p">,</span> <span class="n">version_id</span><span class="p">)</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">config_path</span><span class="p">),</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">metadata</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">2</span><span class="p">))</span>
+
+    <span class="c1"># If the model doesn&#39;t exist locally, download it</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">model_path</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">MODELS_PATH</span><span class="p">):</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">MODELS_PATH</span><span class="p">)</span>
+        <span class="n">download_model</span><span class="p">()</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="c1"># Else check if local version is outdated or does not match requested version</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">config_path</span><span class="p">),</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="n">local_metadata</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">version_id</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">metadata</span><span class="p">[</span><span class="s1">&#39;id&#39;</span><span class="p">]</span> <span class="o">!=</span> <span class="n">local_metadata</span><span class="p">[</span><span class="s1">&#39;id&#39;</span><span class="p">]:</span>
+            <span class="n">download_model</span><span class="p">()</span>
+        <span class="k">elif</span> <span class="n">version_id</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">version_id</span> <span class="o">!=</span> <span class="n">local_metadata</span><span class="p">[</span><span class="s1">&#39;id&#39;</span><span class="p">]:</span>
+            <span class="n">download_model</span><span class="p">()</span>
+
+    <span class="c1"># Load the model from local storage</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">config_path</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+        <span class="n">config_json</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">())</span>
+    <span class="n">model</span> <span class="o">=</span> <span class="n">model_from_config</span><span class="p">(</span><span class="n">config_json</span><span class="p">[</span><span class="s1">&#39;config&#39;</span><span class="p">])</span>
+    <span class="n">model</span><span class="o">.</span><span class="n">load_state_dict</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">model_path</span><span class="p">,</span> <span class="n">weights_only</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
+    <span class="n">model</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
+
+    <span class="k">return</span> <span class="n">model</span></div>
+
+
+<div class="viewcode-block" id="train_model">
+<a class="viewcode-back" href="../../onyxengine.html#onyxengine.api.train_model">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">train_model</span><span class="p">(</span>
+    <span class="n">model_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+    <span class="n">model_config</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">MLPConfig</span><span class="p">,</span> <span class="n">RNNConfig</span><span class="p">,</span> <span class="n">TransformerConfig</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">dataset_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+    <span class="n">dataset_version_id</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">training_config</span><span class="p">:</span> <span class="n">TrainingConfig</span> <span class="o">=</span> <span class="n">TrainingConfig</span><span class="p">(),</span>
+    <span class="n">monitor_training</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Train a model on the Engine using a specified dataset, model config, and training config.</span>
+<span class="sd">    </span>
+<span class="sd">    Args:</span>
+<span class="sd">        model_name (str): The name of the model to train. (Required)</span>
+<span class="sd">        model_config (Union[MLPConfig, RNNConfig, TransformerConfig]): The configuration for the model to train. (Required)</span>
+<span class="sd">        dataset_name (str): The name of the dataset to train on. (Required)</span>
+<span class="sd">        dataset_version_id (str, optional): The version of the dataset to train on, None = latest_version. (Default is None)</span>
+<span class="sd">        training_config (TrainingConfig): The configuration for the training process. (Default is TrainingConfig())</span>
+<span class="sd">        monitor_training (bool, optional): Whether to monitor the training job. (Default is True)</span>
+<span class="sd">        </span>
+<span class="sd">    Example:</span>
+<span class="sd">    </span>
+<span class="sd">    .. code-block:: python</span>
+<span class="sd">    </span>
+<span class="sd">        # Model config</span>
+<span class="sd">        outputs = [</span>
+<span class="sd">            Output(name=&#39;acceleration_prediction&#39;),</span>
+<span class="sd">        ]</span>
+<span class="sd">        inputs = [</span>
+<span class="sd">            State(name=&#39;velocity&#39;, relation=&#39;derivative&#39;, parent=&#39;acceleration_prediction&#39;),</span>
+<span class="sd">            State(name=&#39;position&#39;, relation=&#39;derivative&#39;, parent=&#39;velocity&#39;),</span>
+<span class="sd">            Input(name=&#39;control_input&#39;),</span>
+<span class="sd">        ]</span>
+
+<span class="sd">        model_config = MLPConfig(</span>
+<span class="sd">            outputs=outputs,</span>
+<span class="sd">            inputs=inputs,</span>
+<span class="sd">            dt=0.0025,</span>
+<span class="sd">            sequence_length=8,</span>
+<span class="sd">            hidden_layers=3,</span>
+<span class="sd">            hidden_size=64,</span>
+<span class="sd">            activation=&#39;relu&#39;,</span>
+<span class="sd">            dropout=0.2,</span>
+<span class="sd">            bias=True</span>
+<span class="sd">        )</span>
+<span class="sd">        </span>
+<span class="sd">        # Training config</span>
+<span class="sd">        training_config = TrainingConfig(</span>
+<span class="sd">            training_iters=2000,</span>
+<span class="sd">            train_batch_size=32,</span>
+<span class="sd">            test_dataset_size=500,</span>
+<span class="sd">            checkpoint_type=&#39;single_step&#39;,</span>
+<span class="sd">            optimizer=AdamWConfig(lr=3e-4, weight_decay=1e-2),</span>
+<span class="sd">            lr_scheduler=CosineDecayWithWarmupConfig(max_lr=3e-4, min_lr=3e-5, warmup_iters=200, decay_iters=1000)</span>
+<span class="sd">        )</span>
+
+<span class="sd">        # Execute training</span>
+<span class="sd">        onyx.train_model(</span>
+<span class="sd">            model_name=&#39;example_model&#39;,</span>
+<span class="sd">            model_config=model_config,</span>
+<span class="sd">            dataset_name=&#39;example_train_data&#39;,</span>
+<span class="sd">            training_config=training_config,</span>
+<span class="sd">            monitor_training=True</span>
+<span class="sd">        )</span>
+<span class="sd">        </span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">model_name</span><span class="p">,</span> <span class="nb">str</span><span class="p">),</span> <span class="s2">&quot;model_name must be a string.&quot;</span>
+    <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">model_config</span><span class="p">,</span> <span class="p">(</span><span class="n">MLPConfig</span><span class="p">,</span> <span class="n">RNNConfig</span><span class="p">,</span> <span class="n">TransformerConfig</span><span class="p">)),</span> <span class="s2">&quot;model_config must be a model config.&quot;</span>
+    <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">dataset_name</span><span class="p">,</span> <span class="nb">str</span><span class="p">),</span> <span class="s2">&quot;dataset_name must be a string.&quot;</span>
+    <span class="k">assert</span> <span class="n">dataset_version_id</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">dataset_version_id</span><span class="p">,</span> <span class="nb">str</span><span class="p">),</span> <span class="s2">&quot;dataset_version_id must be an string.&quot;</span>
+    <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">training_config</span><span class="p">,</span> <span class="n">TrainingConfig</span><span class="p">),</span> <span class="s2">&quot;training_config must be a TrainingConfig.&quot;</span>
+    <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">monitor_training</span><span class="p">,</span> <span class="nb">bool</span><span class="p">),</span> <span class="s2">&quot;monitor_training must be a boolean.&quot;</span>
+
+    <span class="c1"># Check that model/dataset names are not empty</span>
+    <span class="k">if</span> <span class="n">model_name</span> <span class="o">==</span> <span class="s1">&#39;&#39;</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">SystemExit</span><span class="p">(</span><span class="s2">&quot;Onyx Engine API error: Model name must be a non-empty string.&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">dataset_name</span> <span class="o">==</span> <span class="s1">&#39;&#39;</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">SystemExit</span><span class="p">(</span><span class="s2">&quot;Onyx Engine API error: Dataset name must be a non-empty string.&quot;</span><span class="p">)</span>
+
+    <span class="c1"># Check that the dataset exists</span>
+    <span class="n">data_metadata</span> <span class="o">=</span> <span class="n">get_object_metadata</span><span class="p">(</span><span class="n">dataset_name</span><span class="p">,</span> <span class="n">dataset_version_id</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">data_metadata</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">SystemExit</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Onyx Engine API error: Dataset [</span><span class="si">{</span><span class="n">dataset_name</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">dataset_version_id</span><span class="si">}</span><span class="s2">] not found in the Engine.&quot;</span><span class="p">)</span>
+    <span class="n">data_config</span> <span class="o">=</span> <span class="n">OnyxDatasetConfig</span><span class="o">.</span><span class="n">model_validate</span><span class="p">(</span><span class="n">data_metadata</span><span class="p">[</span><span class="s1">&#39;config&#39;</span><span class="p">])</span>
+    <span class="c1"># Check that config of model matches features of dataset</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">model_config</span><span class="o">.</span><span class="n">inputs</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="n">data_config</span><span class="o">.</span><span class="n">inputs</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">SystemExit</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Onyx Engine API error: Number of inputs in model config does not match dataset.&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">model_config</span><span class="o">.</span><span class="n">outputs</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="n">data_config</span><span class="o">.</span><span class="n">outputs</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">SystemExit</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Onyx Engine API error: Number of outputs in model config does not match dataset.&quot;</span><span class="p">)</span>
+    <span class="c1"># Check that config dt is an integer multiple of dataset dt</span>
+    <span class="k">if</span> <span class="nb">abs</span><span class="p">((</span><span class="n">model_config</span><span class="o">.</span><span class="n">dt</span> <span class="o">%</span> <span class="n">data_config</span><span class="o">.</span><span class="n">dt</span><span class="p">))</span> <span class="o">&gt;</span> <span class="mf">1e-9</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">SystemExit</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Onyx Engine API error: Model config dt must be an integer multiple of dataset dt.&quot;</span><span class="p">)</span>
+
+    <span class="c1"># Request the onyx server to train the model</span>
+    <span class="n">response</span> <span class="o">=</span> <span class="n">handle_post_request</span><span class="p">(</span><span class="s2">&quot;/train_model&quot;</span><span class="p">,</span> <span class="p">{</span>
+        <span class="s2">&quot;onyx_model_name&quot;</span><span class="p">:</span> <span class="n">model_name</span><span class="p">,</span>
+        <span class="s2">&quot;onyx_model_config&quot;</span><span class="p">:</span> <span class="n">model_config</span><span class="o">.</span><span class="n">model_dump_json</span><span class="p">(),</span>
+        <span class="s2">&quot;dataset_name&quot;</span><span class="p">:</span> <span class="n">dataset_name</span><span class="p">,</span>
+        <span class="s2">&quot;dataset_id&quot;</span><span class="p">:</span> <span class="n">dataset_version_id</span><span class="p">,</span>
+        <span class="s2">&quot;training_config&quot;</span><span class="p">:</span> <span class="n">training_config</span><span class="o">.</span><span class="n">model_dump_json</span><span class="p">(),</span>
+    <span class="p">})</span>
+
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Preparing to train model [</span><span class="si">{</span><span class="n">model_name</span><span class="si">}</span><span class="s1">] using dataset [</span><span class="si">{</span><span class="n">dataset_name</span><span class="si">}</span><span class="s1">].&#39;</span><span class="p">)</span>    
+    <span class="k">if</span> <span class="n">monitor_training</span><span class="p">:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">asyncio</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">monitor_training_job</span><span class="p">(</span><span class="n">response</span><span class="p">[</span><span class="s1">&#39;job_id&#39;</span><span class="p">],</span> <span class="n">training_config</span><span class="p">))</span>
+        <span class="k">except</span> <span class="ne">KeyboardInterrupt</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Training job monitoring stopped.&#39;</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="optimize_model">
+<a class="viewcode-back" href="../../onyxengine.html#onyxengine.api.optimize_model">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">optimize_model</span><span class="p">(</span>
+    <span class="n">model_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+    <span class="n">dataset_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+    <span class="n">dataset_version_id</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">optimization_config</span><span class="p">:</span> <span class="n">OptimizationConfig</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Optimize a model on the Engine using a specified dataset, model simulator config, and optimization configs. Optimization configs define the search space for hyperparameters.</span>
+<span class="sd">    </span>
+<span class="sd">    Args:</span>
+<span class="sd">        model_name (str): The name of the model to optimize. (Required)</span>
+<span class="sd">        model_sim_config (ModelSimulatorConfig): The configuration for the model simulator. (Required)</span>
+<span class="sd">        dataset_name (str): The name of the dataset to optimize on. (Required)</span>
+<span class="sd">        dataset_version_id (str, optional): The version of the dataset to optimize on, None = latest_version. (Default is None)</span>
+<span class="sd">        optimization_config (OptimizationConfig): The configuration for the optimization process. (Required)</span>
+
+<span class="sd">    Example:</span>
+<span class="sd">    </span>
+<span class="sd">    .. code-block:: python</span>
+<span class="sd">    </span>
+<span class="sd">        # Model inputs/outputs</span>
+<span class="sd">        outputs = [</span>
+<span class="sd">            Output(name=&#39;acceleration_prediction&#39;),</span>
+<span class="sd">        ]</span>
+<span class="sd">        inputs = [</span>
+<span class="sd">            State(name=&#39;velocity&#39;, relation=&#39;derivative&#39;, parent=&#39;acceleration_prediction&#39;),</span>
+<span class="sd">            State(name=&#39;position&#39;, relation=&#39;derivative&#39;, parent=&#39;velocity&#39;),</span>
+<span class="sd">            Input(name=&#39;control_input&#39;),</span>
+<span class="sd">        ]</span>
+<span class="sd">        </span>
+<span class="sd">        # Model optimization configs</span>
+<span class="sd">        mlp_opt = MLPOptConfig(</span>
+<span class="sd">            outputs=outputs,</span>
+<span class="sd">            inputs=inputs,</span>
+<span class="sd">            dt=0.0025,</span>
+<span class="sd">            sequence_length={&quot;select&quot;: [1, 2, 4, 5, 6, 8, 10]},</span>
+<span class="sd">            hidden_layers={&quot;range&quot;: [2, 4, 1]},</span>
+<span class="sd">            hidden_size={&quot;select&quot;: [12, 24, 32, 64, 128]},</span>
+<span class="sd">            activation={&quot;select&quot;: [&#39;relu&#39;, &#39;tanh&#39;]},</span>
+<span class="sd">            dropout={&quot;range&quot;: [0.0, 0.4, 0.1]},</span>
+<span class="sd">            bias=True</span>
+<span class="sd">        )</span>
+<span class="sd">        rnn_opt = RNNOptConfig(</span>
+<span class="sd">            outputs=outputs,</span>
+<span class="sd">            inputs=inputs,</span>
+<span class="sd">            dt=0.0025,</span>
+<span class="sd">            rnn_type={&quot;select&quot;: [&#39;RNN&#39;, &#39;LSTM&#39;, &#39;GRU&#39;]},</span>
+<span class="sd">            sequence_length={&quot;select&quot;: [1, 2, 4, 5, 6, 8, 10, 12, 14, 15]},</span>
+<span class="sd">            hidden_layers={&quot;range&quot;: [2, 4, 1]},</span>
+<span class="sd">            hidden_size={&quot;select&quot;: [12, 24, 32, 64, 128]},</span>
+<span class="sd">            dropout={&quot;range&quot;: [0.0, 0.4, 0.1]},</span>
+<span class="sd">            bias=True</span>
+<span class="sd">        )</span>
+<span class="sd">        transformer_opt = TransformerOptConfig(</span>
+<span class="sd">            outputs=outputs,</span>
+<span class="sd">            inputs=inputs,</span>
+<span class="sd">            dt=0.0025,</span>
+<span class="sd">            sequence_length={&quot;select&quot;: [1, 2, 4, 5, 6, 8, 10, 12, 14, 15]},</span>
+<span class="sd">            n_layer={&quot;range&quot;: [2, 4, 1]},</span>
+<span class="sd">            n_head={&quot;range&quot;: [2, 10, 2]},</span>
+<span class="sd">            n_embd={&quot;select&quot;: [12, 24, 32, 64, 128]},</span>
+<span class="sd">            dropout={&quot;range&quot;: [0.0, 0.4, 0.1]},</span>
+<span class="sd">            bias=True</span>
+<span class="sd">        )</span>
+<span class="sd">            </span>
+<span class="sd">        # Optimizer configs</span>
+<span class="sd">        adamw_opt = AdamWOptConfig(</span>
+<span class="sd">            lr={&quot;select&quot;: [1e-5, 5e-5, 1e-4, 3e-4, 5e-4, 8e-4, 1e-3, 5e-3, 1e-2]},</span>
+<span class="sd">            weight_decay={&quot;select&quot;: [1e-4, 1e-3, 1e-2, 1e-1]}</span>
+<span class="sd">        )</span>
+<span class="sd">        sgd_opt = SGDOptConfig(</span>
+<span class="sd">            lr={&quot;select&quot;: [1e-5, 5e-5, 1e-4, 3e-4, 5e-4, 8e-4, 1e-3, 5e-3, 1e-2]},</span>
+<span class="sd">            weight_decay={&quot;select&quot;: [1e-4, 1e-3, 1e-2, 1e-1]},</span>
+<span class="sd">            momentum={&quot;select&quot;: [0, 0.8, 0.9, 0.95, 0.99]}</span>
+<span class="sd">        )</span>
+<span class="sd">        </span>
+<span class="sd">        # Learning rate scheduler configs</span>
+<span class="sd">        cos_decay_opt = CosineDecayWithWarmupOptConfig(</span>
+<span class="sd">            max_lr={&quot;select&quot;: [1e-4, 3e-4, 5e-4, 8e-4, 1e-3, 3e-3, 5e-3]},</span>
+<span class="sd">            min_lr={&quot;select&quot;: [1e-6, 5e-6, 1e-5, 3e-5, 5e-5, 8e-5, 1e-4]},</span>
+<span class="sd">            warmup_iters={&quot;select&quot;: [50, 100, 200, 400, 800]},</span>
+<span class="sd">            decay_iters={&quot;select&quot;: [500, 1000, 2000, 4000, 8000]}</span>
+<span class="sd">        )</span>
+<span class="sd">        cos_anneal_opt = CosineAnnealingWarmRestartsOptConfig(</span>
+<span class="sd">            T_0={&quot;select&quot;: [200, 500, 1000, 2000, 5000, 10000]},</span>
+<span class="sd">            T_mult={&quot;select&quot;: [1, 2, 3]},</span>
+<span class="sd">            eta_min={&quot;select&quot;: [1e-6, 5e-6, 1e-5, 3e-5, 5e-5, 8e-5, 1e-4, 3e-4]}</span>
+<span class="sd">        )</span>
+<span class="sd">        </span>
+<span class="sd">        # Optimization config</span>
+<span class="sd">        opt_config = OptimizationConfig(</span>
+<span class="sd">            training_iters=2000,</span>
+<span class="sd">            train_batch_size=512,</span>
+<span class="sd">            test_dataset_size=500,</span>
+<span class="sd">            checkpoint_type=&#39;single_step&#39;,</span>
+<span class="sd">            opt_models=[mlp_opt, rnn_opt, transformer_opt],</span>
+<span class="sd">            opt_optimizers=[adamw_opt, sgd_opt],</span>
+<span class="sd">            opt_lr_schedulers=[None, cos_decay_opt, cos_anneal_opt],</span>
+<span class="sd">            num_trials=5</span>
+<span class="sd">        )</span>
+<span class="sd">        </span>
+<span class="sd">        # Execute model optimization</span>
+<span class="sd">        onyx.optimize_model(</span>
+<span class="sd">            model_name=&#39;example_model_optimized&#39;,</span>
+<span class="sd">            model_sim_config=sim_config,</span>
+<span class="sd">            dataset_name=&#39;example_train_data&#39;,</span>
+<span class="sd">            optimization_config=opt_config,</span>
+<span class="sd">        )</span>
+<span class="sd">        </span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">model_name</span><span class="p">,</span> <span class="nb">str</span><span class="p">),</span> <span class="s2">&quot;model_name must be a string.&quot;</span>
+    <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">dataset_name</span><span class="p">,</span> <span class="nb">str</span><span class="p">),</span> <span class="s2">&quot;dataset_name must be a string.&quot;</span>
+    <span class="k">assert</span> <span class="n">dataset_version_id</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">dataset_version_id</span><span class="p">,</span> <span class="nb">str</span><span class="p">),</span> <span class="s2">&quot;dataset_version_id must be an string.&quot;</span>
+    <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">optimization_config</span><span class="p">,</span> <span class="n">OptimizationConfig</span><span class="p">),</span> <span class="s2">&quot;optimization_config is required and must be an OptimizationConfig.&quot;</span>
+
+    <span class="c1"># Check that model/dataset names are not empty</span>
+    <span class="k">if</span> <span class="n">model_name</span> <span class="o">==</span> <span class="s1">&#39;&#39;</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">SystemExit</span><span class="p">(</span><span class="s2">&quot;Onyx Engine API error: Model name must be a non-empty string.&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">dataset_name</span> <span class="o">==</span> <span class="s1">&#39;&#39;</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">SystemExit</span><span class="p">(</span><span class="s2">&quot;Onyx Engine API error: Dataset name must be a non-empty string.&quot;</span><span class="p">)</span>
+
+    <span class="c1"># Check that the dataset exists</span>
+    <span class="n">data_metadata</span> <span class="o">=</span> <span class="n">get_object_metadata</span><span class="p">(</span><span class="n">dataset_name</span><span class="p">,</span> <span class="n">dataset_version_id</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">data_metadata</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">SystemExit</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Onyx Engine API error: Dataset [</span><span class="si">{</span><span class="n">dataset_name</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">dataset_version_id</span><span class="si">}</span><span class="s2">] not found in the Engine.&quot;</span><span class="p">)</span>
+    <span class="n">data_config</span> <span class="o">=</span> <span class="n">OnyxDatasetConfig</span><span class="o">.</span><span class="n">model_validate</span><span class="p">(</span><span class="n">data_metadata</span><span class="p">[</span><span class="s1">&#39;config&#39;</span><span class="p">])</span>
+    <span class="c1"># Check that config of model matches features of dataset</span>
+    <span class="k">for</span> <span class="n">opt_model</span> <span class="ow">in</span> <span class="n">optimization_config</span><span class="o">.</span><span class="n">opt_models</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">opt_model</span><span class="o">.</span><span class="n">inputs</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="n">data_config</span><span class="o">.</span><span class="n">inputs</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">SystemExit</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Onyx Engine API error: Number of inputs in model config does not match dataset.&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">opt_model</span><span class="o">.</span><span class="n">outputs</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="n">data_config</span><span class="o">.</span><span class="n">outputs</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">SystemExit</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Onyx Engine API error: Number of outputs in model config does not match dataset.&quot;</span><span class="p">)</span>
+
+    <span class="c1"># Request the onyx server to train the model</span>
+    <span class="n">response</span> <span class="o">=</span> <span class="n">handle_post_request</span><span class="p">(</span><span class="s2">&quot;/optimize_model&quot;</span><span class="p">,</span> <span class="p">{</span>
+        <span class="s2">&quot;onyx_model_name&quot;</span><span class="p">:</span> <span class="n">model_name</span><span class="p">,</span>
+        <span class="s2">&quot;dataset_name&quot;</span><span class="p">:</span> <span class="n">dataset_name</span><span class="p">,</span>
+        <span class="s2">&quot;dataset_id&quot;</span><span class="p">:</span> <span class="n">dataset_version_id</span><span class="p">,</span>
+        <span class="s2">&quot;optimization_config&quot;</span><span class="p">:</span> <span class="n">optimization_config</span><span class="o">.</span><span class="n">model_dump_json</span><span class="p">(),</span>
+    <span class="p">})</span>
+
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Preparing to optimize model [</span><span class="si">{</span><span class="n">model_name</span><span class="si">}</span><span class="s1">] using dataset [</span><span class="si">{</span><span class="n">dataset_name</span><span class="si">}</span><span class="s1">].&#39;</span><span class="p">)</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Onyx Robotics Inc.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
