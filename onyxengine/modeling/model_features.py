@@ -2,8 +2,8 @@ from typing import List, Literal, Union, Optional
 from pydantic import BaseModel, Field, model_validator
 from typing_extensions import Self
 import torch
-import jax
-import jax.numpy as jnp
+# import jax
+# import jax.numpy as jnp
 
 class BaseFeature(BaseModel):
     type: Literal['base_feature'] = Field(default='base_feature', frozen=True, init=False)
@@ -180,104 +180,104 @@ class FeatureScaler:
             self.set_device(y.device)
         return y * self.out_unscale + self.out_unbias
     
-class FeatureScalerJax:
-    def __init__(self, outputs: List[Output], inputs: List[Union[Input, State]], device: jax.Device = None, dtype=jax.numpy.float32):
-        self.device = device
-        self.dtype = dtype
-        n_inputs = len(inputs)
-        n_outputs = len(outputs)
+# class FeatureScalerJax:
+#     def __init__(self, outputs: List[Output], inputs: List[Union[Input, State]], device: jax.Device = None, dtype=jax.numpy.float32):
+#         self.device = device
+#         self.dtype = dtype
+#         n_inputs = len(inputs)
+#         n_outputs = len(outputs)
         
-        # Initialize scaling arrays
-        # Inputs
-        self.in_scale = jnp.ones(n_inputs, dtype=dtype)
-        self.in_bias = jnp.zeros(n_inputs, dtype=dtype)
-        self.in_unscale = jnp.ones(n_inputs, dtype=dtype)
-        self.in_unbias = jnp.zeros(n_inputs, dtype=dtype)
-        # Outputs
-        self.out_scale = jnp.ones(n_outputs, dtype=dtype)
-        self.out_bias = jnp.zeros(n_outputs, dtype=dtype)
-        self.out_unscale = jnp.ones(n_outputs, dtype=dtype)
-        self.out_unbias = jnp.zeros(n_outputs, dtype=dtype)
+#         # Initialize scaling arrays
+#         # Inputs
+#         self.in_scale = jnp.ones(n_inputs, dtype=dtype)
+#         self.in_bias = jnp.zeros(n_inputs, dtype=dtype)
+#         self.in_unscale = jnp.ones(n_inputs, dtype=dtype)
+#         self.in_unbias = jnp.zeros(n_inputs, dtype=dtype)
+#         # Outputs
+#         self.out_scale = jnp.ones(n_outputs, dtype=dtype)
+#         self.out_bias = jnp.zeros(n_outputs, dtype=dtype)
+#         self.out_unscale = jnp.ones(n_outputs, dtype=dtype)
+#         self.out_unbias = jnp.zeros(n_outputs, dtype=dtype)
 
-        # Helper function to compute scaling factors
-        def compute_scale_factors(feature: Union[Input, Output, State], scale_array, bias_array, unscale_array, unbias_array, idx):
-            if feature.scale is None:
-                # Return arrays unchanged when no scaling is needed
-                return scale_array, bias_array, unscale_array, unbias_array
+#         # Helper function to compute scaling factors
+#         def compute_scale_factors(feature: Union[Input, Output, State], scale_array, bias_array, unscale_array, unbias_array, idx):
+#             if feature.scale is None:
+#                 # Return arrays unchanged when no scaling is needed
+#                 return scale_array, bias_array, unscale_array, unbias_array
             
-            if feature.scale == 'mean':
-                mean = feature.train_mean or 0.0
-                std = feature.train_std or 1.0
-                # Scaling: x_norm = (x - mean) / std
-                scale_array = scale_array.at[idx].set(1.0 / std)
-                bias_array = bias_array.at[idx].set(-mean / std)
-                # Descaling: x = x_norm * std + mean
-                unscale_array = unscale_array.at[idx].set(std)
-                unbias_array = unbias_array.at[idx].set(mean)
-            else:
-                min_val = feature.scale[0] or 0.0
-                max_val = feature.scale[1] or 1.0
-                scale_range = max_val - min_val
-                # Scaling: x_norm = 2 * (x - min) / (max - min) - 1
-                scale_array = scale_array.at[idx].set(2.0 / scale_range)
-                bias_array = bias_array.at[idx].set(-1.0 - (2.0 * min_val / scale_range))
-                # Descaling: x = 0.5 * (x_norm + 1) * (max - min) + min
-                unscale_array = unscale_array.at[idx].set(0.5 * scale_range)
-                unbias_array = unbias_array.at[idx].set((0.5 * scale_range) + min_val)
+#             if feature.scale == 'mean':
+#                 mean = feature.train_mean or 0.0
+#                 std = feature.train_std or 1.0
+#                 # Scaling: x_norm = (x - mean) / std
+#                 scale_array = scale_array.at[idx].set(1.0 / std)
+#                 bias_array = bias_array.at[idx].set(-mean / std)
+#                 # Descaling: x = x_norm * std + mean
+#                 unscale_array = unscale_array.at[idx].set(std)
+#                 unbias_array = unbias_array.at[idx].set(mean)
+#             else:
+#                 min_val = feature.scale[0] or 0.0
+#                 max_val = feature.scale[1] or 1.0
+#                 scale_range = max_val - min_val
+#                 # Scaling: x_norm = 2 * (x - min) / (max - min) - 1
+#                 scale_array = scale_array.at[idx].set(2.0 / scale_range)
+#                 bias_array = bias_array.at[idx].set(-1.0 - (2.0 * min_val / scale_range))
+#                 # Descaling: x = 0.5 * (x_norm + 1) * (max - min) + min
+#                 unscale_array = unscale_array.at[idx].set(0.5 * scale_range)
+#                 unbias_array = unbias_array.at[idx].set((0.5 * scale_range) + min_val)
             
-            return scale_array, bias_array, unscale_array, unbias_array
+#             return scale_array, bias_array, unscale_array, unbias_array
 
-        # Compute scaling factors for inputs and outputs
-        for i, feature in enumerate(inputs):
-            self.in_scale, self.in_bias, self.in_unscale, self.in_unbias = compute_scale_factors(
-                feature, self.in_scale, self.in_bias, self.in_unscale, self.in_unbias, i)
+#         # Compute scaling factors for inputs and outputs
+#         for i, feature in enumerate(inputs):
+#             self.in_scale, self.in_bias, self.in_unscale, self.in_unbias = compute_scale_factors(
+#                 feature, self.in_scale, self.in_bias, self.in_unscale, self.in_unbias, i)
             
-        for i, feature in enumerate(outputs):
-            self.out_scale, self.out_bias, self.out_unscale, self.out_unbias = compute_scale_factors(
-                feature, self.out_scale, self.out_bias, self.out_unscale, self.out_unbias, i)
+#         for i, feature in enumerate(outputs):
+#             self.out_scale, self.out_bias, self.out_unscale, self.out_unbias = compute_scale_factors(
+#                 feature, self.out_scale, self.out_bias, self.out_unscale, self.out_unbias, i)
 
-        # Reshape arrays for efficient broadcasting
-        # Input arrays: (1, 1, n_features) for batch, sequence, feature dimensions
-        self.in_scale = self.in_scale.reshape(1, 1, -1)
-        self.in_bias = self.in_bias.reshape(1, 1, -1)
-        self.in_unscale = self.in_unscale.reshape(1, 1, -1)
-        self.in_unbias = self.in_unbias.reshape(1, 1, -1)
+#         # Reshape arrays for efficient broadcasting
+#         # Input arrays: (1, 1, n_features) for batch, sequence, feature dimensions
+#         self.in_scale = self.in_scale.reshape(1, 1, -1)
+#         self.in_bias = self.in_bias.reshape(1, 1, -1)
+#         self.in_unscale = self.in_unscale.reshape(1, 1, -1)
+#         self.in_unbias = self.in_unbias.reshape(1, 1, -1)
         
-        # Output arrays: (1, n_features) for batch, feature dimensions
-        self.out_scale = self.out_scale.reshape(1, -1)
-        self.out_bias = self.out_bias.reshape(1, -1)
-        self.out_unscale = self.out_unscale.reshape(1, -1)
-        self.out_unbias = self.out_unbias.reshape(1, -1)
+#         # Output arrays: (1, n_features) for batch, feature dimensions
+#         self.out_scale = self.out_scale.reshape(1, -1)
+#         self.out_bias = self.out_bias.reshape(1, -1)
+#         self.out_unscale = self.out_unscale.reshape(1, -1)
+#         self.out_unbias = self.out_unbias.reshape(1, -1)
 
-    def set_device(self, device: jax.Device):
-        """Set the device for all scaling arrays.
+#     def set_device(self, device: jax.Device):
+#         """Set the device for all scaling arrays.
         
-        Note: In JAX, arrays are typically placed on devices automatically based on context.
-        This method is provided for explicit device control when needed.
-        """
-        self.device = device
-        # Use jax.device_put to move arrays to the specified device
-        self.in_scale = jax.device_put(self.in_scale, device)
-        self.in_bias = jax.device_put(self.in_bias, device)
-        self.in_unscale = jax.device_put(self.in_unscale, device)
-        self.in_unbias = jax.device_put(self.in_unbias, device)
-        self.out_scale = jax.device_put(self.out_scale, device)
-        self.out_bias = jax.device_put(self.out_bias, device)
-        self.out_unscale = jax.device_put(self.out_unscale, device)
-        self.out_unbias = jax.device_put(self.out_unbias, device)
+#         Note: In JAX, arrays are typically placed on devices automatically based on context.
+#         This method is provided for explicit device control when needed.
+#         """
+#         self.device = device
+#         # Use jax.device_put to move arrays to the specified device
+#         self.in_scale = jax.device_put(self.in_scale, device)
+#         self.in_bias = jax.device_put(self.in_bias, device)
+#         self.in_unscale = jax.device_put(self.in_unscale, device)
+#         self.in_unbias = jax.device_put(self.in_unbias, device)
+#         self.out_scale = jax.device_put(self.out_scale, device)
+#         self.out_bias = jax.device_put(self.out_bias, device)
+#         self.out_unscale = jax.device_put(self.out_unscale, device)
+#         self.out_unbias = jax.device_put(self.out_unbias, device)
 
-    def scale_inputs(self, x: jax.Array) -> jax.Array:
-        """Scale input features to normalized range. (most common)"""
-        return x * self.in_scale + self.in_bias
+#     def scale_inputs(self, x: jax.Array) -> jax.Array:
+#         """Scale input features to normalized range. (most common)"""
+#         return x * self.in_scale + self.in_bias
 
-    def unscale_inputs(self, x: jax.Array) -> jax.Array:
-        """Unscale input features back to original scale."""
-        return x * self.in_unscale + self.in_unbias
+#     def unscale_inputs(self, x: jax.Array) -> jax.Array:
+#         """Unscale input features back to original scale."""
+#         return x * self.in_unscale + self.in_unbias
 
-    def scale_outputs(self, y: jax.Array) -> jax.Array:
-        """Scale output features to normalized range."""
-        return y * self.out_scale + self.out_bias
+#     def scale_outputs(self, y: jax.Array) -> jax.Array:
+#         """Scale output features to normalized range."""
+#         return y * self.out_scale + self.out_bias
 
-    def unscale_outputs(self, y: jax.Array) -> jax.Array:
-        """Unscale output features back to original scale. (most common)"""
-        return y * self.out_unscale + self.out_unbias
+#     def unscale_outputs(self, y: jax.Array) -> jax.Array:
+#         """Unscale output features back to original scale. (most common)"""
+#         return y * self.out_unscale + self.out_unbias
