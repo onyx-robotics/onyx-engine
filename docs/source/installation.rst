@@ -53,10 +53,8 @@ Welcome to the Onyx Engine! To quickly get started, follow these steps:
 		"created_at": "2025-04-14T15:54:40.516003+00:00",
 		"config": {
 			"type": "dataset",
-			"outputs": [
-			"acceleration_predicted"
-			],
-			"inputs": [
+			"features": [
+			"acceleration_predicted",
 			"velocity",
 			"position",
 			"control_input"

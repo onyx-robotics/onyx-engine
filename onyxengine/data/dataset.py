@@ -4,8 +4,7 @@ from typing import List, Optional, Literal
 
 class OnyxDatasetConfig(BaseModel):
     type: Literal['dataset'] = Field(default='dataset', frozen=True, init=False)
-    outputs: List[str] = []
-    inputs: List[str] = []
+    features: List[str] = []
     dt: float = 0
 
 class OnyxDataset:
@@ -22,8 +21,7 @@ class OnyxDataset:
     def __init__(
         self,
         dataframe: pd.DataFrame = pd.DataFrame(),
-        outputs: Optional[List[str]] = [],
-        inputs: Optional[List[str]] = [],
+        features: Optional[List[str]] = [],
         dt: float = 0,
         config: OnyxDatasetConfig = None
     ):
@@ -33,18 +31,17 @@ class OnyxDataset:
             self.validate_dataframe()
         else:
             self.config = OnyxDatasetConfig(
-                outputs=outputs,
-                inputs=inputs,
+                features=features,
                 dt=dt
             )
             self.dataframe = dataframe
             self.validate_dataframe()
             
     def validate_dataframe(self):
-        features = self.config.outputs + self.config.inputs
+        features = self.config.features
         # Make sure number of features matches number of columns
         assert len(features) == len(
             self.dataframe.columns
-        ), "Number of outputs and inputs does not match number of columns in dataframe."
+        ), "Number of features does not match number of columns in dataframe."
         # Ensure column names match features
         self.dataframe.columns = features
