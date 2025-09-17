@@ -28,20 +28,9 @@ class OnyxDataset:
         if config is not None:
             self.config = config
             self.dataframe = dataframe
-            self.validate_dataframe()
         else:
             self.config = OnyxDatasetConfig(
                 features=features,
                 dt=dt
             )
             self.dataframe = dataframe
-            self.validate_dataframe()
-            
-    def validate_dataframe(self):
-        features = self.config.features
-        # Make sure number of features matches number of columns
-        assert len(features) == len(
-            self.dataframe.columns
-        ), "Number of features does not match number of columns in dataframe."
-        # Ensure column names match features
-        self.dataframe.columns = features
