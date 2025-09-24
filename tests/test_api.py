@@ -46,6 +46,7 @@ def test_data_upload():
 
     # Pull out features for model training
     train_data = pd.DataFrame()
+    train_data['time'] = pd.Series([i * 0.1 for i in range(len(raw_data))])
     train_data['acceleration'] = raw_data['acceleration']
     train_data['velocity'] = raw_data['velocity']
     train_data['position'] = raw_data['position']
@@ -56,9 +57,9 @@ def test_data_upload():
     train_dataset = OnyxDataset(
         dataframe=train_data,
         features=['acceleration', 'velocity', 'position', 'brake_input'],
-        dt=0.0025
+        dt=0.1
     )
-    onyx.save_dataset(name='raw_data_ted', dataset=train_dataset)#, source_datasets=[{'name': 'brake_data'}])
+    onyx.save_dataset(name='raw_data_ted', dataset=train_dataset, time_format="s")#, source_datasets=[{'name': 'brake_data'}])
 
 def test_model_upload():
     # Create model configuration
@@ -248,9 +249,9 @@ def test_use_model():
 if __name__ == '__main__':
     # test_metadata_get()
     # test_data_download()
-    # test_data_upload()
+    test_data_upload()
     # test_model_upload()
     # test_model_download()
-    test_train_model()
+    # test_train_model()
     # test_optimize_model()
     # test_use_model()

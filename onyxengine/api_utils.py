@@ -59,6 +59,30 @@ def upload_object(filename, object_type, object_id):
                 raise SystemExit("Onyx Engine API error: The request connection timed out.")
             except requests.exceptions.RequestException:
                 raise SystemExit("Onyx Engine API error: An unexpected error occurred.", e)
+            
+def upload_object_url(filename, object_type, url, fields):
+    # Upload the object using the secure URL
+    local_filename = os.path.join(ONYX_PATH, object_type + 's', filename)
+    file_size = os.path.getsize(local_filename)
+    with tqdm(total=file_size, desc=f'{filename}', unit="B", bar_format="{percentage:.1f}% |{bar}| {desc} | {rate_fmt}", unit_scale=True, unit_divisor=1024) as progress_bar:
+        with open(local_filename, "rb") as file:
+            fields["file"] = (filename, file)
+            e = MultipartEncoder(fields=fields)
+            m = MultipartEncoderMonitor(e, lambda monitor: progress_bar.update(monitor.bytes_read - progress_bar.n))
+            headers = {"Content-Type": m.content_type}
+            try:
+                response = requests.post(url, data=m, headers=headers)
+                response.raise_for_status()
+                progress_bar.n = progress_bar.total
+            except requests.exceptions.HTTPError as e:
+                error = json.loads(response.text)['detail']
+                raise SystemExit(f"Onyx Engine API error: {error}")
+            except requests.exceptions.ConnectionError:
+                raise SystemExit("Onyx Engine API error: Unable to connect to the server.")
+            except requests.exceptions.Timeout:
+                raise SystemExit("Onyx Engine API error: The request connection timed out.")
+            except requests.exceptions.RequestException:
+                raise SystemExit("Onyx Engine API error: An unexpected error occurred.", e)
 
 def download_object(filename, object_type, object_id: Optional[str] = None):
     # Get secure download URL from the cloud

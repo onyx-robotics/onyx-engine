@@ -7,7 +7,15 @@ from onyxengine import DATASETS_PATH, MODELS_PATH
 from onyxengine.data import OnyxDataset, OnyxDatasetConfig
 from onyxengine.modeling.models import *
 from onyxengine.modeling import model_from_config, TrainingConfig, OptimizationConfig
-from .api_utils import handle_post_request, upload_object, download_object, set_object_metadata, monitor_training_job, SourceObject
+from .api_utils import (
+    handle_post_request,
+    upload_object,
+    download_object,
+    set_object_metadata,
+    monitor_training_job,
+    SourceObject,
+    upload_object_url,
+)
 import asyncio
 
 def get_object_metadata(name: str, version_id: str=None) -> dict:
@@ -46,7 +54,7 @@ def get_object_metadata(name: str, version_id: str=None) -> dict:
             
     return metadata
 
-def save_dataset(name: str, dataset: OnyxDataset, source_datasets: List[Dict[str, Optional[str]]]=[]):
+def save_dataset(name: str, dataset: OnyxDataset, source_datasets: List[Dict[str, Optional[str]]]=[], time_format: Literal["datetime", "s", "ms", "us", "ns", "none"]="s"):
     """
     Save a dataset to the Engine.
     
@@ -54,6 +62,7 @@ def save_dataset(name: str, dataset: OnyxDataset, source_datasets: List[Dict[str
         name (str): The name for the new dataset
         dataset (OnyxDataset): The OnyxDataset object to save
         source_datasets (List[Dict[str, Optional[str]]]): The source datasets used as a list of dictionaries, eg. [{'name': 'dataset_name', 'version_id': 'dataset_version'}]. If no version is provided, the latest version will be used.
+        time_format (Literal["datetime", "s", "ms", "us", "ns", "none"]): The time format of the dataset, Onyx's convention is for time to be in seconds. (Default is "s")
         
     Example:
     
@@ -74,15 +83,14 @@ def save_dataset(name: str, dataset: OnyxDataset, source_datasets: List[Dict[str
         train_dataset = OnyxDataset(
             dataframe=train_data,
             features=['acceleration_predicted', 'velocity', 'position', 'control_input'],
-            dt=0.0025
+            dt=0.0025,
         )
-        onyx.save_dataset(name='example_train_data', dataset=train_dataset, source_datasets=[{'name': 'example_data'}])
-    
+        onyx.save_dataset(name='example_train_data', dataset=train_dataset, source_datasets=[{'name': 'example_data'}], time_format="s")
     """
     assert isinstance(name, str), "name must be a string."
     assert isinstance(dataset, OnyxDataset), "dataset must be an OnyxDataset."
     sources = [SourceObject.model_validate({"name": source["name"], "id": source.get("version_id")}) for source in source_datasets]
-    
+
     # Validate the dataset dataframe, name, and source datasets
     if dataset.dataframe.empty:
         raise SystemExit("Onyx Engine API error: Dataset dataframe is empty.")
@@ -91,24 +99,36 @@ def save_dataset(name: str, dataset: OnyxDataset, source_datasets: List[Dict[str
     for source in sources:
         if get_object_metadata(source.name, source.id) is None:
             raise SystemExit(f"Onyx Engine API error: Source dataset [{source}] not found in the Engine.")
-    
+
     # Save a local copy of the dataset
     if not os.path.exists(DATASETS_PATH):
         os.makedirs(DATASETS_PATH)
-    dataset_filename = name + '.csv'
-    dataset.dataframe.to_csv(os.path.join(DATASETS_PATH, dataset_filename), index=False)
-    
+    filename = name + '.csv'
+    dataset.dataframe.to_csv(os.path.join(DATASETS_PATH, filename), index=False)
+
     # Upload the dataset and config to the cloud
-    metadata = set_object_metadata(name, 'dataset', dataset.config.model_dump_json(), sources)
-    upload_object(dataset_filename, 'dataset', metadata['id'])
-    handle_post_request("/notify_dataset_uploaded", {"dataset_name": name, "dataset_id": metadata['id']})
-    
-    # Save local copy of metadata
-    full_metadata = get_object_metadata(name, metadata['id'])
-    with open(os.path.join(DATASETS_PATH, name + '.json'), 'w') as f:
-        f.write(json.dumps(full_metadata, indent=2))
-        
-    print(f'Dataset [{name}] saved to the Engine.')
+    response = handle_post_request(
+        "/upload_dataset",
+        {
+            "dataset_name": name,
+            "features": dataset.config.features,
+            "dt": dataset.config.dt,
+            "time_format": time_format,
+            "files": [filename],
+            "source_datasets": sources,
+        },
+    )    
+    upload_object_url(
+        filename,
+        "dataset",
+        response["presigned_urls"][filename]["url"],
+        response["presigned_urls"][filename]["fields"],
+    )
+    handle_post_request(
+        "/notify_dataset_uploaded", {"dataset_id": response["dataset_id"]}
+    )
+
+    print(f'Dataset [{name}] uploaded to the Engine and is now processing.')
 
 def load_dataset(name: str, version_id: str=None) -> OnyxDataset:
     """
