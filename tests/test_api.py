@@ -93,10 +93,10 @@ def test_model_download():
 def test_train_model():
     # Model config
     outputs = [
-        Output(name='acceleration', scale='mean'),
+        Output(name='acceleration_predicted', scale='mean'),
     ]
     inputs = [
-        State(name='velocity', relation='derivative', parent='acceleration', scale='mean'),
+        State(name='velocity', relation='derivative', parent='acceleration_predicted', scale='mean'),
         State(name='position', relation='derivative', parent='velocity', scale='mean'),
         Input(name='brake_input', scale='mean'),
     ]
@@ -127,7 +127,7 @@ def test_train_model():
     onyx.train_model(
         model_name='small_embedded_model_ted',
         model_config=model_config,
-        dataset_name='raw_data_ted',
+        dataset_name='training_data',
         training_config=training_config,
         monitor_training=False
     )
@@ -208,15 +208,15 @@ def test_optimize_model():
         train_batch_size=1024,
         test_dataset_size=500,
         checkpoint_type='multi_step',
-        opt_models=[mlp_opt],
-        opt_optimizers=[adamw_opt],
-        opt_lr_schedulers=[None],
+        opt_models=[rnn_opt],
+        opt_optimizers=[sgd_opt],
+        opt_lr_schedulers=[cos_anneal_opt],
         num_trials=20
     )
     
     # Execute model optimization
     onyx.optimize_model(
-        model_name='small_embedded_model',
+        model_name='small_embedded_model_ted',
         dataset_name='training_data',
         optimization_config=opt_config,
     )
@@ -225,6 +225,7 @@ def test_use_model():
     # Load our model
     model = onyx.load_model('small_embedded_model')
     model.eval()
+    exit()
     total_inputs = len(model.config.inputs)
     num_states = len([s for s in model.config.inputs if isinstance(s, State)])
     num_inputs = total_inputs - num_states
@@ -249,9 +250,9 @@ def test_use_model():
 if __name__ == '__main__':
     # test_metadata_get()
     # test_data_download()
-    test_data_upload()
+    # test_data_upload()
     # test_model_upload()
     # test_model_download()
-    # test_train_model()
+    test_train_model()
     # test_optimize_model()
     # test_use_model()

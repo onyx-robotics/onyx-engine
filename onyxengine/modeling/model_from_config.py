@@ -1,17 +1,10 @@
 import json
 from typing import Union
-from pydantic import BaseModel, Field
-from onyxengine.modeling.models import *
-
-class ModelConfig(BaseModel):
-    config: Union[MLPConfig, RNNConfig, TransformerConfig] = Field(..., discriminator='type')
-    
-class ModelOptConfig(BaseModel):
-    config: Union[MLPOptConfig, RNNOptConfig, TransformerOptConfig] = Field(..., discriminator='type')
+from onyxengine.modeling import OnyxModelConfigClass, MLP, RNN, Transformer
 
 def model_from_config(model_config: Union[str, dict]):
     config_dict = json.loads(model_config) if isinstance(model_config, str) else model_config
-    config = ModelConfig(config=config_dict).config
+    config = OnyxModelConfigClass(config=config_dict).config
     type = config.type
     
     if type == 'mlp':

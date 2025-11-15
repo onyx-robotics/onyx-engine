@@ -87,12 +87,6 @@ class SGDOptConfig(BaseModel):
         validate_opt_param(self.momentum, 'momentum', options=['select', 'range'], min_val=0.0, max_val=1.0)
         return self
 
-class OptimizerConfig(BaseModel):
-    config: Union[AdamWConfig, SGDConfig] = Field(..., discriminator='type')
-
-class OptimizerOptConfig(BaseModel):
-    config: Union[AdamWOptConfig, SGDOptConfig] = Field(..., discriminator='type')
-
 class CosineDecayWithWarmupConfig(BaseModel):
     """
     Configuration for learning rate scheduler with cosine decay and linear warmup.
@@ -183,12 +177,6 @@ class CosineAnnealingWarmRestartsOptConfig(BaseModel):
         validate_opt_param(self.T_mult, 'T_mult', options=['select', 'range'], min_val=0)
         validate_opt_param(self.eta_min, 'eta_min', options=['select', 'range'], min_val=0.0)
         return self
-
-class SchedulerConfig(BaseModel):
-    config: Union[CosineDecayWithWarmupConfig, CosineAnnealingWarmRestartsConfig] = Field(..., discriminator='type')
-
-class SchedulerOptConfig(BaseModel):
-    config: Union[CosineDecayWithWarmupOptConfig, CosineAnnealingWarmRestartsOptConfig] = Field(..., discriminator='type')
 
 class TrainingConfig(BaseModel):
     """
