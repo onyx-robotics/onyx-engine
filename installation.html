@@ -1,0 +1,190 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Installation &mdash; Engine 0.1.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
+      <link rel="stylesheet" type="text/css" href="_static/css/custom.css" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=01f34227"></script>
+      <script src="_static/doctools.js?v=9bcbadda"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="_static/clipboard.min.js?v=a7894cd8"></script>
+      <script src="_static/copybutton.js?v=f281be69"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Training Models" href="training-models.html" />
+    <link rel="prev" title="Engine documentation" href="index.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html">
+            
+              <img src="_static/engine_logo.svg" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="training-models.html">Training Models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="optimizing-models.html">Optimizing Models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="simulating-models.html">Simulating Models</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Reference:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="onyxengine.html">onyxengine</a></li>
+<li class="toctree-l1"><a class="reference internal" href="onyxengine.data.html">onyxengine.data</a></li>
+<li class="toctree-l1"><a class="reference internal" href="onyxengine.modeling.html">onyxengine.modeling</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Engine</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Installation</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/installation.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="installation">
+<span id="id1"></span><h1>Installation<a class="headerlink" href="#installation" title="Link to this heading"></a></h1>
+<p>Welcome to the Onyx Engine! To quickly get started, follow these steps:</p>
+<ol class="arabic">
+<li><p><strong>Create an Account</strong></p>
+<p>Create your account on the <a class="reference external" href="https://engine.onyx-robotics.com">Engine Platform</a>.</p>
+</li>
+<li><p><strong>Set Your API Key</strong></p>
+<blockquote>
+<div><p>You can find your API key in the <a class="reference external" href="https://engine.onyx-robotics.com">Engine Platform</a> account settings.</p>
+<p>Copy your API key and add it to your environment variables:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">echo</span><span class="w"> </span><span class="s1">&#39;export ONYX_API_KEY=&quot;YOUR_API_KEY&quot;&#39;</span><span class="w"> </span>&gt;&gt;<span class="w"> </span>~/.bashrc
+<span class="nb">source</span><span class="w"> </span>~/.bashrc
+</pre></div>
+</div>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>Do not share your API key with anyone. It is used to authenticate your requests to the Engine.
+You can reset your API key at any time in the <a class="reference external" href="https://engine.onyx-robotics.com">Engine Platform</a> account settings.</p>
+</div>
+</div></blockquote>
+</li>
+<li><p><strong>Install the Engine API Python Package</strong></p>
+<blockquote>
+<div><p>Install the onyx-engine package using pip:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span>onyxengine
+</pre></div>
+</div>
+<p>You can test your installation by retrieving the metadata of the example training dataset in the Engine.</p>
+<blockquote>
+<div><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">onyxengine</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">onyx</span>
+
+<span class="n">metadata</span> <span class="o">=</span> <span class="n">onyx</span><span class="o">.</span><span class="n">get_object_metadata</span><span class="p">(</span><span class="s1">&#39;example_train_data&#39;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">metadata</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">2</span><span class="p">))</span>
+</pre></div>
+</div>
+<p>The output should look something like this:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>{
+&quot;name&quot;: &quot;example_train_data&quot;,
+&quot;type&quot;: &quot;dataset&quot;,
+&quot;created_at&quot;: &quot;2025-04-14T15:54:40.516003+00:00&quot;,
+&quot;config&quot;: {
+        &quot;type&quot;: &quot;dataset&quot;,
+        &quot;features&quot;: [
+        &quot;acceleration_predicted&quot;,
+        &quot;velocity&quot;,
+        &quot;position&quot;,
+        &quot;control_input&quot;
+        ],
+        &quot;dt&quot;: 0.0025
+},
+&quot;status&quot;: &quot;active&quot;,
+&quot;team_id&quot;: &quot;7e6c03eb-217e-41d6-82d2-4b5d6109694f&quot;,
+&quot;id&quot;: &quot;52aea6f3-f61e-487b-981b-901e11b4a9c0&quot;,
+&quot;user_id&quot;: &quot;e28647cf-b254-483b-ac59-1db7668f7f03&quot;,
+&quot;type_metadata&quot;: {
+        &quot;id&quot;: &quot;52aea6f3-f61e-487b-981b-901e11b4a9c0&quot;,
+        &quot;num_points&quot;: 960800,
+        &quot;memory_bytes&quot;: 71807741
+}
+}
+</pre></div>
+</div>
+</div></blockquote>
+<p>If you see the metadata of the example dataset, your installation was successful! Now you’re ready to start <a class="reference internal" href="training-models.html#training-models"><span class="std std-ref">Training Models</span></a>.</p>
+</div></blockquote>
+</li>
+</ol>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="index.html" class="btn btn-neutral float-left" title="Engine documentation" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="training-models.html" class="btn btn-neutral float-right" title="Training Models" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Onyx Robotics Inc.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
