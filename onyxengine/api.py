@@ -1,12 +1,21 @@
 import os
 import json
-from typing import List, Optional, Dict, Union, Literal
+from typing import List, Optional, Dict, Literal, Union
 import torch
 import pandas as pd
 from onyxengine import DATASETS_PATH, MODELS_PATH
 from onyxengine.data import OnyxDataset, OnyxDatasetConfig
-from onyxengine.modeling.models import *
-from onyxengine.modeling import model_from_config, TrainingConfig, OptimizationConfig
+from onyxengine.modeling import (
+    model_from_config,
+    TrainingConfig,
+    OptimizationConfig,
+    MLP,
+    RNN,
+    Transformer,
+    MLPConfig,
+    RNNConfig,
+    TransformerConfig,
+)
 from .api_utils import (
     handle_post_request,
     upload_object,
@@ -115,7 +124,7 @@ def save_dataset(name: str, dataset: OnyxDataset, source_datasets: List[Dict[str
             "dt": dataset.config.dt,
             "time_format": time_format,
             "files": [filename],
-            "source_datasets": sources,
+            "source_datasets": [source.model_dump() for source in sources],
         },
     )    
     upload_object_url(
@@ -190,13 +199,13 @@ def load_dataset(name: str, version_id: str=None) -> OnyxDataset:
 
     return dataset
 
-def save_model(name: str, model: MLP | RNN | Transformer, source_datasets: List[Dict[str, Optional[str]]]=[]):
+def save_model(name: str, model: Union[MLP, RNN, Transformer], source_datasets: List[Dict[str, Optional[str]]]=[]):
     """
     Save a model to the Engine. Generally you won't need to use this function as the Engine will save models it trains automatically.
     
     Args:
         name (str): The name for the new model.
-        model (MLP | RNN | Transformer): The Onyx model to save.
+        model (Union[MLP, RNN, Transformer]): The Onyx model to save.
         source_datasets (List[Dict[str, Optional[str]]]): The source datasets used as a list of dictionaries, eg. [{'name': 'dataset_name', 'version_id': 'dataset_version'}]. If no version is provided, the latest version will be used.
         
     Example:
@@ -426,10 +435,10 @@ def train_model(
     # Request the onyx server to train the model
     response = handle_post_request("/train_model", {
         "onyx_model_name": model_name,
-        "onyx_model_config": model_config.model_dump_json(),
+        "onyx_model_config": model_config.model_dump(),
         "dataset_name": dataset_name,
         "dataset_id": dataset_version_id,
-        "training_config": training_config.model_dump_json(),
+        "training_config": training_config.model_dump(),
     })
 
     print(f'Preparing to train model [{model_name}] using dataset [{dataset_name}].')    
@@ -571,7 +580,7 @@ def optimize_model(
         "onyx_model_name": model_name,
         "dataset_name": dataset_name,
         "dataset_id": dataset_version_id,
-        "optimization_config": optimization_config.model_dump_json(),
+        "optimization_config": optimization_config.model_dump(),
     })
 
     print(f'Preparing to optimize model [{model_name}] using dataset [{dataset_name}].')
