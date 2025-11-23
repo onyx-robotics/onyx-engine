@@ -42,17 +42,23 @@ class OnyxModelOptConfigClass(BaseModel):
     config: ModelOptUnion = Field(..., discriminator='type')
 
 from .model_from_config import model_from_config
-from .model_training import (
+from .optimizers import (
     AdamWConfig,
     AdamWOptConfig,
     SGDConfig,
     SGDOptConfig,
+)
+from .lr_schedulers import (
     CosineDecayWithWarmupConfig,
     CosineDecayWithWarmupOptConfig,
     CosineAnnealingWarmRestartsConfig,
     CosineAnnealingWarmRestartsOptConfig,
+)
+from .model_training import (
     TrainingConfig,
     OptimizationConfig,
+    TrainingJob,
+    OptimizationJob,
 )
     
 # Generic optimizer config types and classes

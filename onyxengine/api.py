@@ -15,6 +15,8 @@ from onyxengine.modeling import (
     MLPConfig,
     RNNConfig,
     TransformerConfig,
+    TrainingJob,
+    OptimizationJob,
 )
 from .api_utils import (
     handle_post_request,
@@ -422,24 +424,17 @@ def train_model(
         raise SystemExit("Onyx Engine API error: Model name must be a non-empty string.")
     if dataset_name == '':
         raise SystemExit("Onyx Engine API error: Dataset name must be a non-empty string.")
-
-    # Check that the dataset exists
-    data_metadata = get_object_metadata(dataset_name, dataset_version_id)
-    if data_metadata is None:
-        raise SystemExit(f"Onyx Engine API error: Dataset [{dataset_name}: {dataset_version_id}] not found in the Engine.")
-    data_config = OnyxDatasetConfig.model_validate(data_metadata['config'])
-    # Check that config dt is an integer multiple of dataset dt
-    if abs((model_config.dt % data_config.dt)) > 1e-9:
-        raise SystemExit(f"Onyx Engine API error: Model config dt must be an integer multiple of dataset dt.")
-
-    # Request the onyx server to train the model
-    response = handle_post_request("/train_model", {
-        "onyx_model_name": model_name,
-        "onyx_model_config": model_config.model_dump(),
-        "dataset_name": dataset_name,
-        "dataset_id": dataset_version_id,
-        "training_config": training_config.model_dump(),
-    })
+    
+    # Construct training job
+    training_job = TrainingJob(
+        onyx_model_name=model_name,
+        onyx_model_config=model_config,
+        dataset_name=dataset_name,
+        dataset_id=dataset_version_id,
+        training_config=training_config,
+    )
+    
+    response = handle_post_request("/train_model", {"training_job": training_job.model_dump()})
 
     print(f'Preparing to train model [{model_name}] using dataset [{dataset_name}].')    
     if monitor_training:
@@ -570,17 +565,13 @@ def optimize_model(
     if dataset_name == '':
         raise SystemExit("Onyx Engine API error: Dataset name must be a non-empty string.")
 
-    # Check that the dataset exists
-    data_metadata = get_object_metadata(dataset_name, dataset_version_id)
-    if data_metadata is None:
-        raise SystemExit(f"Onyx Engine API error: Dataset [{dataset_name}: {dataset_version_id}] not found in the Engine.")
-
-    # Request the onyx server to train the model
-    response = handle_post_request("/optimize_model", {
-        "onyx_model_name": model_name,
-        "dataset_name": dataset_name,
-        "dataset_id": dataset_version_id,
-        "optimization_config": optimization_config.model_dump(),
-    })
+    # Construct optimization job
+    optimization_job = OptimizationJob(
+        onyx_model_name=model_name,
+        dataset_name=dataset_name,
+        dataset_id=dataset_version_id,
+        optimization_config=optimization_config,
+    )
+    response = handle_post_request("/optimize_model", {"optimization_job": optimization_job.model_dump()})
 
     print(f'Preparing to optimize model [{model_name}] using dataset [{dataset_name}].')

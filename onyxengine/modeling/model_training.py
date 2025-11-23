@@ -1,189 +1,33 @@
 from pydantic import BaseModel, Field, model_validator
 from typing_extensions import Self
-from typing import Union, Dict, List, Literal
+from typing import Union, List, Literal, Optional
 from onyxengine.modeling import (
+    OnyxModelConfig,
     validate_param,
-    validate_opt_param,
     MLPOptConfig,
     RNNOptConfig,
     TransformerOptConfig,
+    State,
 )
-
-class AdamWConfig(BaseModel):
-    """
-    Configuration for the AdamW optimizer.
-    
-    Args:
-        lr (float): Learning rate (default is 3e-4).
-        weight_decay (float): Weight decay (default is 1e-2).
-    """
-    type: Literal['adamw'] = Field(default='adamw', frozen=True, init=False)
-    lr: float = 3e-4
-    weight_decay: float = 1e-2
-    
-    @model_validator(mode='after')
-    def validate_hyperparameters(self) -> Self:
-        validate_param(self.lr, 'lr', min_val=0.0)
-        validate_param(self.weight_decay, 'weight_decay', min_val=0.0)
-        return self
-
-class AdamWOptConfig(BaseModel):
-    """
-    Optimization config for the AdamW optimizer.
-    
-    Args:
-        lr (Union[float, Dict[str, List[float]]): Learning rate (default is {"select": [1e-5, 5e-5, 1e-4, 3e-4, 5e-4, 8e-4, 1e-3, 5e-3, 1e-2]}).
-        weight_decay (Union[float, Dict[str, List[float]]): Weight decay (default is {"select": [1e-4, 1e-3, 1e-2, 1e-1]}).
-    """
-    type: Literal['adamw_opt'] = Field(default='adamw_opt', frozen=True, init=False)
-    lr: Union[float, Dict[str, List[float]]] = {"select": [1e-5, 5e-5, 1e-4, 3e-4, 5e-4, 8e-4, 1e-3, 5e-3, 1e-2]}
-    weight_decay: Union[float, Dict[str, List[float]]] = {"select": [1e-4, 1e-3, 1e-2, 1e-1]}
-    
-    @model_validator(mode='after')
-    def validate_hyperparameters(self) -> Self:
-        validate_opt_param(self.lr, 'lr', options=['select', 'range'], min_val=0.0)
-        validate_opt_param(self.weight_decay, 'weight_decay', options=['select', 'range'], min_val=0.0)
-        return self
-
-class SGDConfig(BaseModel):
-    """
-    Configuration for the SGD optimizer.
-    
-    Args:
-        lr (float): Learning rate (default is 3e-4).
-        weight_decay (float): Weight decay (default is 1e-2).
-        momentum (float): Momentum (default is 0.9).
-    """
-    type: Literal['sgd'] = Field(default='sgd', frozen=True, init=False)
-    lr: float = 3e-4
-    weight_decay: float = 1e-2
-    momentum: float = 0.9
-    
-    @model_validator(mode='after')
-    def validate_hyperparameters(self) -> Self:
-        validate_param(self.lr, 'lr', min_val=0.0)
-        validate_param(self.weight_decay, 'weight_decay', min_val=0.0)
-        validate_param(self.momentum, 'momentum', min_val=0.0, max_val=1.0)
-        return self
-
-class SGDOptConfig(BaseModel):
-    """
-    Optimization config for the SGD optimizer.
-    
-    Args:
-        lr (Union[float, Dict[str, List[float]]): Learning rate (default is {"select": [1e-5, 5e-5, 1e-4, 3e-4, 5e-4, 8e-4, 1e-3, 5e-3, 1e-2]}).
-        weight_decay (Union[float, Dict[str, List[float]]): Weight decay (default is {"select": [1e-4, 1e-3, 1e-2, 1e-1]}).
-        momentum (Union[float, Dict[str, List[float]]): Momentum (default is {"select": [0.0, 0.8, 0.9, 0.95, 0.99]}).
-    """
-    type: Literal['sgd_opt'] = Field(default='sgd_opt', frozen=True, init=False)
-    lr: Union[float, Dict[str, List[float]]] = {"select": [1e-5, 5e-5, 1e-4, 3e-4, 5e-4, 8e-4, 1e-3, 5e-3, 1e-2]}
-    weight_decay: Union[float, Dict[str, List[float]]] = {"select": [1e-4, 1e-3, 1e-2, 1e-1]}
-    momentum: Union[float, Dict[str, List[float]]] = {"select": [0.0, 0.8, 0.9, 0.95, 0.99]}
-    
-    @model_validator(mode='after')
-    def validate_hyperparameters(self) -> Self:
-        validate_opt_param(self.lr, 'lr', options=['select', 'range'], min_val=0.0)
-        validate_opt_param(self.weight_decay, 'weight_decay', options=['select', 'range'], min_val=0.0)
-        validate_opt_param(self.momentum, 'momentum', options=['select', 'range'], min_val=0.0, max_val=1.0)
-        return self
-
-class CosineDecayWithWarmupConfig(BaseModel):
-    """
-    Configuration for learning rate scheduler with cosine decay and linear warmup.
-    
-    Args:
-        max_lr (float): Maximum learning rate (default is 3e-4).
-        min_lr (float): Minimum learning rate (default is 3e-5).
-        warmup_iters (int): Number of warmup iterations (default is 200).
-        decay_iters (int): Number of decay iterations (default is 1000).
-    """
-    type: Literal['cosine_decay_with_warmup'] = Field(default='cosine_decay_with_warmup', frozen=True, init=False)
-    max_lr: float = 3e-4
-    min_lr: float = 3e-5
-    warmup_iters: int = 200
-    decay_iters: int = 1000
-    
-    @model_validator(mode='after')
-    def validate_hyperparameters(self) -> Self:
-        validate_param(self.max_lr, 'max_lr', min_val=0.0)
-        validate_param(self.min_lr, 'min_lr', min_val=0.0)
-        validate_param(self.warmup_iters, 'warmup_iters', min_val=0)
-        validate_param(self.decay_iters, 'decay_iters', min_val=0)
-        return self
-
-class CosineDecayWithWarmupOptConfig(BaseModel):
-    """
-    Optimization config for learning rate scheduler with cosine decay and linear warmup.
-    
-    Args:
-        max_lr (Union[float, Dict[str, List[float]]): Maximum learning rate (default is {"select": [1e-4, 3e-4, 5e-4, 8e-4, 1e-3, 3e-3, 5e-3]}).
-        min_lr (Union[float, Dict[str, List[float]]): Minimum learning rate (default is {"select": [1e-6, 5e-6, 1e-5, 3e-5, 5e-5, 8e-5, 1e-4]}).
-        warmup_iters (Union[int, Dict[str, List[int]]): Number of warmup iterations (default is {"select": [50, 100, 200, 400, 800]}).
-        decay_iters (Union[int, Dict[str, List[int]]): Number of decay iterations (default is {"select": [500, 1000, 2000, 4000, 8000]}).
-    
-    """
-    type: Literal['cosine_decay_with_warmup_opt'] = Field(default='cosine_decay_with_warmup_opt', frozen=True, init=False)
-    max_lr: Union[float, Dict[str, List[float]]] = {"select": [1e-4, 3e-4, 5e-4, 8e-4, 1e-3, 3e-3, 5e-3]}
-    min_lr: Union[float, Dict[str, List[float]]] = {"select": [1e-6, 5e-6, 1e-5, 3e-5, 5e-5, 8e-5, 1e-4]}
-    warmup_iters: Union[int, Dict[str, List[int]]] = {"select": [50, 100, 200, 400, 800]}
-    decay_iters: Union[int, Dict[str, List[int]]] = {"select": [500, 1000, 2000, 4000, 8000]}
-    
-    @model_validator(mode='after')
-    def validate_hyperparameters(self) -> Self:
-        validate_opt_param(self.max_lr, 'max_lr', options=['select', 'range'], min_val=0.0)
-        validate_opt_param(self.min_lr, 'min_lr', options=['select', 'range'], min_val=0.0)
-        validate_opt_param(self.warmup_iters, 'warmup_iters', options=['select', 'range'], min_val=0)
-        validate_opt_param(self.decay_iters, 'decay_iters', options=['select', 'range'], min_val=0)
-        return self
-
-class CosineAnnealingWarmRestartsConfig(BaseModel):
-    """
-    Configuration for learning rate scheduler with cosine annealing and warm restarts.
-    
-    Args:
-        T_0 (int): Initial period of learning rate decay (default is 2000).
-        T_mult (int): Multiplicative factor for the period of learning rate decay (default is 1).
-        eta_min (float): Minimum learning rate (default is 3e-5).
-    """
-    type: Literal['cosine_annealing_warm_restarts'] = Field(default='cosine_annealing_warm_restarts', frozen=True, init=False)
-    T_0: int = 2000
-    T_mult: int = 1
-    eta_min: float = 3e-5
-    
-    @model_validator(mode='after')
-    def validate_hyperparameters(self) -> Self:
-        validate_param(self.T_0, 'T_0', min_val=0)
-        validate_param(self.T_mult, 'T_mult', min_val=0)
-        validate_param(self.eta_min, 'eta_min', min_val=0.0)
-        return self
-
-class CosineAnnealingWarmRestartsOptConfig(BaseModel):
-    """
-    Optimization config for learning rate scheduler with cosine annealing and warm restarts.
-    
-    Args:
-        T_0 (Union[int, Dict[str, List[int]]]): Initial period of learning rate decay (default is {"select": [200, 500, 1000, 2000, 5000, 10000]}).
-        T_mult (Union[int, Dict[str, List[int]]]): Multiplicative factor for the period of learning rate decay (default is {"select": [1, 2, 3]}).
-        eta_min (Union[float, Dict[str, List[float]]]): Minimum learning rate (default is {"select": [1e-6, 5e-6, 1e-5, 3e-5, 5e-5, 8e-5, 1e-4, 3e-4]}).
-    """
-    type: Literal['cosine_annealing_warm_restarts_opt'] = Field(default='cosine_annealing_warm_restarts_opt', frozen=True, init=False)
-    T_0: Union[int, Dict[str, List[int]]] = {"select": [200, 500, 1000, 2000, 5000, 10000]}
-    T_mult: Union[int, Dict[str, List[int]]] = {"select": [1, 2, 3]}
-    eta_min: Union[float, Dict[str, List[float]]] = {"select": [1e-6, 5e-6, 1e-5, 3e-5, 5e-5, 8e-5, 1e-4, 3e-4]}
-    
-    @model_validator(mode='after')
-    def validate_hyperparameters(self) -> Self:
-        validate_opt_param(self.T_0, 'T_0', options=['select', 'range'], min_val=0)
-        validate_opt_param(self.T_mult, 'T_mult', options=['select', 'range'], min_val=0)
-        validate_opt_param(self.eta_min, 'eta_min', options=['select', 'range'], min_val=0.0)
-        return self
+from onyxengine.modeling.optimizers import (
+    AdamWConfig,
+    AdamWOptConfig,
+    SGDConfig,
+    SGDOptConfig,
+)
+from onyxengine.modeling.lr_schedulers import (
+    CosineDecayWithWarmupConfig,
+    CosineDecayWithWarmupOptConfig,
+    CosineAnnealingWarmRestartsConfig,
+    CosineAnnealingWarmRestartsOptConfig,
+)
 
 class TrainingConfig(BaseModel):
     """
     Configuration for the training of a model.
     
     Args:
-        training_iters (int): Number of training iterations (default is 3000).
+        training_iters (int): Number of training iterations (default is 3000, max is 100000).
         train_batch_size (int): Batch size for training (default is 32).
         train_val_split_ratio (float): Ratio of training data to validation data (default is 0.9).
         test_dataset_size (int): Number of samples in the test dataset (default is 500).
@@ -199,13 +43,21 @@ class TrainingConfig(BaseModel):
     checkpoint_type: Literal['single_step', 'multi_step'] = 'single_step'
     optimizer: Union[AdamWConfig, SGDConfig] = AdamWConfig()
     lr_scheduler: Union[None, CosineDecayWithWarmupConfig, CosineAnnealingWarmRestartsConfig] = None
+    
+    @model_validator(mode='after')
+    def validate_hyperparameters(self) -> Self:
+        validate_param(self.training_iters, 'training_iters', min_val=1, max_val=100000)
+        validate_param(self.train_batch_size, 'train_batch_size', min_val=1)
+        validate_param(self.train_val_split_ratio, 'train_val_split_ratio', min_val=0.0, max_val=1.0)
+        validate_param(self.test_dataset_size, 'test_dataset_size', min_val=1)
+        return self
 
 class OptimizationConfig(BaseModel):
     """
     Configuration for the optimization of models.
     
     Args:
-        training_iters (int): Number of training iterations (default is 3000).
+        training_iters (int): Number of training iterations (default is 3000, max is 100000).
         train_batch_size (int): Batch size for training (default is 32).
         train_val_split_ratio (float): Ratio of training data to validation data (default is 0.9).
         test_dataset_size (int): Number of samples in the test dataset (default is 500).
@@ -225,3 +77,70 @@ class OptimizationConfig(BaseModel):
     opt_optimizers: List[Union[AdamWOptConfig, SGDOptConfig]] = []
     opt_lr_schedulers: List[Union[None, CosineDecayWithWarmupOptConfig, CosineAnnealingWarmRestartsOptConfig]] = [None]
     num_trials: int = 10
+    
+    @model_validator(mode='after')
+    def validate_hyperparameters(self) -> Self:
+        validate_param(self.training_iters, 'training_iters', min_val=1, max_val=100000)
+        validate_param(self.train_batch_size, 'train_batch_size', min_val=1)
+        validate_param(self.train_val_split_ratio, 'train_val_split_ratio', min_val=0.0, max_val=1.0)
+        validate_param(self.test_dataset_size, 'test_dataset_size', min_val=1)
+        validate_param(self.num_trials, 'num_trials', min_val=1)
+        
+        # Length of opt_models, opt_optimizers, and opt_lr_schedulers must be at least 1
+        if len(self.opt_models) < 1:
+            raise ValueError("Optimization config must have at least one model.")
+        if len(self.opt_optimizers) < 1:
+            raise ValueError("Optimization config must have at least one optimizer.")
+        if len(self.opt_lr_schedulers) < 1:
+            raise ValueError("Optimization config must have at least one learning rate scheduler.")
+        
+        # If none of model inputs are states, then optimization config cannot be multi_step
+        for model in self.opt_models:
+            if not any(isinstance(input, State) for input in model.inputs):
+                if self.checkpoint_type == 'multi_step':
+                    raise ValueError("Optimization config cannot be multi_step if none of the model inputs are states.")
+                break
+            
+        return self
+        
+class TrainingJob(BaseModel):
+    """
+    Configuration for an Onyx model training job.
+    
+    Args:
+        onyx_model_name (str): Name of the model to train.
+        onyx_model_config (OnyxModelConfig): Configuration for the model to train.
+        dataset_name (str): Name of the dataset to train on.
+        dataset_id (Optional[str]): ID of the dataset to train on. (Default is None)
+        training_config (TrainingConfig): Configuration for the training process.
+    """
+    type: Literal['training_job'] = Field(default='training_job', frozen=True, init=False)
+    onyx_model_name: str
+    onyx_model_config: OnyxModelConfig
+    dataset_name: str
+    dataset_id: Optional[str] = None
+    training_config: TrainingConfig
+    
+    @model_validator(mode='after')
+    def validate_hyperparameters(self) -> Self:
+        # If none of model inputs are states, then training config cannot be multi_step
+        if not any(isinstance(input, State) for input in self.onyx_model_config.inputs):
+            if self.training_config.checkpoint_type == 'multi_step':
+                raise ValueError("Training config cannot be multi_step if none of the model inputs are states.")
+        return self
+    
+class OptimizationJob(BaseModel):
+    """
+    Configuration for an Onyx model optimization job.
+    
+    Args:
+        onyx_model_name (str): Name of the model to optimize.
+        dataset_name (str): Name of the dataset to optimize on.
+        dataset_id (Optional[str]): ID of the dataset to optimize on. (Default is None)
+        optimization_config (OptimizationConfig): Configuration for the optimization process.
+    """
+    type: Literal['optimization_job'] = Field(default='optimization_job', frozen=True, init=False)
+    onyx_model_name: str
+    dataset_name: str
+    dataset_id: Optional[str] = None
+    optimization_config: OptimizationConfig
