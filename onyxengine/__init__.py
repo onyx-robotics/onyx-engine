@@ -1,8 +1,12 @@
 # onyxengine/__init__.py
 import os
+from dotenv import load_dotenv
+
+# Load environment variables from .env file (one directory up, relative path)
+load_dotenv(dotenv_path="../.env")
 
 # API Constants
-DEV_MODE = False
+DEV_MODE = os.getenv('ONYX_ENGINE_DEV_MODE', 'False') == 'True'
 SERVER = "api.onyx-robotics.com"
 DEV_SERVER = "localhost:7000"
 SERVER_URL = f"https://{SERVER}" if not DEV_MODE else f"http://{DEV_SERVER}"
