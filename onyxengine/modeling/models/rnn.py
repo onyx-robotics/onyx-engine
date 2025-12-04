@@ -19,7 +19,7 @@ class RNNConfig(OnyxModelBaseConfig):
     Args:
         type (str): Model type = 'rnn', immutable.
         outputs (List[Output]): List of output variables.
-        inputs (List[Input | State]): List of input variables.
+        inputs (List[Input]): List of input variables.
         dt (float): Time step for the model.
         sequence_length (int): Length of input sequences (default is 1).
         rnn_type (Literal['RNN', 'LSTM', 'GRU']): Type of RNN to use (default is 'LSTM').
@@ -49,7 +49,7 @@ class RNNOptConfig(OnyxModelOptBaseConfig):
     Args:
         type (str): Model type = 'rnn_opt', immutable.
         outputs (List[Output]): List of output variables.
-        inputs (List[Input | State]): List of input variables.
+        inputs (List[Input]): List of input variables.
         dt (float): Time step for the model.
         rnn_type (Union[Literal['RNN', 'LSTM', 'GRU'], Dict[str, List[str]]): Type of RNN to use (default is {"select": ['RNN', 'LSTM', 'GRU']}).
         sequence_length (Union[int, Dict[str, List[int]]): Length of input sequences (default is {"select": [1, 2, 4, 5, 6, 8, 10, 12, 14, 15]}).
@@ -84,11 +84,14 @@ class RNN(nn.Module, ModelSimulator):
             sequence_length=config.sequence_length,
             dt=config.dt,
         )        
-        self.feature_scaler = FeatureScaler(outputs=config.outputs, inputs=config.inputs)
+        self.feature_scaler = FeatureScaler(
+            outputs=[o for o in config.outputs if not o.is_derived],
+            inputs=config.inputs,
+        )
         self.config = config
         self.rnn_type = config.rnn_type
-        num_inputs = len(config.inputs)
-        num_outputs = len(config.outputs)
+        num_inputs = config.num_inputs
+        num_outputs = config.num_direct_outputs
         self.sequence_length = config.sequence_length
         self.hidden_layers = config.hidden_layers
         self.hidden_size = config.hidden_size

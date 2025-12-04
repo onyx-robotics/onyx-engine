@@ -19,8 +19,6 @@ Model Simulation
 
 .. autoclass:: onyxengine.modeling.Input
 
-.. autoclass:: onyxengine.modeling.State
-
 Model Training
 --------------
 .. autoclass:: onyxengine.modeling.TrainingConfig

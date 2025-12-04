@@ -15,7 +15,6 @@ We will optimize a model using the following code, you can paste this into your 
     from onyxengine.modeling import ( 
         Output,
         Input,
-        State,
         OptimizationConfig,
         MLPOptConfig,
         RNNOptConfig,
@@ -32,8 +31,8 @@ We will optimize a model using the following code, you can paste this into your 
         Output(name='acceleration_prediction'),
     ]
     inputs = [
-        State(name='velocity', relation='derivative', parent='acceleration_prediction'),
-        State(name='position', relation='derivative', parent='velocity'),
+        Input(name='velocity', parent='acceleration_prediction', relation='derivative'),
+        Input(name='position', parent='velocity', relation='derivative'),
         Input(name='control_input'),
     ]
 

@@ -7,7 +7,6 @@ from onyxengine.modeling import (
     MLPOptConfig,
     RNNOptConfig,
     TransformerOptConfig,
-    State,
 )
 from onyxengine.modeling.optimizers import (
     AdamWConfig,
@@ -96,7 +95,7 @@ class OptimizationConfig(BaseModel):
         
         # If none of model inputs are states, then optimization config cannot be multi_step
         for model in self.opt_models:
-            if not any(isinstance(input, State) for input in model.inputs):
+            if not any(input.relation is not None for input in model.inputs):
                 if self.checkpoint_type == 'multi_step':
                     raise ValueError("Optimization config cannot be multi_step if none of the model inputs are states.")
                 break
@@ -124,7 +123,7 @@ class TrainingJob(BaseModel):
     @model_validator(mode='after')
     def validate_hyperparameters(self) -> Self:
         # If none of model inputs are states, then training config cannot be multi_step
-        if not any(isinstance(input, State) for input in self.onyx_model_config.inputs):
+        if not any(input.relation is not None for input in self.onyx_model_config.inputs):
             if self.training_config.checkpoint_type == 'multi_step':
                 raise ValueError("Training config cannot be multi_step if none of the model inputs are states.")
         return self

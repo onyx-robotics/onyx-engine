@@ -7,7 +7,6 @@ from .model_features import (
     BaseFeature,
     Output,
     Input,
-    State,
     Feature,
     FeatureScaler,
     # FeatureScalerJax,
@@ -17,7 +16,7 @@ from .model_base_config import (
     OnyxModelBaseConfig,
     OnyxModelOptBaseConfig,
 )
-from .model_simulator import ModelSimulator, NumpyModelSimulator
+from .model_simulator import ModelSimulator
 from .models import (
     MLP,
     MLPConfig,

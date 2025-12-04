@@ -22,7 +22,7 @@ class MLPConfig(OnyxModelBaseConfig):
     Args:
         type (str): Model type = 'mlp', immutable.
         outputs (List[Output]): List of output variables.
-        inputs (List[Input | State]): List of input variables.
+        inputs (List[Input]): List of input variables.
         dt (float): Time step for the model.
         sequence_length (int): Length of the input sequence (default is 1).
         hidden_layers (int): Number of hidden layers (default is 2).
@@ -52,7 +52,7 @@ class MLPOptConfig(OnyxModelOptBaseConfig):
     Args:
         type (str): Model type = 'mlp_opt', immutable.
         outputs (List[Output]): List of output variables.
-        inputs (List[Input | State]): List of input variables.
+        inputs (List[Input]): List of input variables.
         dt (float): Time step for the model.
         sequence_length (Union[int, Dict[str, List[int]]): Length of the input sequence (default is {"select": [1, 2, 4, 5, 6, 8, 10]}).
         hidden_layers (Union[int, Dict[str, List[int]]): Number of hidden layers (default is {"range": [2, 5, 1]}).
@@ -88,10 +88,13 @@ class MLP(nn.Module, ModelSimulator):
             sequence_length=config.sequence_length,
             dt=config.dt,
         )
-        self.feature_scaler = FeatureScaler(outputs=config.outputs, inputs=config.inputs)
+        self.feature_scaler = FeatureScaler(
+            outputs=[o for o in config.outputs if not o.is_derived],
+            inputs=config.inputs,
+        )
         self.config = config
-        num_inputs = len(config.inputs) * config.sequence_length
-        num_outputs = len(config.outputs)
+        num_inputs = config.num_inputs * config.sequence_length
+        num_outputs = config.num_direct_outputs
         hidden_layers = config.hidden_layers
         hidden_size = config.hidden_size
         activation = None

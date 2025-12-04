@@ -22,7 +22,7 @@ class TransformerConfig(OnyxModelBaseConfig):
     Args:
         type (str): Model type = 'transformer', immutable.
         outputs (List[Output]): List of output variables.
-        inputs (List[Input | State]): List of input variables.
+        inputs (List[Input]): List of input variables.
         dt (float): Time step for the model.
         sequence_length (int): Length of the input sequence (default is 1).
         n_layer (int): Number of transformer layers (default is 1).
@@ -56,7 +56,7 @@ class TransformerOptConfig(OnyxModelOptBaseConfig):
     Args:
         type (str): Model type = 'transformer_opt', immutable.
         outputs (List[Output]): List of output variables.
-        inputs (List[Input | State]): List of input variables.
+        inputs (List[Input]): List of input variables.
         dt (float): Time step for the model.
         sequence_length (Union[int, Dict[str, List[int]]): Length of the input sequence (default is {"select": [1, 2, 4, 5, 6, 8, 10, 12, 14, 15]}).
         n_layer (Union[int, Dict[str, List[int]]): Number of transformer layers (default is {"range": [2, 5, 1]}).
@@ -167,10 +167,13 @@ class Transformer(nn.Module, ModelSimulator):
             sequence_length=config.sequence_length,
             dt=config.dt,
         )        
-        self.feature_scaler = FeatureScaler(outputs=config.outputs, inputs=config.inputs)
+        self.feature_scaler = FeatureScaler(
+            outputs=[o for o in config.outputs if not o.is_derived],
+            inputs=config.inputs,
+        )
         self.config = config
-        num_inputs = len(config.inputs)
-        num_outputs = len(config.outputs)
+        num_inputs = config.num_inputs
+        num_outputs = config.num_direct_outputs
         
         # Continuous states embedded with linear layer instead of token-level nn.Embedding
         self.transformer = nn.ModuleDict(dict(
