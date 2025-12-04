@@ -7,7 +7,7 @@
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
 project = 'Engine'
-copyright = '2024, Onyx Robotics Inc'
+copyright = '2025, Onyx Robotics Inc'
 author = 'Onyx'
 release = '0.1.0'
 
@@ -25,10 +25,14 @@ extensions = [
     'sphinx.ext.viewcode',   # Adds links to source code
     'sphinx.ext.doctest',
     'sphinx_copybutton',
+    'myst_parser',  # Markdown support
 ]
 
 templates_path = ['_templates']
 exclude_patterns = []
+
+# Master document (root of documentation)
+root_doc = 'index'
 
 # -- Options for HTML output -------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
@@ -36,6 +40,9 @@ exclude_patterns = []
 html_theme = 'sphinx_rtd_theme'
 html_theme_options = {
     "logo_only": True,
+    "navigation_depth": 4,
+    "collapse_navigation": False,
+    "sticky_navigation": True,
 }
 html_static_path = ['_static']
 html_css_files = [
