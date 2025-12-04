@@ -17,6 +17,8 @@ from onyxengine.modeling import (
     TransformerConfig,
     TrainingJob,
     OptimizationJob,
+    Input,
+    Output,
 )
 from .api_utils import (
     handle_post_request,
@@ -219,8 +221,8 @@ def save_model(name: str, model: Union[MLP, RNN, Transformer], source_datasets: 
             Output(name='acceleration_prediction'),
         ]
         inputs = [
-            State(name='velocity', relation='derivative', parent='acceleration_prediction'),
-            State(name='position', relation='derivative', parent='velocity'),
+            Input(name='velocity', parent='acceleration_prediction', relation='derivative'),
+            Input(name='position', parent='velocity', relation='derivative'),
             Input(name='control_input'),
         ]
         mlp_config = MLPConfig(
@@ -375,8 +377,8 @@ def train_model(
             Output(name='acceleration_prediction'),
         ]
         inputs = [
-            State(name='velocity', relation='derivative', parent='acceleration_prediction'),
-            State(name='position', relation='derivative', parent='velocity'),
+            Input(name='velocity', parent='acceleration_prediction', relation='derivative'),
+            Input(name='position', parent='velocity', relation='derivative'),
             Input(name='control_input'),
         ]
 
@@ -469,8 +471,8 @@ def optimize_model(
             Output(name='acceleration_prediction'),
         ]
         inputs = [
-            State(name='velocity', relation='derivative', parent='acceleration_prediction'),
-            State(name='position', relation='derivative', parent='velocity'),
+            Input(name='velocity', parent='acceleration_prediction', relation='derivative'),
+            Input(name='position', parent='velocity', relation='derivative'),
             Input(name='control_input'),
         ]
         

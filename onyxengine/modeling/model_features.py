@@ -1,4 +1,5 @@
 from typing import List, Literal, Union, Optional
+from pyarrow import output_stream
 from pydantic import BaseModel, Field, model_validator
 from typing_extensions import Self
 import torch
@@ -13,6 +14,12 @@ class BaseFeature(BaseModel):
     train_std: Optional[float] = Field(default=None, init=False)
     train_min: Optional[float] = Field(default=None, init=False)
     train_max: Optional[float] = Field(default=None, init=False)
+    parent: Optional[str] = None  # Parent feature to derive from
+    relation: Optional[Literal['equal', 'delta', 'derivative']] = None  # Method to solve for the feature: equal to the parent value, parent is the delta of the value, or parent is the derivative of the value
+    
+    @property
+    def is_derived(self) -> bool:
+        return self.relation is not None
     
     @model_validator(mode='after')
     def validate_scale(self) -> Self:
@@ -23,10 +30,18 @@ class BaseFeature(BaseModel):
                 raise ValueError("Scale must be in the form [min, max] where min < max")
             
         return self
+    
+    @model_validator(mode='after')
+    def validate_parent_relation(self) -> Self:
+        if self.relation is not None and self.parent is None:
+            raise ValueError("If relation is provided, parent must also be provided.")
+        if self.relation is None and self.parent is not None:
+            raise ValueError("If parent is provided, relation must also be provided.")
+        return self
 
 class Output(BaseFeature):
     """
-    A standard output feature to be used by the model.
+    A standard output feature to be used by the model. Can be derived from a parent feature.
     
     Args:
         name (str): Name of the output feature.
@@ -35,13 +50,20 @@ class Output(BaseFeature):
             - None: Feature is not scaled.
             - 'mean': Feature is scaled to have a mean of 0 and std of 1. (Default).
             - List[float]: Feature is scaled from its real-world [min, max] to a range of [-1, 1].
+        parent (Optional[str]): Optional name of the parent feature from which this output is derived. Required if relation is provided. Outputs can only have other outputs as parents.
+        relation (Optional[Literal['equal', 'delta', 'derivative']]): Optional method to solve for the output when it's derived from a parent feature:
+        
+            - 'equal': Output is equal to the parent value
+            - 'delta': Parent is the change/delta of the Output value
+            - 'derivative': Parent is the derivative of the Output value
+            - None: Output is a standard output (default)
     """
     
     type: Literal['output'] = Field(default='output', frozen=True, init=False)
     
 class Input(BaseFeature):
     """
-    A standard input feature to be used by the model.
+    An input feature to be used by the model. Can be derived from a parent feature.
     
     Args:
         name (str): Name of the input feature.
@@ -50,37 +72,22 @@ class Input(BaseFeature):
             - None: Feature is not scaled.
             - 'mean': Feature is scaled to have a mean of 0 and std of 1. (Default).
             - List[float]: Feature is scaled from its real-world [min, max] to a range of [-1, 1].
+        parent (Optional[str]): Optional name of the parent feature from which this input is derived. Required if relation is provided. Inputs can have inputs or outputs as parents.
+        relation (Optional[Literal['equal', 'delta', 'derivative']]): Optional method to solve for the input when it's derived from a parent feature:
+        
+            - 'equal': Input is equal to the parent value
+            - 'delta': Parent is the change/delta of the Input value
+            - 'derivative': Parent is the derivative of the Input value
+            - None: Input is a standard input (default)
     """
     
     type: Literal['input'] = Field(default='input', frozen=True, init=False)
     
-class State(BaseFeature):
-    """
-    A state feature that can be derived from a parent feature through different relationships (output, delta, or derivative).
-
-    Args:
-        name (str): Name of the state feature.
-        relation (Literal['output', 'delta', 'derivative']): Method to solve for the feature:
-        
-            - 'output': Feature is the direct output of the model
-            - 'delta': Feature is the change/delta of the parent value
-            - 'derivative': Feature is the derivative of the parent value
-        parent (str): Name of the parent feature from which this state is derived
-        scale (Union[None, Literal['mean'], List[float]]): Scale for the output feature:
-            
-            - None: Feature is not scaled.
-            - 'mean': Feature is scaled to have a mean of 0 and std of 1. (Default).
-            - List[float]: Feature is scaled from its real-world [min, max] to a range of [-1, 1].
-    """
-    type: Literal['state'] = Field(default='state', frozen=True, init=False)
-    relation: Literal['output', 'delta', 'derivative'] # Method to solve for the feature: the output of the model, parent is the delta of the value, or derivative of parent value
-    parent: str # Parent feature to derive from
-    
 class Feature(BaseModel):
-    config: Union[Input, Output, State] = Field(..., discriminator='type')
+    config: Union[Input, Output] = Field(..., discriminator='type')
     
 class FeatureScaler:
-    def __init__(self, outputs: List[Output], inputs: List[Union[Input, State]], device: torch.device = torch.device('cpu'), dtype=torch.float32):
+    def __init__(self, outputs: List[Output], inputs: List[Input], device: torch.device = torch.device('cpu'), dtype=torch.float32):
         self.device = device
         self.dtype = dtype
         n_inputs = len(inputs)
@@ -99,7 +106,7 @@ class FeatureScaler:
         self.out_unbias = torch.zeros(n_outputs, dtype=dtype, device=device)
 
         # Helper function to compute scaling factors
-        def compute_scale_factors(feature: Union[Input, Output, State], scale_tensor, bias_tensor, unscale_tensor, unbias_tensor, idx):
+        def compute_scale_factors(feature: Union[Input, Output], scale_tensor, bias_tensor, unscale_tensor, unbias_tensor, idx):
             if feature.scale is None:
                 return scale_tensor, bias_tensor, unscale_tensor, unbias_tensor
             
@@ -181,7 +188,7 @@ class FeatureScaler:
         return y * self.out_unscale + self.out_unbias
     
 # class FeatureScalerJax:
-#     def __init__(self, outputs: List[Output], inputs: List[Union[Input, State]], device: jax.Device = None, dtype=jax.numpy.float32):
+#     def __init__(self, outputs: List[Output], inputs: List[Input], device: jax.Device = None, dtype=jax.numpy.float32):
 #         self.device = device
 #         self.dtype = dtype
 #         n_inputs = len(inputs)
@@ -200,7 +207,7 @@ class FeatureScaler:
 #         self.out_unbias = jnp.zeros(n_outputs, dtype=dtype)
 
 #         # Helper function to compute scaling factors
-#         def compute_scale_factors(feature: Union[Input, Output, State], scale_array, bias_array, unscale_array, unbias_array, idx):
+#         def compute_scale_factors(feature: Union[Input, Output], scale_array, bias_array, unscale_array, unbias_array, idx):
 #             if feature.scale is None:
 #                 # Return arrays unchanged when no scaling is needed
 #                 return scale_array, bias_array, unscale_array, unbias_array

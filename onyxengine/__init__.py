@@ -1,9 +1,10 @@
 # onyxengine/__init__.py
 import os
+from pathlib import Path
 from dotenv import load_dotenv
 
-# Load environment variables from .env file (one directory up, relative path)
-load_dotenv(dotenv_path="../.env")
+_env_path = Path(__file__).parent.parent / '.env'
+load_dotenv(dotenv_path=_env_path)
 
 # API Constants
 DEV_MODE = os.getenv('ONYX_ENGINE_DEV_MODE', 'False') == 'True'

@@ -11,7 +11,6 @@ We will train our first model on the dataset "example_train_data" that is provid
 from onyxengine.modeling import (
     Output,
     Input,
-    State,
     MLPConfig,
     TrainingConfig,
     AdamWConfig,
@@ -24,8 +23,8 @@ outputs = [
     Output(name='acceleration_prediction'),
 ]
 inputs = [
-    State(name='velocity', relation='derivative', parent='acceleration_prediction'),
-    State(name='position', relation='derivative', parent='velocity'),
+    Input(name='velocity', parent='acceleration_prediction', relation='derivative'),
+    Input(name='position', parent='velocity', relation='derivative'),
     Input(name='control_input'),
 ]
 
@@ -74,8 +73,8 @@ outputs = [
     Output(name='acceleration_prediction'),
 ]
 inputs = [
-    State(name='velocity', relation='derivative', parent='acceleration_prediction'),
-    State(name='position', relation='derivative', parent='velocity'),
+    Input(name='velocity', parent='acceleration_prediction', relation='derivative'),
+    Input(name='position', parent='velocity', relation='derivative'),
     Input(name='control_input'),
 ]
 ```

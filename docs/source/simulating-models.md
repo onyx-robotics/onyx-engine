@@ -14,8 +14,7 @@ Once the model is trained/saved, the output-input configuration will be saved wi
 ```python
 from onyxengine.modeling import ( 
     Output,
-    Input,
-    State
+    Input
 )
 import onyxengine as onyx
 
@@ -24,8 +23,8 @@ outputs = [
     Output(name='acceleration_prediction'),
 ]
 inputs = [
-    State(name='velocity', relation='derivative', parent='acceleration_prediction'),
-    State(name='position', relation='derivative', parent='velocity'),
+    Input(name='velocity', parent='acceleration_prediction', relation='derivative'),
+    Input(name='position', parent='velocity', relation='derivative'),
     Input(name='control_input'),
 ]
 ```
@@ -66,12 +65,11 @@ We will now use the {meth}`simulate` method on a model. Here is the example code
 ```python
 import torch
 import onyxengine as onyx
-from onyxengine.modeling import State
 
 # Load our model
 model = onyx.load_model('example_model')
 total_inputs = len(model.config.inputs)
-num_states = len([s for s in model.config.inputs if isinstance(s, State)])
+num_states = len([s for s in model.config.inputs if s.relation is not None])
 num_inputs = total_inputs - num_states
 
 # Example 1: Run inference with our model (using normal pytorch model prediction)
