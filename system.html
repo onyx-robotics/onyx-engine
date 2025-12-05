@@ -1,0 +1,321 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>System &mdash; Engine 0.1.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
+      <link rel="stylesheet" type="text/css" href="_static/css/custom.css" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=01f34227"></script>
+      <script src="_static/doctools.js?v=9bcbadda"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="_static/clipboard.min.js?v=a7894cd8"></script>
+      <script src="_static/copybutton.js?v=f281be69"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Uploading a dataset" href="uploading-a-dataset.html" />
+    <link rel="prev" title="Getting Started" href="getting-started.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html">
+            
+              <img src="_static/engine_logo.svg" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Engine Platform</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="getting-started.html">Getting Started</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="getting-started.html#sign-up-and-create-your-account">Sign Up and Create Your Account</a></li>
+<li class="toctree-l2"><a class="reference internal" href="getting-started.html#features-overview">Features Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="getting-started.html#example-dataset">Example Dataset</a></li>
+</ul>
+</li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">System</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#system-overview">System Overview</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#node-graph">Node Graph</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#details">Details</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#inspector">Inspector</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#lineage-notes">Lineage Notes</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#system-table">System Table</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#table-columns">Table Columns</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="uploading-a-dataset.html">Uploading a dataset</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="uploading-a-dataset.html#collecting-data">Collecting Data</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="uploading-a-dataset.html#what-kind-of-data-do-i-need-to-collect">What kind of data do I need to collect?</a></li>
+<li class="toctree-l3"><a class="reference internal" href="uploading-a-dataset.html#how-much-data-do-i-need">How much data do I need?</a></li>
+<li class="toctree-l3"><a class="reference internal" href="uploading-a-dataset.html#can-i-upload-multiple-files">Can I upload multiple files?</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="uploading-a-dataset.html#uploading">Uploading</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="datasets.html">Datasets</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="datasets.html#viewing-a-dataset">Viewing a dataset</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="datasets.html#raw-datasets">Raw Datasets</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="datasets.html#processing-a-dataset-for-ai-training">Processing a dataset for AI training</a></li>
+<li class="toctree-l2"><a class="reference internal" href="datasets.html#fixing-dataset-processing-issues">Fixing dataset processing issues</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="training-a-model.html">Training Models</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="training-a-model.html#training-an-ai-model">Training an AI model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="training-a-model.html#model-features-and-configuration">Model Features and Configuration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="training-a-model.html#jobs">Jobs</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="settings.html">Settings</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="settings.html#profile">Profile</a></li>
+<li class="toctree-l2"><a class="reference internal" href="settings.html#team">Team</a></li>
+<li class="toctree-l2"><a class="reference internal" href="settings.html#api-keys">API Keys</a></li>
+<li class="toctree-l2"><a class="reference internal" href="settings.html#license">License</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Python API</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="training-models.html">Training Models</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="training-models.html#training-script">Training Script</a></li>
+<li class="toctree-l2"><a class="reference internal" href="training-models.html#model-configuration">Model Configuration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="training-models.html#training-configuration">Training Configuration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="training-models.html#train-model">train_model()</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="optimizing-models.html">Optimizing Models</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="optimizing-models.html#optimization-script">Optimization Script</a></li>
+<li class="toctree-l2"><a class="reference internal" href="optimizing-models.html#optconfigs">OptConfigs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="optimizing-models.html#optimize-model">optimize_model()</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="simulating-models.html">Simulating Models</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="simulating-models.html#simulating-with-ai-models">Simulating with AI Models</a></li>
+<li class="toctree-l2"><a class="reference internal" href="simulating-models.html#simulate">simulate()</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="onyxengine.html">onyxengine</a></li>
+<li class="toctree-l1"><a class="reference internal" href="onyxengine.data.html">onyxengine.data</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="onyxengine.data.html#onyxengine.data.OnyxDataset"><code class="docutils literal notranslate"><span class="pre">OnyxDataset</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="onyxengine.modeling.html">onyxengine.modeling</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="onyxengine.modeling.html#models">Models</a></li>
+<li class="toctree-l2"><a class="reference internal" href="onyxengine.modeling.html#model-simulation">Model Simulation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="onyxengine.modeling.html#model-training">Model Training</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Engine</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">System</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/system.md.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section class="tex2jax_ignore mathjax_ignore" id="system">
+<h1>System<a class="headerlink" href="#system" title="Link to this heading"></a></h1>
+<section id="system-overview">
+<h2>System Overview<a class="headerlink" href="#system-overview" title="Link to this heading"></a></h2>
+<p>The System Overview is a visualization of the full lineage of datasets and models in your system. Collaborate with your team on all the objects in your system and quickly view details at a high level.</p>
+<section id="node-graph">
+<h3>Node Graph<a class="headerlink" href="#node-graph" title="Link to this heading"></a></h3>
+<figure class="align-center">
+<a class="reference internal image-reference" href="_images/node_graph.png"><img alt="Overview" src="_images/node_graph.png" style="width: 100%;" />
+</a>
+</figure>
+<p>The Node Graph visualizes all objects in your system. Objects are Datasets and Models. Nodes in the node graph are organized by lineage connecting models to the datasets they were trained from. Node lineages will appear top to bottom by most recently added.</p>
+<p>Objects in the Onyx Engine have a name and ID. Objects with the same name will be consolidated into one node in the node graph and are interpreted as versions of that object.</p>
+<p>Clicking on the name of an object on the node will take you to the detailed object view.</p>
+</section>
+<section id="details">
+<h3>Details<a class="headerlink" href="#details" title="Link to this heading"></a></h3>
+<figure class="align-center">
+<a class="reference internal image-reference" href="_images/details.png"><img alt="Details" src="_images/details.png" style="width: 100%;" />
+</a>
+</figure>
+<p>You can toggle additional details on the nodes in the node graph by clicking on the “Details” button on the bottom tool menu. The Details menu contains parameters that can be toggled visible and displayed on the nodes in the node graph like created date, dt, and memory usage.</p>
+</section>
+<section id="inspector">
+<h3>Inspector<a class="headerlink" href="#inspector" title="Link to this heading"></a></h3>
+<figure class="align-center">
+<a class="reference internal image-reference" href="_images/inspector.png"><img alt="Inspector" src="_images/inspector.png" style="width: 100%;" />
+</a>
+</figure>
+<p>The Inspector is a quick way to gather information about a node in the node graph. Click on a node to select it. Selecting the object will open the inspector panel on the right side of the overview.</p>
+<p>In the Inspector, you’ll find the following details:</p>
+<ol class="arabic simple">
+<li><p>Object type (i.e. Dataset, Model)</p></li>
+<li><p>Object name</p></li>
+<li><p>Object versions</p></li>
+<li><p>Created date and status</p></li>
+<li><p>Configuration details</p></li>
+<li><p>Lineage Notes</p></li>
+</ol>
+<p>You can rename/delete an object by clicking on the three-dot menu in the top right corner of the inspector panel.</p>
+</section>
+<section id="lineage-notes">
+<h3>Lineage Notes<a class="headerlink" href="#lineage-notes" title="Link to this heading"></a></h3>
+<figure class="align-center">
+<a class="reference internal image-reference" href="_images/lineage.png"><img alt="Lineage" src="_images/lineage.png" style="width: 100%;" />
+</a>
+</figure>
+<p>Lineage notes are your team’s tool to enter details about the history of the objects in your node graph. A lineage note can exist on an edge between two nodes. For example, you can enter a lineage note between a dataset and the model that was trained from that dataset. You can use these notes to document details about decisions made to train different models from your datasets.</p>
+<p>To view the lineage notes for an object, click on a node in the node graph to open the Inspector panel. Scroll down to the Lineage Notes section of the Inspector.</p>
+<p>In the Lineage Notes section of the Inspector, you’ll see the list of ancestor objects in the hierarchy that lead to the creation of the selected object.</p>
+<p>To add a note, click on the text box in between two objects and type your note. Once finished, click the plus button to save the note.</p>
+</section>
+</section>
+<section id="system-table">
+<h2>System Table<a class="headerlink" href="#system-table" title="Link to this heading"></a></h2>
+<figure class="align-center">
+<a class="reference internal image-reference" href="_images/table.png"><img alt="Table" src="_images/table.png" style="width: 100%;" />
+</a>
+</figure>
+<p>The System Table is a complete table of object versions and their high level metadata across your entire system. To access the System Table, click the “Table” button near the top bar from the Overview.</p>
+<p>From the table, you can:</p>
+<ol class="arabic simple">
+<li><p>View all datasets and models across all versions</p></li>
+<li><p>Search by name</p></li>
+<li><p>Filter by type and status</p></li>
+<li><p>Toggle column visibility</p></li>
+<li><p>Rename/delete objects</p></li>
+<li><p>Upload a new dataset</p></li>
+</ol>
+<section id="table-columns">
+<h3>Table Columns<a class="headerlink" href="#table-columns" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p>Name</p></li>
+<li><p>Version</p>
+<ul>
+<li><p>The version ID of a specific object. An object with one name can have multiple versions.</p></li>
+</ul>
+</li>
+<li><p>Type</p>
+<ul>
+<li><p>The type of the object, either Dataset or Model.</p></li>
+</ul>
+</li>
+<li><p>Config</p>
+<ul>
+<li><p>The configuration parameters and data for the object, including fields like “features” and “dt”.</p></li>
+</ul>
+</li>
+<li><p>Status</p>
+<ul>
+<li><p>For Datasets:</p>
+<ul>
+<li><p>Raw (unprocessed data)</p></li>
+<li><p>Processing (data currently being processed)</p></li>
+<li><p>Failed (processed data with errors/issues)</p></li>
+<li><p>Active (processed data ready for AI model training)</p></li>
+</ul>
+</li>
+<li><p>For Models:</p>
+<ul>
+<li><p>Training (a currently training AI model)</p></li>
+<li><p>Optimizing (a currently optimizing AI model)</p></li>
+<li><p>Active (a trained AI model)</p></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>Date Created</p></li>
+<li><p>Owner</p>
+<ul>
+<li><p>The creator of the object.</p></li>
+</ul>
+</li>
+<li><p>Options</p>
+<ul>
+<li><p>Rename</p></li>
+<li><p>Delete</p></li>
+</ul>
+</li>
+</ul>
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="getting-started.html" class="btn btn-neutral float-left" title="Getting Started" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="uploading-a-dataset.html" class="btn btn-neutral float-right" title="Uploading a dataset" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Onyx Robotics Inc.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

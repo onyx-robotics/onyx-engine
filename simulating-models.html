@@ -1,0 +1,332 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Simulating Models &mdash; Engine 0.1.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
+      <link rel="stylesheet" type="text/css" href="_static/css/custom.css" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=01f34227"></script>
+      <script src="_static/doctools.js?v=9bcbadda"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="_static/clipboard.min.js?v=a7894cd8"></script>
+      <script src="_static/copybutton.js?v=f281be69"></script>
+      <script>window.MathJax = {"options": {"processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+      <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="onyxengine" href="onyxengine.html" />
+    <link rel="prev" title="Optimizing Models" href="optimizing-models.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html">
+            
+              <img src="_static/engine_logo.svg" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Engine Platform</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="getting-started.html">Getting Started</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="getting-started.html#sign-up-and-create-your-account">Sign Up and Create Your Account</a></li>
+<li class="toctree-l2"><a class="reference internal" href="getting-started.html#features-overview">Features Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="getting-started.html#example-dataset">Example Dataset</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="system.html">System</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="system.html#system-overview">System Overview</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="system.html#node-graph">Node Graph</a></li>
+<li class="toctree-l3"><a class="reference internal" href="system.html#details">Details</a></li>
+<li class="toctree-l3"><a class="reference internal" href="system.html#inspector">Inspector</a></li>
+<li class="toctree-l3"><a class="reference internal" href="system.html#lineage-notes">Lineage Notes</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="system.html#system-table">System Table</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="system.html#table-columns">Table Columns</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="uploading-a-dataset.html">Uploading a dataset</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="uploading-a-dataset.html#collecting-data">Collecting Data</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="uploading-a-dataset.html#what-kind-of-data-do-i-need-to-collect">What kind of data do I need to collect?</a></li>
+<li class="toctree-l3"><a class="reference internal" href="uploading-a-dataset.html#how-much-data-do-i-need">How much data do I need?</a></li>
+<li class="toctree-l3"><a class="reference internal" href="uploading-a-dataset.html#can-i-upload-multiple-files">Can I upload multiple files?</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="uploading-a-dataset.html#uploading">Uploading</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="datasets.html">Datasets</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="datasets.html#viewing-a-dataset">Viewing a dataset</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="datasets.html#raw-datasets">Raw Datasets</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="datasets.html#processing-a-dataset-for-ai-training">Processing a dataset for AI training</a></li>
+<li class="toctree-l2"><a class="reference internal" href="datasets.html#fixing-dataset-processing-issues">Fixing dataset processing issues</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="training-a-model.html">Training Models</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="training-a-model.html#training-an-ai-model">Training an AI model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="training-a-model.html#model-features-and-configuration">Model Features and Configuration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="training-a-model.html#jobs">Jobs</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="settings.html">Settings</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="settings.html#profile">Profile</a></li>
+<li class="toctree-l2"><a class="reference internal" href="settings.html#team">Team</a></li>
+<li class="toctree-l2"><a class="reference internal" href="settings.html#api-keys">API Keys</a></li>
+<li class="toctree-l2"><a class="reference internal" href="settings.html#license">License</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Python API</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="training-models.html">Training Models</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="training-models.html#training-script">Training Script</a></li>
+<li class="toctree-l2"><a class="reference internal" href="training-models.html#model-configuration">Model Configuration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="training-models.html#training-configuration">Training Configuration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="training-models.html#train-model">train_model()</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="optimizing-models.html">Optimizing Models</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="optimizing-models.html#optimization-script">Optimization Script</a></li>
+<li class="toctree-l2"><a class="reference internal" href="optimizing-models.html#optconfigs">OptConfigs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="optimizing-models.html#optimize-model">optimize_model()</a></li>
+</ul>
+</li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Simulating Models</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#simulating-with-ai-models">Simulating with AI Models</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#simulate">simulate()</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="onyxengine.html">onyxengine</a></li>
+<li class="toctree-l1"><a class="reference internal" href="onyxengine.data.html">onyxengine.data</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="onyxengine.data.html#onyxengine.data.OnyxDataset"><code class="docutils literal notranslate"><span class="pre">OnyxDataset</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="onyxengine.modeling.html">onyxengine.modeling</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="onyxengine.modeling.html#models">Models</a></li>
+<li class="toctree-l2"><a class="reference internal" href="onyxengine.modeling.html#model-simulation">Model Simulation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="onyxengine.modeling.html#model-training">Model Training</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Engine</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Simulating Models</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/simulating-models.md.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section class="tex2jax_ignore mathjax_ignore" id="simulating-models">
+<span id="id1"></span><h1>Simulating Models<a class="headerlink" href="#simulating-models" title="Link to this heading"></a></h1>
+<p>Onyx models come with built-in simulation capabilites to quickly deploy trained models.</p>
+<section id="simulating-with-ai-models">
+<h2>Simulating with AI Models<a class="headerlink" href="#simulating-with-ai-models" title="Link to this heading"></a></h2>
+<p>To recap from <a class="reference internal" href="training-models.html#training-models"><span class="std std-ref">Training Models</span></a>, AI models predict one step at a time by default. But for simulation and controls, we need to predict more than a single step and instead simulate trajectories over multiple steps. Managing state relations, numerical integration, and recursive model calls is tedious, so our models provide a built-in <code class="docutils literal notranslate"><span class="pre">simulate()</span></code> function to handle this for you efficiently.</p>
+<p>To use this method, we just need to configure the model’s outputs, inputs, and states.</p>
+<p>Once the model is trained/saved, the output-input configuration will be saved with it, so you will not need to set the outputs/inputs when loading the model.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">onyxengine.modeling</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span> 
+    <span class="n">Output</span><span class="p">,</span>
+    <span class="n">Input</span>
+<span class="p">)</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">onyxengine</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">onyx</span>
+
+<span class="c1"># Configure outputs and inputs for a new model</span>
+<span class="n">outputs</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="n">Output</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;acceleration_prediction&#39;</span><span class="p">),</span>
+<span class="p">]</span>
+<span class="n">inputs</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="n">Input</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;velocity&#39;</span><span class="p">,</span> <span class="n">parent</span><span class="o">=</span><span class="s1">&#39;acceleration_prediction&#39;</span><span class="p">,</span> <span class="n">relation</span><span class="o">=</span><span class="s1">&#39;derivative&#39;</span><span class="p">),</span>
+    <span class="n">Input</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;position&#39;</span><span class="p">,</span> <span class="n">parent</span><span class="o">=</span><span class="s1">&#39;velocity&#39;</span><span class="p">,</span> <span class="n">relation</span><span class="o">=</span><span class="s1">&#39;derivative&#39;</span><span class="p">),</span>
+    <span class="n">Input</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;control_input&#39;</span><span class="p">),</span>
+<span class="p">]</span>
+</pre></div>
+</div>
+<p>States are similar to dynamical system state-space models, where <span class="math notranslate nohighlight">\(\dot{x} = f(x, u)\)</span>. In this example:</p>
+<ul class="simple">
+<li><p>Model Outputs</p>
+<ul>
+<li><p><strong>acceleration</strong> (<span class="math notranslate nohighlight">\(\dot{x}\)</span>) is the output of the model.</p></li>
+</ul>
+</li>
+<li><p>Model Inputs</p>
+<ul>
+<li><p><strong>velocity</strong> (<span class="math notranslate nohighlight">\(x_1\)</span>) is the first state, whose parent <strong>acceleration</strong> is its derivative.</p></li>
+<li><p><strong>position</strong> (<span class="math notranslate nohighlight">\(x_2\)</span>) is the second state, whose parent <strong>velocity</strong> is its derivative.</p></li>
+<li><p><strong>control_input</strong> (<span class="math notranslate nohighlight">\(u\)</span>) is a control input, whose value is known at each time step.</p></li>
+</ul>
+</li>
+</ul>
+<p>The standard inputs are given at each time step, and outputs are predicted by the model, so they do not need any special attention.</p>
+<p>The <strong>states</strong>, however, must be calculated from the outputs (or other states) and fed back into the model as inputs to simulate a trajectory. The available relations between states and their parents are:</p>
+<ul class="simple">
+<li><p><strong>“output”</strong>: The state is equal to an output of the model.</p>
+<ul>
+<li><p><span class="math notranslate nohighlight">\(\text{state}_{t+1} = \text{parent}_t\)</span></p></li>
+</ul>
+</li>
+<li><p><strong>“delta”</strong>: The parent is the delta of the state.</p>
+<ul>
+<li><p><span class="math notranslate nohighlight">\(\text{state}_{t+1} = \text{state}_t + \text{parent}_t\)</span></p></li>
+</ul>
+</li>
+<li><p><strong>“derivative”</strong>: The parent is the derivative of the state.</p>
+<ul>
+<li><p><span class="math notranslate nohighlight">\(\text{state}_{t+1} = \text{state}_t + \text{parent}_t \cdot \text{dt}\)</span></p></li>
+</ul>
+</li>
+</ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Often it can be easier for a hardware AI model to predict the delta or derivative of a feature than the feature itself.</p>
+</div>
+</section>
+<section id="simulate">
+<h2>simulate()<a class="headerlink" href="#simulate" title="Link to this heading"></a></h2>
+<p>We will now use the <code class="xref py py-meth docutils literal notranslate"><span class="pre">simulate()</span></code> method on a model. Here is the example code:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">torch</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">onyxengine</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">onyx</span>
+
+<span class="c1"># Load our model</span>
+<span class="n">model</span> <span class="o">=</span> <span class="n">onyx</span><span class="o">.</span><span class="n">load_model</span><span class="p">(</span><span class="s1">&#39;example_model&#39;</span><span class="p">)</span>
+<span class="n">total_inputs</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">inputs</span><span class="p">)</span>
+<span class="n">num_states</span> <span class="o">=</span> <span class="nb">len</span><span class="p">([</span><span class="n">s</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">model</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">inputs</span> <span class="k">if</span> <span class="n">s</span><span class="o">.</span><span class="n">relation</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">])</span>
+<span class="n">num_inputs</span> <span class="o">=</span> <span class="n">total_inputs</span> <span class="o">-</span> <span class="n">num_states</span>
+
+<span class="c1"># Example 1: Run inference with our model (using normal pytorch model prediction)</span>
+<span class="n">batch_size</span> <span class="o">=</span> <span class="mi">1</span>
+<span class="n">seq_length</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">sequence_length</span>
+<span class="n">test_input</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">batch_size</span><span class="p">,</span> <span class="n">seq_length</span><span class="p">,</span> <span class="n">total_inputs</span><span class="p">)</span>
+<span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">no_grad</span><span class="p">():</span>
+    <span class="n">test_output</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="n">test_input</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">test_output</span><span class="p">)</span>
+
+<span class="c1"># Example 2: Simulate a trajectory with our model</span>
+<span class="c1"># Model will fill in the x_traj tensor with the simulated trajectory</span>
+<span class="n">sim_steps</span> <span class="o">=</span> <span class="mi">10</span>
+<span class="n">state_x0</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">batch_size</span><span class="p">,</span> <span class="n">seq_length</span><span class="p">,</span> <span class="n">num_states</span><span class="p">)</span>
+<span class="n">inputs</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">batch_size</span><span class="p">,</span> <span class="n">seq_length</span><span class="o">+</span><span class="n">sim_steps</span><span class="p">,</span> <span class="n">num_inputs</span><span class="p">)</span>
+<span class="n">state_traj</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">seq_length</span><span class="o">+</span><span class="n">sim_steps</span><span class="p">,</span> <span class="n">total_inputs</span><span class="p">)</span>
+<span class="n">model</span><span class="o">.</span><span class="n">simulate</span><span class="p">(</span><span class="n">state_traj</span><span class="p">,</span> <span class="n">state_x0</span><span class="p">,</span> <span class="n">inputs</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">state_traj</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>To make the <code class="xref py py-meth docutils literal notranslate"><span class="pre">simulate()</span></code> method performant, we avoid using dynamic memory allocation by passing in the pre-allocated tensors needed:</p>
+<figure class="align-center">
+<a class="reference internal image-reference" href="_images/simulate_tensors.png"><img alt="Simulated trajectory solution" src="_images/simulate_tensors.png" style="width: 40%;" />
+</a>
+</figure>
+<p><br><br></p>
+<ul class="simple">
+<li><p><strong>state_traj</strong> - The state trajectory tensor whose values will be “filled in” with the simulated trajectory.</p>
+<ul>
+<li><p>Should be of shape (batch_size, sim_steps, model_inputs):</p>
+<ul>
+<li><p><strong>batch_size</strong> is the number of parallel trajectories to simulate</p></li>
+<li><p><strong>sim_steps</strong> is the number of time steps to simulate</p></li>
+<li><p><strong>model_inputs</strong> is the total number of inputs to the model (num_states + num_inputs).</p></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p><strong>state_x0</strong> - The initial state for the simulation, and the first <code class="docutils literal notranslate"><span class="pre">sequence_length</span></code> state values of the traj_solution tensor.</p>
+<ul>
+<li><p>Should be of shape (batch_size, seq_length, num_states)</p></li>
+</ul>
+</li>
+<li><p><strong>inputs</strong> - The complete array of non-state inputs for the simulation.</p>
+<ul>
+<li><p>Should be of shape (batch_size, sim_steps, num_inputs)</p></li>
+</ul>
+</li>
+<li><p><strong>(Optional) model_outputs</strong> - Optionally, you can pass a tensor to obtain the model outputs</p>
+<ul>
+<li><p>Should be of shape (batch_size, sim_steps, num_outputs)</p></li>
+</ul>
+</li>
+</ul>
+<p>The batch dimension allows for parallel simulation of multiple trajectories, which is where GPU acceleration becomes useful.</p>
+<p>If you need to run some code (such as a controller) at each time step, you can use the simulate method in a loop and simulate one step at a time.</p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="optimizing-models.html" class="btn btn-neutral float-left" title="Optimizing Models" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="onyxengine.html" class="btn btn-neutral float-right" title="onyxengine" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Onyx Robotics Inc.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
