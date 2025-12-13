@@ -106,18 +106,21 @@ def save_dataset(name: str, dataset: OnyxDataset, source_datasets: List[Dict[str
 
     # Validate the dataset dataframe, name, and source datasets
     if dataset.dataframe.empty:
-        raise SystemExit("Onyx Engine API error: Dataset dataframe is empty.")
+        raise Exception("Onyx Engine API error: Dataset dataframe is empty.")
     if name == '':
-        raise SystemExit("Onyx Engine API error: Dataset name must be a non-empty string.")
+        raise Exception("Onyx Engine API error: Dataset name must be a non-empty string.")
     for source in sources:
         if get_object_metadata(source.name, source.id) is None:
-            raise SystemExit(f"Onyx Engine API error: Source dataset [{source}] not found in the Engine.")
+            raise Exception(f"Onyx Engine API error: Source dataset [{source}] not found in the Engine.")
 
     # Save a local copy of the dataset
     if not os.path.exists(DATASETS_PATH):
         os.makedirs(DATASETS_PATH)
-    filename = name + '.csv'
-    dataset.dataframe.to_csv(os.path.join(DATASETS_PATH, filename), index=False)
+    filename = name + '.parquet'
+    for col in dataset.dataframe.columns:
+        if dataset.dataframe[col].dtype == 'float64':
+            dataset.dataframe[col] = dataset.dataframe[col].astype('float32')
+    dataset.dataframe.to_parquet(os.path.join(DATASETS_PATH, filename), index=False)
 
     # Upload the dataset and config to the cloud
     response = handle_post_request(
@@ -166,14 +169,18 @@ def load_dataset(name: str, version_id: str=None) -> OnyxDataset:
     assert isinstance(name, str), "name must be a string."
     assert version_id is None or isinstance(version_id, str), "version_id must be an string."
     config_filename = name + '.json'
-    dataset_filename = name + '.csv'
+    dataset_filename = name + '.parquet'
     dataset_path = os.path.join(DATASETS_PATH, dataset_filename)
     config_path = os.path.join(DATASETS_PATH, config_filename)
 
     # Get dataset metadata
     metadata = get_object_metadata(name, version_id)
+    # Check dataset exists
     if metadata is None:
-        raise SystemExit(f"Onyx Engine API error: Dataset [{name}: {version_id}] not found in the Engine.")
+        raise Exception(f"Onyx Engine API error: Dataset [{name}: {version_id}] not found in the Engine.")
+    # Check dataset is active
+    if metadata['status'] != 'active':
+        raise Exception(f"Onyx Engine API error: Dataset [{name}: {version_id}] is not active.")
 
     def download_dataset():
         download_object(dataset_filename, 'dataset', version_id)
@@ -195,7 +202,7 @@ def load_dataset(name: str, version_id: str=None) -> OnyxDataset:
             download_dataset()
 
     # Load the dataset from local storage
-    dataset_dataframe = pd.read_csv(dataset_path)
+    dataset_dataframe = pd.read_parquet(dataset_path)
     with open(config_path, 'r') as f:
         config_json = json.loads(f.read())
     dataset_config = OnyxDatasetConfig.model_validate(config_json["config"])
@@ -248,10 +255,10 @@ def save_model(name: str, model: Union[MLP, RNN, Transformer], source_datasets: 
     
     # Validate the model name and source datasets
     if name == '':
-        raise SystemExit("Onyx Engine API error: Model name must be a non-empty string.")
+        raise Exception("Onyx Engine API error: Model name must be a non-empty string.")
     for source in sources:
         if get_object_metadata(source.name, source.id) is None:
-            raise SystemExit(f"Onyx Engine API error: Source dataset [{source}] not found in the Engine.")
+            raise Exception(f"Onyx Engine API error: Source dataset [{source}] not found in the Engine.")
     
     # Save model to local storage
     if not os.path.exists(MODELS_PATH):
@@ -307,7 +314,7 @@ def load_model(name: str, version_id: str=None, mode: Literal["online", "offline
     if mode == "offline":
         # In offline mode, try to directly load from local storage
         if not os.path.exists(model_path) or not os.path.exists(config_path):
-            raise SystemExit(f"Onyx Engine API error: Model [{name}] not found in local storage")
+            raise Exception(f"Onyx Engine API error: Model [{name}] not found in local storage")
         
         with open(config_path, 'r') as f:
             config_json = json.load(f)
@@ -319,7 +326,7 @@ def load_model(name: str, version_id: str=None, mode: Literal["online", "offline
     # Online mode - check remote metadata
     metadata = get_object_metadata(name, version_id)
     if metadata is None:
-        raise SystemExit(f"Onyx Engine API error: Model [{name}: {version_id}] not found in the Engine.")
+        raise Exception(f"Onyx Engine API error: Model [{name}: {version_id}] not found in the Engine.")
 
     def download_model():
         download_object(model_filename, 'model', version_id)
@@ -423,9 +430,9 @@ def train_model(
 
     # Check that model/dataset names are not empty
     if model_name == '':
-        raise SystemExit("Onyx Engine API error: Model name must be a non-empty string.")
+        raise Exception("Onyx Engine API error: Model name must be a non-empty string.")
     if dataset_name == '':
-        raise SystemExit("Onyx Engine API error: Dataset name must be a non-empty string.")
+        raise Exception("Onyx Engine API error: Dataset name must be a non-empty string.")
     
     # Construct training job
     training_job = TrainingJob(
@@ -563,9 +570,9 @@ def optimize_model(
 
     # Check that model/dataset names are not empty
     if model_name == '':
-        raise SystemExit("Onyx Engine API error: Model name must be a non-empty string.")
+        raise Exception("Onyx Engine API error: Model name must be a non-empty string.")
     if dataset_name == '':
-        raise SystemExit("Onyx Engine API error: Dataset name must be a non-empty string.")
+        raise Exception("Onyx Engine API error: Dataset name must be a non-empty string.")
 
     # Construct optimization job
     optimization_job = OptimizationJob(
