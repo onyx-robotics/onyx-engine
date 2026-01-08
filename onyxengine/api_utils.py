@@ -21,14 +21,18 @@ def handle_post_request(endpoint, data=None):
     except requests.exceptions.HTTPError as e:
         if response.status_code == 502:
             raise SystemExit(f"Onyx Engine API error: {e}")
-        error = json.loads(response.text)['detail']
+        try:
+            error_data = json.loads(response.text)
+            error = error_data.get('detail', response.text or str(e))
+        except (json.JSONDecodeError, ValueError):
+            error = response.text or str(e)
         raise SystemExit(f"Onyx Engine API error: {error}")
     except requests.exceptions.ConnectionError:
         raise SystemExit("Onyx Engine API error: Unable to connect to the server.")
     except requests.exceptions.Timeout:
         raise SystemExit("Onyx Engine API error: The request connection timed out.")
-    except requests.exceptions.RequestException:
-        raise SystemExit("Onyx Engine API error: An unexpected error occurred.", e)
+    except requests.exceptions.RequestException as e:
+        raise SystemExit(f"Onyx Engine API error: An unexpected error occurred: {e}")
         
     return response.json()
 
@@ -51,14 +55,18 @@ def upload_object(filename, object_type, object_id):
                 response.raise_for_status()
                 progress_bar.n = progress_bar.total
             except requests.exceptions.HTTPError as e:
-                error = json.loads(response.text)['detail']
+                try:
+                    error_data = json.loads(response.text)
+                    error = error_data.get('detail', response.text or str(e))
+                except (json.JSONDecodeError, ValueError):
+                    error = response.text or str(e)
                 raise SystemExit(f"Onyx Engine API error: {error}")
             except requests.exceptions.ConnectionError:
                 raise SystemExit("Onyx Engine API error: Unable to connect to the server.")
             except requests.exceptions.Timeout:
                 raise SystemExit("Onyx Engine API error: The request connection timed out.")
-            except requests.exceptions.RequestException:
-                raise SystemExit("Onyx Engine API error: An unexpected error occurred.", e)
+            except requests.exceptions.RequestException as e:
+                raise SystemExit(f"Onyx Engine API error: An unexpected error occurred: {e}")
             
 def upload_object_url(filename, object_type, url, fields):
     # Upload the object using the secure URL
@@ -75,14 +83,18 @@ def upload_object_url(filename, object_type, url, fields):
                 response.raise_for_status()
                 progress_bar.n = progress_bar.total
             except requests.exceptions.HTTPError as e:
-                error = json.loads(response.text)['detail']
+                try:
+                    error_data = json.loads(response.text)
+                    error = error_data.get('detail', response.text or str(e))
+                except (json.JSONDecodeError, ValueError):
+                    error = response.text or str(e)
                 raise SystemExit(f"Onyx Engine API error: {error}")
             except requests.exceptions.ConnectionError:
                 raise SystemExit("Onyx Engine API error: Unable to connect to the server.")
             except requests.exceptions.Timeout:
                 raise SystemExit("Onyx Engine API error: The request connection timed out.")
-            except requests.exceptions.RequestException:
-                raise SystemExit("Onyx Engine API error: An unexpected error occurred.", e)
+            except requests.exceptions.RequestException as e:
+                raise SystemExit(f"Onyx Engine API error: An unexpected error occurred: {e}")
 
 def download_object(filename, object_type, object_id: Optional[str] = None):
     # Get secure download URL from the cloud
@@ -94,14 +106,18 @@ def download_object(filename, object_type, object_id: Optional[str] = None):
         response = requests.get(download_url, stream=True)
         response.raise_for_status()
     except requests.exceptions.HTTPError as e:
-        error = json.loads(response.text)['detail']
+        try:
+            error_data = json.loads(response.text)
+            error = error_data.get('detail', response.text or str(e))
+        except (json.JSONDecodeError, ValueError):
+            error = response.text or str(e)
         raise SystemExit(f"Onyx Engine API error: {error}")
     except requests.exceptions.ConnectionError:
         raise SystemExit("Onyx Engine API error: Unable to connect to the server.")
     except requests.exceptions.Timeout:
         raise SystemExit("Onyx Engine API error: The request connection timed out.")
-    except requests.exceptions.RequestException:
-        raise SystemExit("Onyx Engine API error: An unexpected error occurred.", e)
+    except requests.exceptions.RequestException as e:
+        raise SystemExit(f"Onyx Engine API error: An unexpected error occurred: {e}")
 
     # Write the object to local storage
     block_size = 1024 * 64

@@ -1,5 +1,4 @@
 from typing import List, Literal, Union, Optional
-from pyarrow import output_stream
 from pydantic import BaseModel, Field, model_validator
 from typing_extensions import Self
 import torch
@@ -9,17 +8,25 @@ import torch
 class BaseFeature(BaseModel):
     type: Literal['base_feature'] = Field(default='base_feature', frozen=True, init=False)
     name: str
+    dataset_feature: Optional[str] = None # Name of the feature in the dataset
     scale: Union[None, Literal['mean'], List[float]] = 'mean'
+    parent: Optional[str] = None  # Parent feature to derive from
+    relation: Optional[Literal['equal', 'delta', 'derivative']] = None  # Method to solve for the feature: equal to the parent value, parent is the delta of the value, or parent is the derivative of the value
     train_mean: Optional[float] = Field(default=None, init=False)
     train_std: Optional[float] = Field(default=None, init=False)
     train_min: Optional[float] = Field(default=None, init=False)
     train_max: Optional[float] = Field(default=None, init=False)
-    parent: Optional[str] = None  # Parent feature to derive from
-    relation: Optional[Literal['equal', 'delta', 'derivative']] = None  # Method to solve for the feature: equal to the parent value, parent is the delta of the value, or parent is the derivative of the value
     
     @property
     def is_derived(self) -> bool:
         return self.relation is not None
+    
+    @model_validator(mode='after')
+    def set_dataset_feature_from_name(self) -> Self:
+        """Automatically set dataset_feature to name if not provided."""
+        if self.dataset_feature is None:
+            self.dataset_feature = self.name
+        return self
     
     @model_validator(mode='after')
     def validate_scale(self) -> Self:
@@ -45,6 +52,7 @@ class Output(BaseFeature):
     
     Args:
         name (str): Name of the output feature.
+        dataset_feature (str): Name of the feature in the dataset.
         scale (Union[None, Literal['mean'], List[float]]): Scale for the output feature:
             
             - None: Feature is not scaled.
@@ -67,6 +75,7 @@ class Input(BaseFeature):
     
     Args:
         name (str): Name of the input feature.
+        dataset_feature (str): Name of the feature in the dataset.
         scale (Union[None, Literal['mean'], List[float]]): Scale for the output feature:
             
             - None: Feature is not scaled.
