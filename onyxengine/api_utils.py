@@ -5,16 +5,16 @@ from typing import List, Optional
 from pydantic import BaseModel
 from tqdm import tqdm
 from requests_toolbelt import MultipartEncoder, MultipartEncoderMonitor
-from onyxengine import SERVER_URL, WSS_URL, ONYX_API_KEY, ONYX_PATH
+from onyxengine import SERVER_URL, WSS_URL, ONYX_PATH
 from onyxengine.modeling import TrainingConfig
 import websockets
 from websockets.asyncio.client import connect
 
-def handle_post_request(endpoint, data=None):
+def handle_post_request(endpoint, data=None, api_key=None):
     try:
         response = requests.post(
             SERVER_URL + endpoint,
-            headers={"x-api-key": ONYX_API_KEY},
+            headers={"x-api-key": api_key},
             json=data,
         )
         response.raise_for_status()
@@ -36,9 +36,9 @@ def handle_post_request(endpoint, data=None):
         
     return response.json()
 
-def upload_object(filename, object_type, object_id):
+def upload_object(filename, object_type, object_id, api_key=None):
     # Get secure upload URL from the cloud
-    response = handle_post_request("/generate_upload_url", {"object_filename": filename, "object_type": object_type, "object_id": object_id})
+    response = handle_post_request("/generate_upload_url", {"object_filename": filename, "object_type": object_type, "object_id": object_id}, api_key=api_key)
 
     # Upload the object using the secure URL
     local_copy_path = os.path.join(ONYX_PATH, object_type + 's', filename)
@@ -96,9 +96,9 @@ def upload_object_url(filename, object_type, url, fields):
             except requests.exceptions.RequestException as e:
                 raise SystemExit(f"Onyx Engine API error: An unexpected error occurred: {e}")
 
-def download_object(filename, object_type, object_id: Optional[str] = None):
+def download_object(filename, object_type, object_id: Optional[str] = None, api_key=None):
     # Get secure download URL from the cloud
-    response = handle_post_request("/generate_download_url", {"object_filename": filename, "object_type": object_type, "object_id": object_id})
+    response = handle_post_request("/generate_download_url", {"object_filename": filename, "object_type": object_type, "object_id": object_id}, api_key=api_key)
     download_url = response["download_url"]
 
     # Download the object using the secure URL
@@ -133,14 +133,14 @@ class SourceObject(BaseModel):
     name: str
     id: Optional[str] = None
 
-def set_object_metadata(object_name, object_type, object_config, object_sources: List[SourceObject]=[]):
+def set_object_metadata(object_name, object_type, object_config, object_sources: List[SourceObject]=[], api_key=None):
     # Request to set metadata for the object in onyx engine
     metadata = handle_post_request("/set_object_metadata", {
         "object_name": object_name,
         "object_type": object_type,
         "object_config": object_config,
         "object_sources": [source.model_dump() for source in object_sources],
-    })
+    }, api_key=api_key)
     if metadata is None:
         return None
     if isinstance(metadata['config'], str):
@@ -148,9 +148,9 @@ def set_object_metadata(object_name, object_type, object_config, object_sources:
  
     return metadata
     
-async def monitor_training_job(job_id: str, training_config: TrainingConfig):
+async def monitor_training_job(job_id: str, training_config: TrainingConfig, api_key=None):
     headers = {
-        "x-api-key": ONYX_API_KEY,
+        "x-api-key": api_key,
     }
     query_params = {
         "client": "api",
