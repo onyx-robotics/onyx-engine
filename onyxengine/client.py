@@ -25,11 +25,9 @@ from .api_utils import (
     upload_object,
     download_object,
     set_object_metadata,
-    monitor_training_job,
     SourceObject,
     upload_object_url,
 )
-import asyncio
 
 
 class Onyx:
@@ -407,7 +405,6 @@ class Onyx:
         dataset_name: str = "",
         dataset_version_id: Optional[str] = None,
         training_config: TrainingConfig = TrainingConfig(),
-        monitor_training: bool = True,
     ):
         """
         Train a model on the Engine using a specified dataset, model config, and training config.
@@ -418,7 +415,6 @@ class Onyx:
             dataset_name (str): The name of the dataset to train on. (Required)
             dataset_version_id (str, optional): The version of the dataset to train on, None = latest_version. (Default is None)
             training_config (TrainingConfig): The configuration for the training process. (Default is TrainingConfig())
-            monitor_training (bool, optional): Whether to monitor the training job. (Default is True)
 
         Example:
 
@@ -462,7 +458,6 @@ class Onyx:
                 model_config=model_config,
                 dataset_name='example_train_data',
                 training_config=training_config,
-                monitor_training=True
             )
 
         """
@@ -471,7 +466,6 @@ class Onyx:
         assert isinstance(dataset_name, str), "dataset_name must be a string."
         assert dataset_version_id is None or isinstance(dataset_version_id, str), "dataset_version_id must be an string."
         assert isinstance(training_config, TrainingConfig), "training_config must be a TrainingConfig."
-        assert isinstance(monitor_training, bool), "monitor_training must be a boolean."
 
         # Check that model/dataset names are not empty
         if model_name == '':
@@ -491,11 +485,6 @@ class Onyx:
         response = handle_post_request("/train_model", {"training_job": training_job.model_dump()}, api_key=self._api_key)
 
         print(f'Preparing to train model [{model_name}] using dataset [{dataset_name}].')
-        if monitor_training:
-            try:
-                asyncio.run(monitor_training_job(response['job_id'], training_config, api_key=self._api_key))
-            except KeyboardInterrupt:
-                print('Training job monitoring stopped.')
 
     def optimize_model(
         self,
