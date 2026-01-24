@@ -494,11 +494,10 @@ class Onyx:
         optimization_config: OptimizationConfig = None,
     ):
         """
-        Optimize a model on the Engine using a specified dataset, model simulator config, and optimization configs. Optimization configs define the search space for hyperparameters.
+        Optimize a model on the Engine using a specified dataset and optimization configs. Optimization configs define the search space for hyperparameters.
 
         Args:
             model_name (str): The name of the model to optimize. (Required)
-            model_sim_config (ModelSimulatorConfig): The configuration for the model simulator. (Required)
             dataset_name (str): The name of the dataset to optimize on. (Required)
             dataset_version_id (str, optional): The version of the dataset to optimize on, None = latest_version. (Default is None)
             optimization_config (OptimizationConfig): The configuration for the optimization process. (Required)
@@ -591,7 +590,6 @@ class Onyx:
             # Execute model optimization
             onyx.optimize_model(
                 model_name='example_model_optimized',
-                model_sim_config=sim_config,
                 dataset_name='example_train_data',
                 optimization_config=opt_config,
             )
