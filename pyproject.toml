@@ -25,3 +25,6 @@ classifiers=[
 
 [project.urls]
 Homepage = "https://github.com/onyx-robotics/onyx-engine"
+
+[tool.setuptools]
+packages = ["onyxengine"]
