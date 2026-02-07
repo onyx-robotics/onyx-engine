@@ -26,7 +26,7 @@ from .api_utils import (
     download_object,
     set_object_metadata,
     SourceObject,
-    upload_object_url,
+    upload_object_multipart,
 )
 
 
@@ -161,28 +161,42 @@ class Onyx:
                 dataset.dataframe[col] = dataset.dataframe[col].astype('float32')
         dataset.dataframe.to_parquet(os.path.join(DATASETS_PATH, filename), index=False)
 
-        # Upload the dataset and config to the cloud
+        # Initialize multipart upload for dataset
+        file_path = os.path.join(DATASETS_PATH, filename)
+        file_size = os.path.getsize(file_path)
         response = handle_post_request(
-            "/upload_dataset",
+            "/init_dataset_upload",
             {
                 "dataset_name": name,
                 "features": dataset.config.features,
                 "dt": dataset.config.dt,
                 "time_format": time_format,
                 "files": [filename],
+                "file_sizes": {filename: file_size},
                 "source_datasets": [source.model_dump() for source in sources],
             },
             api_key=self._api_key
         )
-        upload_object_url(
+        dataset_id = response["dataset_id"]
+        upload_plan = response["uploads"][filename]
+        parts = upload_object_multipart(
             filename,
             "dataset",
-            response["presigned_urls"][filename]["url"],
-            response["presigned_urls"][filename]["fields"],
+            dataset_id,
+            upload_plan,
+            api_key=self._api_key
         )
         handle_post_request(
             "/notify_dataset_uploaded",
-            {"dataset_id": response["dataset_id"]},
+            {
+                "dataset_id": dataset_id,
+                "uploaded_parts": {
+                    filename: {
+                        "upload_id": upload_plan["upload_id"],
+                        "parts": parts,
+                    }
+                },
+            },
             api_key=self._api_key
         )
 
