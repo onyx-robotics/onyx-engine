@@ -68,33 +68,98 @@ def upload_object(filename, object_type, object_id, api_key=None):
             except requests.exceptions.RequestException as e:
                 raise SystemExit(f"Onyx Engine API error: An unexpected error occurred: {e}")
             
-def upload_object_url(filename, object_type, url, fields):
-    # Upload the object using the secure URL
+def upload_object_multipart(
+    filename,
+    object_type,
+    dataset_id,
+    upload_plan,
+    api_key=None,
+):
     local_filename = os.path.join(ONYX_PATH, object_type + 's', filename)
     file_size = os.path.getsize(local_filename)
+    part_size = upload_plan["part_size"]
+    parts = []
+    abort_required = False
+    upload_id = upload_plan["upload_id"]
+    stream_chunk_size = 256 * 1024
+
+    class StreamingBody:
+        def __init__(self, file_handle, length, chunk_size, progress):
+            self.file_handle = file_handle
+            self.length = length
+            self.chunk_size = chunk_size
+            self.progress = progress
+            self.remaining = length
+
+        def __iter__(self):
+            return self
+
+        def __next__(self):
+            if self.remaining <= 0:
+                raise StopIteration
+            data = self.file_handle.read(min(self.chunk_size, self.remaining))
+            if not data:
+                raise SystemExit("Onyx Engine API error: Unexpected EOF while reading upload part.")
+            self.remaining -= len(data)
+            self.progress.update(len(data))
+            return data
+
+        def __len__(self):
+            return self.length
+
     with tqdm(total=file_size, desc=f'{filename}', unit="B", bar_format="{percentage:.1f}% |{bar}| {desc} | {rate_fmt}", unit_scale=True, unit_divisor=1024) as progress_bar:
-        with open(local_filename, "rb") as file:
-            fields["file"] = (filename, file)
-            e = MultipartEncoder(fields=fields)
-            m = MultipartEncoderMonitor(e, lambda monitor: progress_bar.update(monitor.bytes_read - progress_bar.n))
-            headers = {"Content-Type": m.content_type}
+        try:
+            with open(local_filename, "rb") as file:
+                for part in upload_plan["parts"]:
+                    start = (part["part_number"] - 1) * part_size
+                    end = min(start + part_size, file_size)
+                    part_length = end - start
+                    file.seek(start)
+                    url = part["url"]
+                    response = requests.put(
+                        url,
+                        data=StreamingBody(file, part_length, stream_chunk_size, progress_bar),
+                    )
+                    response.raise_for_status()
+                    etag = response.headers.get("ETag") or response.headers.get("etag")
+                    if etag is None:
+                        raise SystemExit("Onyx Engine API error: Missing ETag for multipart upload.")
+
+                    parts.append({"part_number": part["part_number"], "etag": etag})
+        except requests.exceptions.HTTPError as e:
+            abort_required = True
             try:
-                response = requests.post(url, data=m, headers=headers)
-                response.raise_for_status()
-                progress_bar.n = progress_bar.total
-            except requests.exceptions.HTTPError as e:
+                error_text = e.response.text if e.response is not None else str(e)
+                error_data = json.loads(error_text)
+                error = error_data.get('detail', error_text or str(e))
+            except (json.JSONDecodeError, ValueError):
+                error = e.response.text if e.response is not None else str(e)
+            raise SystemExit(f"Onyx Engine API error: {error}")
+        except requests.exceptions.ConnectionError:
+            abort_required = True
+            raise SystemExit("Onyx Engine API error: Unable to connect to the server.")
+        except requests.exceptions.Timeout:
+            abort_required = True
+            raise SystemExit("Onyx Engine API error: The request connection timed out.")
+        except requests.exceptions.RequestException as e:
+            abort_required = True
+            raise SystemExit(f"Onyx Engine API error: An unexpected error occurred: {e}")
+        finally:
+            if abort_required:
                 try:
-                    error_data = json.loads(response.text)
-                    error = error_data.get('detail', response.text or str(e))
-                except (json.JSONDecodeError, ValueError):
-                    error = response.text or str(e)
-                raise SystemExit(f"Onyx Engine API error: {error}")
-            except requests.exceptions.ConnectionError:
-                raise SystemExit("Onyx Engine API error: Unable to connect to the server.")
-            except requests.exceptions.Timeout:
-                raise SystemExit("Onyx Engine API error: The request connection timed out.")
-            except requests.exceptions.RequestException as e:
-                raise SystemExit(f"Onyx Engine API error: An unexpected error occurred: {e}")
+                    handle_post_request(
+                        "/abort_dataset_upload",
+                        {
+                            "dataset_id": dataset_id,
+                            "file_path": filename,
+                            "upload_id": upload_id,
+                        },
+                        api_key=api_key
+                    )
+                except Exception:
+                    pass
+
+    return parts
 
 def download_object(filename, object_type, object_id: Optional[str] = None, api_key=None):
     # Get secure download URL from the cloud
