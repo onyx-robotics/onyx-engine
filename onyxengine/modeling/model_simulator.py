@@ -57,9 +57,12 @@ class FeatureTrajectory:
 class SimulationResult:
     """Result object from model simulation with named access to input and output trajectories."""
     
-    def __init__(self, input_traj: torch.Tensor, output_traj: torch.Tensor, 
+    def __init__(self, input_traj: torch.Tensor, output_traj: torch.Tensor,
                  input_name_to_idx: Dict[str, int], output_name_to_idx: Dict[str, int],
-                 input_feature_names: List[str], output_feature_names: List[str]):
+                 input_feature_names: List[str], output_feature_names: List[str],
+                 output_var_traj: torch.Tensor = None,
+                 direct_output_name_to_idx: Dict[str, int] = None,
+                 direct_output_names: List[str] = None):
         """
         Args:
             input_traj: Full input trajectory tensor (batch_size, time_steps, n_inputs)
@@ -68,15 +71,23 @@ class SimulationResult:
             output_name_to_idx: Dictionary mapping output feature names to indices
             input_feature_names: Ordered list of input feature names
             output_feature_names: Ordered list of output feature names
+            output_var_traj: Optional variance trajectory tensor (batch_size, time_steps, n_direct_outputs)
+            direct_output_name_to_idx: Optional mapping of direct output names to variance tensor indices
+            direct_output_names: Optional ordered list of direct output names
         """
         self.inputs = FeatureTrajectory(input_traj, input_name_to_idx, input_feature_names)
         self.outputs = FeatureTrajectory(output_traj, output_name_to_idx, output_feature_names)
+        if output_var_traj is not None and direct_output_name_to_idx is not None:
+            self.output_uncertainties = FeatureTrajectory(output_var_traj, direct_output_name_to_idx, direct_output_names)
+        else:
+            self.output_uncertainties = None
 
 
 class ModelSimulator():
     def __init__(self, outputs: List[Output], inputs: List[Input], sequence_length: int, dt: float):
         self.sequence_length = sequence_length
         self.dt = dt
+        self.predict_uncertainty = False
         self.amp_context = nullcontext()
 
         # Create feature name mappings for dictionary-based API
@@ -103,12 +114,15 @@ class ModelSimulator():
         # This is needed because the model's forward() only returns direct outputs
         self.direct_output_indices = [idx for idx, output in enumerate(outputs) if not output.is_derived]
         self.n_direct_outputs = len(self.direct_output_indices)
+        self.direct_output_names = [output.name for output in outputs if not output.is_derived]
+        self.direct_output_name_to_idx = {name: idx for idx, name in enumerate(self.direct_output_names)}
 
         self.n_state = len(self.derived_input_names)
         self.n_inputs = len(self.external_input_names)
         self.n_outputs = len(outputs)
         self.input_traj = None # (batch_size, sequence_length + sim_steps, num_inputs) - matches inputs list order
         self.output_traj = None # (batch_size, sim_steps, n_outputs)
+        self.output_var_traj = None # (batch_size, sim_steps, n_direct_outputs) - only when predict_uncertainty=True
 
         # Build operations using name-based approach
         self.derived_output_ops = self._build_derived_output_ops(outputs)        
@@ -192,16 +206,24 @@ class ModelSimulator():
         # Sort by dependency depth only - parents (lower depth) come before children (higher depth)
         return sorted(ops, key=compute_depth)
 
-    def _step(self, x, dx: torch.Tensor, prev_outputs: torch.Tensor = None):
+    def _step(self, x, dx: torch.Tensor, prev_outputs: torch.Tensor = None, var_out: torch.Tensor = None):
         """Optimized step function with vectorized state updates and derived output computation.
-        
+
         Args:
             x: Input trajectory slice (batch_size, sequence_length + 1, n_inputs)
             dx: Output trajectory slice to write to (batch_size, n_outputs) - modified in place
             prev_outputs: Previous outputs for delta/derivative operations (batch_size, n_outputs) or None
+            var_out: Optional variance output slice to write to (batch_size, n_direct_outputs) - modified in place
         """
         # Do a single forward step of the model - compute direct outputs
-        dx[:, self.direct_output_indices] = self.forward(x[:, :-1, :])
+        forward_result = self.forward(x[:, :-1, :])
+        if self.predict_uncertainty and isinstance(forward_result, tuple):
+            mean, log_var = forward_result
+            dx[:, self.direct_output_indices] = mean
+            if var_out is not None:
+                var_out.copy_(self.feature_scaler.unscale_output_variance(torch.exp(log_var)))
+        else:
+            dx[:, self.direct_output_indices] = forward_result
 
         # Compute derived outputs FIRST, before updating inputs
         # This ensures inputs that depend on derived outputs use the correct values
@@ -412,10 +434,16 @@ class ModelSimulator():
         if need_realloc:
             self.input_traj = torch.zeros(batch_size, total_length, total_inputs, device=device, dtype=dtype)
             self.output_traj = torch.zeros(batch_size, sim_steps, self.n_outputs, device=device, dtype=dtype)
+            if self.predict_uncertainty:
+                self.output_var_traj = torch.zeros(batch_size, sim_steps, self.n_direct_outputs, device=device, dtype=dtype)
+            else:
+                self.output_var_traj = None
         else:
             # Reuse existing buffers - just zero them out
             self.input_traj.zero_()
             self.output_traj.zero_()
+            if self.output_var_traj is not None:
+                self.output_var_traj.zero_()
 
         # Move model to device once (check only if it's a PyTorch module)
         if isinstance(self, torch.nn.Module):
@@ -439,15 +467,19 @@ class ModelSimulator():
         with self.amp_context, torch.no_grad():
             for i in range(sim_steps):
                 prev_outputs = self.output_traj[:, i-1, :] if i > 0 else None
-                self._step(self.input_traj[:, i:i+seq_length+1, :], self.output_traj[:, i, :], prev_outputs)
+                var_out = self.output_var_traj[:, i, :] if self.output_var_traj is not None else None
+                self._step(self.input_traj[:, i:i+seq_length+1, :], self.output_traj[:, i, :], prev_outputs, var_out)
 
         # Return SimulationResult with named access
         # SimulationResult creates FeatureTrajectory objects internally
         return SimulationResult(
-            self.input_traj, 
+            self.input_traj,
             self.output_traj,
             self.input_name_to_idx,
             self.output_name_to_idx,
             self.input_names,
-            self.output_names
+            self.output_names,
+            output_var_traj=self.output_var_traj,
+            direct_output_name_to_idx=self.direct_output_name_to_idx if self.predict_uncertainty else None,
+            direct_output_names=self.direct_output_names if self.predict_uncertainty else None,
         )

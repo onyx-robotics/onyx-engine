@@ -195,6 +195,12 @@ class FeatureScaler:
         if self.device != y.device:
             self.set_device(y.device)
         return y * self.out_unscale + self.out_unbias
+
+    def unscale_output_variance(self, var: torch.Tensor) -> torch.Tensor:
+        """Unscale output variance back to original scale (variance scales quadratically)."""
+        if self.device != var.device:
+            self.set_device(var.device)
+        return var * (self.out_unscale ** 2)
     
 # class FeatureScalerJax:
 #     def __init__(self, outputs: List[Output], inputs: List[Input], device: jax.Device = None, dtype=jax.numpy.float32):

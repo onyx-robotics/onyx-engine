@@ -89,9 +89,10 @@ class RNN(nn.Module, ModelSimulator):
             inputs=config.inputs,
         )
         self.config = config
+        self.predict_uncertainty = config.predict_uncertainty
         self.rnn_type = config.rnn_type
         num_inputs = config.num_inputs
-        num_outputs = config.num_direct_outputs
+        num_outputs = config.num_direct_outputs * (2 if config.predict_uncertainty else 1)
         self.sequence_length = config.sequence_length
         self.hidden_layers = config.hidden_layers
         self.hidden_size = config.hidden_size
@@ -120,5 +121,9 @@ class RNN(nn.Module, ModelSimulator):
         x = self.feature_scaler.scale_inputs(x)
         rnn_output, _ = self.rnn(x, hidden_state)
         normalized_output = self.layer_norm(rnn_output[:, -1, :])
-        network_output = self.output_layer(normalized_output)
-        return self.feature_scaler.unscale_outputs(network_output)
+        output = self.output_layer(normalized_output)
+        if self.predict_uncertainty:
+            n = self.config.num_direct_outputs
+            mean, log_var = output[:, :n], output[:, n:]
+            return self.feature_scaler.unscale_outputs(mean), log_var
+        return self.feature_scaler.unscale_outputs(output)
