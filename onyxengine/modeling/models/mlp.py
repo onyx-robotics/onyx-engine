@@ -140,7 +140,8 @@ class MLP(nn.Module, ModelSimulator):
         if self.predict_uncertainty:
             n = self.config.num_direct_outputs
             mean, log_var = output[:, :n], output[:, n:]
-            return self.feature_scaler.unscale_outputs(mean), log_var
+            variance = self.feature_scaler.unscale_output_variance(torch.exp(log_var))
+            return self.feature_scaler.unscale_outputs(mean), variance
         return self.feature_scaler.unscale_outputs(output)
     
 # class MLPJax(nnx.Module):

@@ -218,10 +218,10 @@ class ModelSimulator():
         # Do a single forward step of the model - compute direct outputs
         forward_result = self.forward(x[:, :-1, :])
         if self.predict_uncertainty and isinstance(forward_result, tuple):
-            mean, log_var = forward_result
+            mean, variance = forward_result
             dx[:, self.direct_output_indices] = mean
             if var_out is not None:
-                var_out.copy_(self.feature_scaler.unscale_output_variance(torch.exp(log_var)))
+                var_out.copy_(variance)
         else:
             dx[:, self.direct_output_indices] = forward_result
 
