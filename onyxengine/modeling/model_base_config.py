@@ -42,7 +42,8 @@ class OnyxModelBaseConfig(BaseModel):
     inputs: List[Input]
     dt: float = 0.0
     sequence_length: int = 1
-    
+    predict_uncertainty: bool = False
+
     @model_validator(mode='after')
     def validate_base_config(self) -> Self:
         validate_inputs_and_outputs(self.inputs, self.outputs)
@@ -75,10 +76,12 @@ class OnyxModelOptBaseConfig(BaseModel):
     inputs: List[Input]
     dt: Union[float, Dict[str, List[float]]] = {"range": [0.001, 0.1, 0.005]}
     sequence_length: Union[int, Dict[str, List[int]]] = {"range": [1, 10, 1]}
-    
+    predict_uncertainty: Union[bool, Dict[str, List[bool]]] = False
+
     @model_validator(mode='after')
     def validate_base_config(self) -> Self:
         validate_inputs_and_outputs(self.inputs, self.outputs)
         validate_opt_param(self.dt, 'dt', options=['select', 'range'], min_val=0.0)
         validate_opt_param(self.sequence_length, 'sequence_length', options=['select', 'range'], min_val=1, max_val=50)
+        validate_opt_param(self.predict_uncertainty, 'predict_uncertainty', options=['select'], select_from=[True, False])
         return self

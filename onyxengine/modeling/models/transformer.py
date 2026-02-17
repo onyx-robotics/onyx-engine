@@ -172,8 +172,9 @@ class Transformer(nn.Module, ModelSimulator):
             inputs=config.inputs,
         )
         self.config = config
+        self.predict_uncertainty = config.predict_uncertainty
         num_inputs = config.num_inputs
-        num_outputs = config.num_direct_outputs
+        num_outputs = config.num_direct_outputs * (2 if config.predict_uncertainty else 1)
         
         # Continuous states embedded with linear layer instead of token-level nn.Embedding
         self.transformer = nn.ModuleDict(dict(
@@ -222,4 +223,9 @@ class Transformer(nn.Module, ModelSimulator):
         
         # Project back out to embedded outputs
         output = self.lm_head(x[:, [-1], :]).squeeze(1)
+        if self.predict_uncertainty:
+            n = self.config.num_direct_outputs
+            mean, log_var = output[:, :n], output[:, n:]
+            variance = self.feature_scaler.unscale_output_variance(torch.exp(log_var))
+            return self.feature_scaler.unscale_outputs(mean), variance
         return self.feature_scaler.unscale_outputs(output)

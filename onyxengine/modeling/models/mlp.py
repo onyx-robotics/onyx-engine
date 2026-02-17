@@ -93,8 +93,9 @@ class MLP(nn.Module, ModelSimulator):
             inputs=config.inputs,
         )
         self.config = config
+        self.predict_uncertainty = config.predict_uncertainty
         num_inputs = config.num_inputs * config.sequence_length
-        num_outputs = config.num_direct_outputs
+        num_outputs = config.num_direct_outputs * (2 if config.predict_uncertainty else 1)
         hidden_layers = config.hidden_layers
         hidden_size = config.hidden_size
         activation = None
@@ -135,7 +136,13 @@ class MLP(nn.Module, ModelSimulator):
         # Flatten to (batch_size, sequence_length * num_inputs)
         x = self.feature_scaler.scale_inputs(x)
         x = x.view(x.size(0), -1)
-        return self.feature_scaler.unscale_outputs(self.model(x))
+        output = self.model(x)
+        if self.predict_uncertainty:
+            n = self.config.num_direct_outputs
+            mean, log_var = output[:, :n], output[:, n:]
+            variance = self.feature_scaler.unscale_output_variance(torch.exp(log_var))
+            return self.feature_scaler.unscale_outputs(mean), variance
+        return self.feature_scaler.unscale_outputs(output)
     
 # class MLPJax(nnx.Module):
 #     def __init__(self, config: MLPConfig):
